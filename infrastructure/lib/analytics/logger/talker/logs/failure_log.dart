@@ -20,7 +20,7 @@ class FailureLog extends TalkerLog {
   }
 
   @override
-  String generateTextMessage() {
+  String generateTextMessage({TimeFormat? timeFormat}) {
     return _createMessage();
   }
 

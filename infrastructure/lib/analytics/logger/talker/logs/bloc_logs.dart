@@ -21,7 +21,7 @@ class BlocEventLog extends TalkerLog {
   AnsiPen get pen => AnsiPen()..xterm(51);
 
   @override
-  String generateTextMessage() {
+  String generateTextMessage({TimeFormat? timeFormat}) {
     return _createMessage();
   }
 
@@ -53,7 +53,7 @@ class BlocStateLog extends TalkerLog {
   AnsiPen get pen => AnsiPen()..xterm(49);
 
   @override
-  String generateTextMessage() {
+  String generateTextMessage({TimeFormat? timeFormat}) {
     return _createMessage();
   }
 
@@ -88,7 +88,7 @@ class BlocChangeLog extends TalkerLog {
   AnsiPen get pen => AnsiPen()..xterm(49);
 
   @override
-  String generateTextMessage() {
+  String generateTextMessage({TimeFormat? timeFormat}) {
     return _createMessage();
   }
 
@@ -116,7 +116,7 @@ class BlocCreateLog extends TalkerLog {
   AnsiPen get pen => AnsiPen()..xterm(8);
 
   @override
-  String generateTextMessage() {
+  String generateTextMessage({TimeFormat? timeFormat}) {
     return _createMessage();
   }
 
@@ -144,7 +144,7 @@ class BlocCloseLog extends TalkerLog {
   AnsiPen get pen => AnsiPen()..xterm(13);
 
   @override
-  String generateTextMessage() {
+  String generateTextMessage({TimeFormat? timeFormat}) {
     return _createMessage();
   }
 

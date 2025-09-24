@@ -3,7 +3,7 @@ targets:
     builders:
       slang_build_runner:
         options:
-          locale_handling: false
+          locale_handling: true
           translation_class_visibility: public
           fallback_strategy: base_locale
           input_directory: lib/_core/_i18n

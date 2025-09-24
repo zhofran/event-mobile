@@ -12,7 +12,7 @@ class DebugLog extends TalkerLog {
   LogLevel? get logLevel => LogLevel.debug;
 
   @override
-  String generateTextMessage() {
+  String generateTextMessage({TimeFormat? timeFormat}) {
     return _createDebugLog();
   }
 

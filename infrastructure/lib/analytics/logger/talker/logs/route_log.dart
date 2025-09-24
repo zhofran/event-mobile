@@ -12,7 +12,7 @@ class RouteLog extends TalkerLog {
   final bool isPush;
 
   @override
-  String generateTextMessage() {
+  String generateTextMessage({TimeFormat? timeFormat}) {
     return _createMessage();
   }
 

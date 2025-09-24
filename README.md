@@ -1,4 +1,4 @@
-# flutter_advanced_boilerplate
+# job_portal_mobile
 
 A new Flutter project.
 

@@ -1,10 +1,10 @@
-name: flutter_advanced_boilerplate
+name: job_portal_mobile
 
 repository:
   type: github
-  origin: https://github.com/fikretsengul/flutter_advanced_boilerplate
-  owner: fikretsengul
-  name: flutter_advanced_boilerplate
+  origin: https://github.com/elisofttechnology/job_portal_mobile
+  owner: elisofttechnology
+  name: job_portal_mobile
 
 # To tell melos to use fvm as flutter sdk
 sdkPath: .fvm/flutter_sdk

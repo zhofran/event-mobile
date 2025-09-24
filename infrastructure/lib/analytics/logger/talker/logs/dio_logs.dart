@@ -24,7 +24,7 @@ class DioRequestLog extends TalkerLog {
   AnsiPen get pen => settings.requestPen ?? (AnsiPen()..xterm(219));
 
   @override
-  String generateTextMessage() {
+  String generateTextMessage({TimeFormat? timeFormat}) {
     return _createMessage();
   }
 
@@ -73,7 +73,7 @@ class DioResponseLog extends TalkerLog {
   AnsiPen get pen => settings.responsePen ?? (AnsiPen()..xterm(46));
 
   @override
-  String generateTextMessage() {
+  String generateTextMessage({TimeFormat? timeFormat}) {
     return _createMessage();
   }
 
@@ -134,7 +134,7 @@ class DioErrorLog extends TalkerLog {
   AnsiPen get pen => settings.errorPen ?? (AnsiPen()..red());
 
   @override
-  String generateTextMessage() {
+  String generateTextMessage({TimeFormat? timeFormat}) {
     return _createMessage();
   }
 

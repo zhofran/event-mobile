@@ -327,6 +327,10 @@ abstract class _CupertinoModalSheetRoute<T> extends PageRoute<T> with ModalSheet
   _CupertinoModalSheetRoute({super.settings});
 
   PageRoute<dynamic>? _previousRoute;
+  late final SheetController _sheetController = SheetController();
+
+  @override
+  SheetController get sheetController => _sheetController;
 
   @override
   void didChangePrevious(Route<dynamic>? previousRoute) {
@@ -348,6 +352,7 @@ abstract class _CupertinoModalSheetRoute<T> extends PageRoute<T> with ModalSheet
   void dispose() {
     sheetController.removeListener(_invalidateTransitionProgress);
     controller!.removeListener(_invalidateTransitionProgress);
+    _sheetController.dispose();
     super.dispose();
   }
 
@@ -359,9 +364,9 @@ abstract class _CupertinoModalSheetRoute<T> extends PageRoute<T> with ModalSheet
           _cupertinoTransitionControllerOf[_previousRoute]?.value = min(
             controller!.value,
             inverseLerp(
-              metrics.viewportDimensions.height / 2,
-              metrics.viewportDimensions.height,
-              metrics.viewPixels,
+              metrics.contentSize.height / 2,
+              metrics.contentSize.height,
+              metrics.pixels,
             ),
           );
         }
@@ -416,6 +421,12 @@ class CupertinoModalSheetRoute<T> extends _CupertinoModalSheetRoute<T> {
   final Duration transitionDuration;
   @override
   final Curve transitionCurve;
+
+  @override
+  bool get swipeDismissible => enablePullToDismiss;
+
+  @override
+  SwipeDismissSensitivity get swipeDismissSensitivity => const SwipeDismissSensitivity();
 
   @override
   Widget buildContent(BuildContext context) => builder(context);
