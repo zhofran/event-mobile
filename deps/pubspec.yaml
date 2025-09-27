@@ -47,7 +47,7 @@ dependencies:
   reactive_forms_annotations: ^5.1.0
   rxdart: ^0.27.7
   sentry_flutter: ^8.14.2
-  skeletonizer: ^1.0.1
+  skeletonizer: ^2.1.0
   slang: ^3.29.0
   slang_flutter: ^3.29.0
   sliver_snap: ^2.1.0

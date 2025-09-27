@@ -13,9 +13,9 @@ extension ContextExt on BuildContext {
   TextTheme get textTheme => Theme.of(this).textTheme;
   ColorScheme get colorScheme => Theme.of(this).colorScheme;
   TextTheme get primaryTextTheme => Theme.of(this).primaryTextTheme;
-  BottomAppBarTheme get bottomAppBarTheme => Theme.of(this).bottomAppBarTheme;
+  BottomAppBarThemeData get bottomAppBarTheme => Theme.of(this).bottomAppBarTheme;
   BottomSheetThemeData get bottomSheetTheme => Theme.of(this).bottomSheetTheme;
-  AppBarTheme get appBarTheme => Theme.of(this).appBarTheme;
+  AppBarThemeData get appBarTheme => Theme.of(this).appBarTheme;
 
   /// Media query related extensions
   Size get mediaQuerySize => MediaQuery.of(this).size;

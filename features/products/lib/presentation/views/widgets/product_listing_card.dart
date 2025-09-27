@@ -20,7 +20,7 @@ class ProductListingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<CartCubit, CartState>(
       builder: (context, state) {
-        final cartItem = state.cartItems.firstWhereOrNull((element) => element.id == product.id);
+        final cartItem = state.cartItems.where((element) => element.id == product.id).firstOrNull;
         final isAddedToCart = cartItem != null;
 
         return Skeletonizer(
@@ -121,18 +121,12 @@ class ProductListingCard extends StatelessWidget {
                           child: AnimatedOpacity(
                             opacity: isAddedToCart ? 1 : 0,
                             duration: $.timings.mil200,
-                            child: FabButton(
+                            child: FabButton.primary(
                               width: 25,
-                              height: 25,
-                              color: product.isEmpty
-                                  ? context.fabTheme.inactiveColor.withOpacity(0.3)
-                                  : context.fabTheme.primaryColor,
-                              borderRadius: const BorderRadius.all(Radius.circular(100)),
-                              innerPadding: $.paddings.xxs.horizontal,
-                              child: Icon(
-                                UIcons.boldRounded.minus_small,
-                                size: 16,
-                              ),
+                              size: FabButtonSize.small,
+                              isIconOnly: true,
+                              icon: UIcons.boldRounded.minus_small,
+                              child: const SizedBox.shrink(),
                               onPressed: () => $.get<CartCubit>().decreaseQuantity(product.id),
                             ),
                           ),
@@ -143,30 +137,19 @@ class ProductListingCard extends StatelessWidget {
                           child: AnimatedOpacity(
                             opacity: isAddedToCart ? 1 : 0,
                             duration: $.timings.mil200,
-                            child: FabButton(
+                            child: FabButton.primary(
                               width: 25,
-                              height: 25,
-                              color: product.isEmpty
-                                  ? context.fabTheme.inactiveColor.withOpacity(0.3)
-                                  : context.fabTheme.primaryColor,
-                              borderRadius: const BorderRadius.all(Radius.circular(100)),
-                              innerPadding: $.paddings.xxs.horizontal,
-                              child: Icon(
-                                UIcons.boldRounded.plus_small,
-                                size: 16,
-                              ),
+                              size: FabButtonSize.small,
+                              isIconOnly: true,
+                              icon: UIcons.boldRounded.plus_small,
+                              child: const SizedBox.shrink(),
                               onPressed: () => $.get<CartCubit>().increaseQuantity(product.id),
                             ),
                           ),
                         ),
-                        FabButton(
+                        FabButton.primary(
                           width: isAddedToCart ? 70 : 200,
-                          color: product.isEmpty
-                              ? context.fabTheme.inactiveColor.withOpacity(0.3)
-                              : context.fabTheme.primaryColor,
-                          pressedOpacity: isAddedToCart ? 1 : 0.4,
-                          borderRadius: BorderRadius.all(Radius.circular($.paddings.sm)),
-                          innerPadding: $.paddings.xxs.all,
+                          size: FabButtonSize.medium,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [

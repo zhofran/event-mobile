@@ -14,7 +14,7 @@ dependencies:
   json_annotation: ^4.8.1
 
 dev_dependencies:
-  auto_route_generator: ^7.3.2
+  auto_route_generator: ^8.0.0
   build_runner: ^2.4.8
   freezed: ^2.4.6
   injectable_generator: ^2.4.1

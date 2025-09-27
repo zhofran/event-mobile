@@ -86,10 +86,34 @@ scripts:
     run: melos exec dart format . --set-exit-if-changed
 
   generate:
-    description: Generate codes for all packages.
+    description: Generate codes and assets for all packages.
     run:  |
+      echo "Generating assets for design package..." && \
+      cd design && fluttergen && cd .. && \
+      echo "Generating codes for all packages..." && \
       melos exec -c 1 --depends-on="build_runner" -- \
         fvm dart run build_runner build -d
+
+  generate:watch:
+    description: Watch and generate codes automatically when files change.
+    run:  |
+      echo "Initial asset generation for design package..." && \
+      cd design && fluttergen && cd .. && \
+      echo "Starting watch mode for code generation..." && \
+      melos exec -c 1 --depends-on="build_runner" -- \
+        fvm dart run build_runner watch -d
+
+  generate:assets:
+    description: Generate assets only for design package.
+    run: |
+      echo "Generating assets for design package..." && \
+      cd design && fluttergen && cd ..
+
+  watch:dev:
+    description: Watch mode for development - runs generate and analyze on file changes.
+    run: |
+      echo "Starting watch mode for development..."
+      melos run generate:watch
 
   # Tests
   test:

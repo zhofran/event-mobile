@@ -36,17 +36,13 @@ class TopBar extends StatelessWidget {
                   : const Nil(),
             ),
             PaddingGap.sm(),
-            FabButton(
+            FabButton.secondary(
               width: 32,
-              height: 32,
-              borderRadius: const BorderRadius.all(Radius.circular(16)),
+              size: FabButtonSize.small,
+              isIconOnly: true,
+              icon: UIcons.boldRounded.cross_small,
               onPressed: $.navigator.pop,
-              color: context.fabTheme.softInactiveColor,
-              child: Icon(
-                UIcons.boldRounded.cross_small,
-                size: 20,
-                color: context.fabTheme.onBackgroundColor,
-              ),
+              child: const SizedBox.shrink(),
             ),
           ],
         ),

@@ -1,4 +1,4 @@
-// Copyright 2024 Fikret Şengül. All rights reserved.
+// Copyright 2025. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -95,6 +95,61 @@ class FeaturesRouter extends $FeaturesRouter {
               title: (_, __) => $.tr.auth.title,
               path: 'login',
               page: LoginRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Register',
+              path: 'register',
+              page: RegisterRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Verify Email',
+              path: 'verify-email',
+              page: VerifyEmailRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Change Email',
+              path: 'change-email',
+              page: ChangeEmailRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Setup Profile',
+              path: 'setup-profile',
+              page: SetupProfileRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Setup Phone Number',
+              path: 'setup-phone-number',
+              page: SetupPhoneNumberRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'OTP Verification',
+              path: 'otp-verification',
+              page: OTPVerificationRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Profile Career',
+              path: 'profile-career',
+              page: ProfileCareerRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Profile Job',
+              path: 'profile-job',
+              page: ProfileJobRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Profile Location',
+              path: 'profile-location',
+              page: ProfileLocationRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Profile Recent Job',
+              path: 'profile-recent-job',
+              page: ProfileRecentJobRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Profile Photo',
+              path: 'profile-photo',
+              page: ProfilePhotoRoute.page,
             ),
             CustomRoute(
               page: MaterialDialogWrapperRoute.page,

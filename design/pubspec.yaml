@@ -11,6 +11,7 @@ dependencies:
     path: ../deps
   flutter:
     sdk: flutter
+  flutter_svg: ^2.0.9
 
 dev_dependencies:
   build_runner: ^2.4.8
@@ -24,46 +25,27 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/images/icons/
   fonts:
-    - family: VisueltPro
+    - family: PlusJakartaSans
       fonts:
-        - asset: assets/fonts/VisueltPro/VisueltPro-Black.ttf
-          weight: 900
-        - asset: assets/fonts/VisueltPro/VisueltPro-BlackItalic.ttf
-          weight: 900
-          style: italic
-        - asset: assets/fonts/VisueltPro/VisueltPro-Bold.ttf
+        - asset: assets/fonts/PlusJakartaSans/PlusJakartaSans-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/PlusJakartaSans/PlusJakartaSans-Bold.ttf
           weight: 700
-        - asset: assets/fonts/VisueltPro/VisueltPro-BoldItalic.ttf
-          weight: 700
-          style: italic
-        - asset: assets/fonts/VisueltPro/VisueltPro-Medium.ttf
+        - asset: assets/fonts/PlusJakartaSans/PlusJakartaSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/PlusJakartaSans/PlusJakartaSans-Medium.ttf
           weight: 500
-        - asset: assets/fonts/VisueltPro/VisueltPro-MediumItalic.ttf
-          weight: 500
-          style: italic
-        - asset: assets/fonts/VisueltPro/VisueltPro-Regular.ttf
+        - asset: assets/fonts/PlusJakartaSans/PlusJakartaSans-Regular.ttf
           weight: 400
-        - asset: assets/fonts/VisueltPro/VisueltPro-Light.ttf
+        - asset: assets/fonts/PlusJakartaSans/PlusJakartaSans-Light.ttf
           weight: 300
-        - asset: assets/fonts/VisueltPro/VisueltPro-LightItalic.ttf
-          weight: 300
-          style: italic
-        - asset: assets/fonts/VisueltPro/VisueltPro-ExtraLight.ttf
+        - asset: assets/fonts/PlusJakartaSans/PlusJakartaSans-ExtraLight.ttf
           weight: 200
-        - asset: assets/fonts/VisueltPro/VisueltPro-ExtraLightItalic.ttf
-          weight: 200
-          style: italic
-        - asset: assets/fonts/VisueltPro/VisueltPro-Thin.ttf
-          weight: 100
-        - asset: assets/fonts/VisueltPro/VisueltPro-ThinItalic.ttf
-          weight: 100
-          style: italic
-        - asset: assets/fonts/VisueltPro/VisueltPro-Italic.ttf
-          style: italic
 
 flutter_gen:
   output: lib/_core/constants/
   line_length: 120
   integrations:
-    flutter_svg: false
+    flutter_svg: true

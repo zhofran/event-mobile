@@ -24,7 +24,7 @@ class ProductAppBarActions extends StatelessWidget {
         PaddingGap.md(),
         BlocBuilder<CartCubit, CartState>(
           builder: (context, state) {
-            return FabButton(
+            return FabButton.tertiary(
               onPressed: () {
                 $.dialog.showCupertinoModal(
                   builder: (_) {

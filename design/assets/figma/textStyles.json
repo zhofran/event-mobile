@@ -1,0 +1,599 @@
+{
+  "fileName": "TYPOGRAPHY",
+  "textStyles": [
+    {
+      "name": "MOBILE/Caption/ExtraLight",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "ExtraLight",
+      "fontSize": 12,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Caption/Light",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Light",
+      "fontSize": 12,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Caption/Regular",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Regular",
+      "fontSize": 12,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Caption/Medium",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Medium",
+      "fontSize": 12,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Caption/Semibold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "SemiBold",
+      "fontSize": 12,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Caption/Bold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Bold",
+      "fontSize": 12,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Body Small/Extralight",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "ExtraLight",
+      "fontSize": 14,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Body Small/Light",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Light",
+      "fontSize": 14,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Body Small/Regular",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Regular",
+      "fontSize": 14,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Body Small/Medium",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Medium",
+      "fontSize": 14,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Body Small/SemiBold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "SemiBold",
+      "fontSize": 14,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Body Small/Bold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Bold",
+      "fontSize": 14,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Body Large/ExtraLight",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "ExtraLight",
+      "fontSize": 16,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Body Large/Light",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Light",
+      "fontSize": 16,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Body Large/Regular",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Regular",
+      "fontSize": 16,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Body Large/Medium",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Medium",
+      "fontSize": 16,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Body Large/SemiBold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "SemiBold",
+      "fontSize": 16,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Body Large/Bold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Bold",
+      "fontSize": 16,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Subtitle/ExtraLight",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "ExtraLight",
+      "fontSize": 18,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Subtitle/Light",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Light",
+      "fontSize": 18,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Subtitle/Regular",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Regular",
+      "fontSize": 18,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Subtitle/Medium",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Medium",
+      "fontSize": 18,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Subtitle/SemiBold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "SemiBold",
+      "fontSize": 18,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Subtitle/Bold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Bold",
+      "fontSize": 18,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 4/ExtraLight",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "ExtraLight",
+      "fontSize": 20,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 4/Light",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Light",
+      "fontSize": 20,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 4/Regular",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Regular",
+      "fontSize": 20,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 4/Medium",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Medium",
+      "fontSize": 20,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 4/SemiBold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "SemiBold",
+      "fontSize": 20,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 4/Bold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Bold",
+      "fontSize": 20,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 3/ExtraLight",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "ExtraLight",
+      "fontSize": 22,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 3/Light",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Light",
+      "fontSize": 22,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 3/Regular",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Regular",
+      "fontSize": 22,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 3/Medium",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Medium",
+      "fontSize": 22,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 3/SemiBold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "SemiBold",
+      "fontSize": 22,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 3/Bold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Bold",
+      "fontSize": 22,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 2/ExtraLight",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "ExtraLight",
+      "fontSize": 30,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 2/Light",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Light",
+      "fontSize": 30,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 2/Regular",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Regular",
+      "fontSize": 30,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 2/Medium",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Medium",
+      "fontSize": 30,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 2/SemiBold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "SemiBold",
+      "fontSize": 30,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 2/Bold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Bold",
+      "fontSize": 30,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 1/ExtraLight",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "ExtraLight",
+      "fontSize": 40,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 1/Light",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Light",
+      "fontSize": 40,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 1/Regular",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Regular",
+      "fontSize": 40,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 1/Medium",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Medium",
+      "fontSize": 40,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 1/SemiBold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "SemiBold",
+      "fontSize": 40,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Heading 1/Bold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Bold",
+      "fontSize": 40,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Display/ExtraLight",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "ExtraLight",
+      "fontSize": 56,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Display/Light",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Light",
+      "fontSize": 56,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Display/Regular",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Regular",
+      "fontSize": 56,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Display/Medium",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Medium",
+      "fontSize": 56,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Display/Semibold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "SemiBold",
+      "fontSize": 56,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    },
+    {
+      "name": "MOBILE/Display/Bold",
+      "fontFamily": "Plus Jakarta Sans",
+      "fontWeight": "Bold",
+      "fontSize": 56,
+      "letterSpacing": {
+        "unit": "PERCENT",
+        "value": 0
+      },
+      "textCase": "ORIGINAL"
+    }
+  ]
+}

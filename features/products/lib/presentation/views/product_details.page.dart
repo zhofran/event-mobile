@@ -118,7 +118,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         child: Wrap(
                           runSpacing: $.paddings.md,
                           children: widget.product.images.map((image) {
-                            return FabButton(
+                            return FabButton.tertiary(
                               onPressed: _selectedImage != image
                                   ? () {
                                       widget.onSelectedItemChanged?.call(widget.product.images.indexOf(image));
