@@ -33,3 +33,4 @@ export 'widgets/tab_bar/widgets/circle_tab_indicator.dart';
 export 'widgets/tab_bar/widgets/underline_tab_indicator.dart';
 export 'widgets/textfield/fab_textfield.dart';
 export 'widgets/textfield/fab_textfield_types.dart';
+export 'widgets/progress_indicator/fab_progress_indicator.dart';

@@ -94,11 +94,11 @@ class _ChangeEmailPageState extends State<ChangeEmailPage> {
         children: [ 
           FabButton.secondary(
             onPressed: () {
-              $.navigator.push(
-                VerifyEmailRoute(
-                  onResult: widget.onResult,
-                )
-              );
+              // $.navigator.push(
+              //   VerifyEmailRoute(
+              //     onResult: widget.onResult,
+              //   )
+              // );
             },
             isIconOnly: true,
             iconWidget: Assets.images.icons.arrowLeftSLine.svg(
@@ -184,11 +184,11 @@ class _ChangeEmailPageState extends State<ChangeEmailPage> {
             ),
             size: FabButtonSize.large,
             onPressed: () => {
-              $.navigator.replace(VerifyEmailRoute(onResult: (result) {
-                if (result) {
-                  widget.onResult(true);
-                }
-              }))
+              // $.navigator.replace(VerifyEmailRoute(onResult: (result) {
+              //   if (result) {
+              //     widget.onResult(true);
+              //   }
+              // }))
             },
           ),
         ),

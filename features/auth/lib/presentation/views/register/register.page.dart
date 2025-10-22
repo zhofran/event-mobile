@@ -39,6 +39,14 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
     });
   }
+  
+  bool _obscureText = true;
+
+  void toggleObscureText() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
+  }
 
   Future<void> _handleRegister() async {
     setState(() {
@@ -55,7 +63,7 @@ class _RegisterPageState extends State<RegisterPage> {
       // For now, just call onResult with true
       await $.navigator.replace(VerifyEmailRoute(onResult: (bool didVerify) {
         widget.onResult(didVerify);
-      }));
+      }, title: 'Register', move: RoleSelectionRoute(onResult: widget.onResult)));
   }
 
   @override
@@ -83,7 +91,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         // Welcome text section
                         _buildWelcomeSection(),
                         
-                        PaddingGap.md(),
+                        PaddingGap.xxl(),
                         
                         // Register Form
                         _buildRegisterForm(),
@@ -149,9 +157,17 @@ class _RegisterPageState extends State<RegisterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Set up your account',
+        const Text(
+          'Start Where the Events Begin',
           style: FabTypography.displaySemiBold22,
+        ),
+        PaddingGap.sm(),
+        Text(
+          'Join the Mining Event Platform, a single space for every event role.',
+          style: FabTypography.displayRegular14.copyWith(
+            color: FabColors.greyscale400,
+          ),
+          textAlign: TextAlign.justify,
         ),
       ],
     );
@@ -163,7 +179,7 @@ class _RegisterPageState extends State<RegisterPage> {
         // Divider with "atau" text
         Row(
           children: [
-            Expanded(
+            const Expanded(
               child: Divider(
               color: FabColors.line,
               thickness: 1,
@@ -178,7 +194,7 @@ class _RegisterPageState extends State<RegisterPage> {
                  ),
                ),
              ),
-            Expanded(
+            const Expanded(
               child: Divider(
               color: FabColors.line,
               thickness: 1,
@@ -205,7 +221,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     package: 'design',
                   ),
                   PaddingGap.sm(),
-                  Text(
+                  const Text(
                     'Continue With Google',
                     style: FabTypography.displaySemiBold14,
                   ),
@@ -226,7 +242,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     package: 'design',
                   ),
                   PaddingGap.sm(),
-                  Text(
+                  const Text(
                     'Continue With LinkedIn',
                     style: FabTypography.displaySemiBold14,
                   ),
@@ -248,10 +264,10 @@ class _RegisterPageState extends State<RegisterPage> {
         FabTextfield(
           formControl: form.control('email') as FormControl<String>,
           keyboardType: TextInputType.emailAddress,
-          labelText: 'Email',
-          hintText: 'Masukkan email Anda',
+          // labelText: 'Email',
+          hintText: 'Email',
           textInputAction: TextInputAction.next,
-          prefixIcon: Icon(CupertinoIcons.mail, color: FabColors.primary300),
+          prefixIcon: const Icon(CupertinoIcons.mail, color: FabColors.primary300),
           size: FabTextfieldSize.large,
         ),
         
@@ -261,13 +277,16 @@ class _RegisterPageState extends State<RegisterPage> {
         FabTextfield(
           formControl: form.control('password') as FormControl<String>,
           keyboardType: TextInputType.text,
-          labelText: 'Password',
-          hintText: 'Masukkan password Anda',
+          // labelText: 'Password',
+          hintText: 'Password',
           textInputAction: TextInputAction.next,
-          obscureText: true,
+          obscureText: _obscureText,
           size: FabTextfieldSize.large,
-          prefixIcon: Icon(CupertinoIcons.lock, color: FabColors.primary300),
-          suffixIcon: Icon(CupertinoIcons.eye, color: FabColors.primary300),
+          prefixIcon: const Icon(CupertinoIcons.lock, color: FabColors.primary300),
+          suffixIcon: Icon(
+            _obscureText ? CupertinoIcons.eye_slash : CupertinoIcons.eye, 
+            color: FabColors.primary300
+          ),
         ),
         
         PaddingGap.md(),
@@ -276,25 +295,29 @@ class _RegisterPageState extends State<RegisterPage> {
         FabTextfield(
           formControl: form.control('confirmPassword') as FormControl<String>,
           keyboardType: TextInputType.text,
-          labelText: 'Konfirmasi Password',
-          hintText: 'Masukkan ulang password Anda',
+          // labelText: 'Konfirmasi Password',
+          hintText: 'Confirm Password',
           textInputAction: TextInputAction.done,
           obscureText: true,
           size: FabTextfieldSize.large,
-          prefixIcon: Icon(CupertinoIcons.lock, color: FabColors.primary300),
-          suffixIcon: Icon(CupertinoIcons.eye, color: FabColors.primary300),
-        ),
-        
-        PaddingGap.lg(),
-
-        FabTextStyled(
-          "By clicking continue, you agree to Mining Digital Platform Terms & Conditions.",
-          style: FabTypography.displayRegular12.copyWith(
-            color: FabColors.greyscale400,
+          prefixIcon: const Icon(CupertinoIcons.lock, color: FabColors.primary300),
+          suffixIcon: Icon(
+            _obscureText ? CupertinoIcons.eye_slash : CupertinoIcons.eye, 
+            color: FabColors.primary300
           ),
         ),
+        
+        PaddingGap.xxl(),
 
-        PaddingGap.sm(),
+        FabTextStyled(
+          "By continuing, you agree to our Terms & Privacy Policy.",
+          style: FabTypography.displayRegular14Alt.copyWith(
+            color: FabColors.greyscale400,
+          ),
+          textAlign: TextAlign.center,
+        ),
+
+        PaddingGap.xs(),
         
         // Register Button
         Container(
@@ -302,6 +325,8 @@ class _RegisterPageState extends State<RegisterPage> {
           height: 52,
           child: FabButton.primary(
             isLoading: _isLoading,
+            size: FabButtonSize.large,
+            onPressed: _isLoading ? null : _handleRegister,
             child: Text(
               'Continue',
               style: FabTypography.body.copyWith(
@@ -309,10 +334,34 @@ class _RegisterPageState extends State<RegisterPage> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            size: FabButtonSize.large,
-            onPressed: _isLoading ? null : _handleRegister,
           ),
         ),
+        
+        PaddingGap.sm(),
+
+        // Login redirect
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Already have an account? ',
+              style: FabTypography.displayRegular14.copyWith(
+                color: FabColors.greyscale400,
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                $.navigator.replace(LoginRoute(onResult: widget.onResult));
+              },
+              child: Text(
+                'Login',
+                style: FabTypography.displayRegular14.copyWith(
+                  color: FabColors.primary200,
+                ),
+              ),
+            ),
+          ],
+        )
       ],
     );
   }

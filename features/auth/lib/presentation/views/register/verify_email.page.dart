@@ -12,9 +12,11 @@ import 'package:reactive_forms/reactive_forms.dart';
 
 @RoutePage()
 class VerifyEmailPage extends StatefulWidget {
-  const VerifyEmailPage({required this.onResult, super.key});
+  VerifyEmailPage({required this.onResult, required this.title, required this.move, super.key});
 
   final Function(bool didRegister) onResult;
+  String title;
+  PageRouteInfo move;
 
   @override
   State<VerifyEmailPage> createState() => _VerifyEmailPageState();
@@ -74,22 +76,79 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
               
               // Main content area - properly centered
               Expanded(
-                child: Center(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Register Form
-                          _buildRegisterForm(),
-                        ],
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.9,
+                  height: MediaQuery.of(context).size.height * 0.65,
+                  // color: Colors.amber,
+                  child: Center(
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Register Form
+                            _buildRegisterForm(),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
+
+              Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Got nothing? ',
+                          style: FabTypography.displayRegular14.copyWith(
+                            color: FabColors.greyscale400,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            $.navigator.replace(LoginRoute(onResult: widget.onResult));
+                          },
+                          child: Text(
+                            'Resend',
+                            style: FabTypography.displayRegular14.copyWith(
+                              color: FabColors.primary200,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    PaddingGap.md(),
+
+                    // Verify Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: FabButton.primary(
+                        isLoading: _isLoading,
+                        size: FabButtonSize.large,
+                        onPressed: () => {
+                          $.navigator.replace(widget.move)
+                        },
+                        child: Text(
+                          'Open Email App',
+                          style: FabTypography.body.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
             ],
           ),
         ),
@@ -104,7 +163,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
         children: [ 
           FabButton.secondary(
             onPressed: () {
-              $.navigator.replace(LoginRoute(onResult: widget.onResult));
+              $.navigator.pop();
             },
             isIconOnly: true,
             iconWidget: Assets.images.icons.arrowLeftSLine.svg(
@@ -114,9 +173,9 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
             ),
             child: const SizedBox.shrink(),
           ),
-          const Expanded(
+          Expanded(
             child: FabTextStyled(
-              'Unverified Email',
+              widget.title,
               style: FabTypography.displaySemiBold18,
               textAlign: TextAlign.center,
             ),
@@ -154,7 +213,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
         PaddingGap.md(),
 
         FabTextStyled(
-          'It looks like your email isn’t verified yet.',
+          'Verify Your Account',
           textAlign: TextAlign.center,
           style: FabTypography.displaySemiBold22.copyWith(
             color: FabColors.greyscale700,
@@ -164,14 +223,14 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
         PaddingGap.md(),
 
         FabTextStyled(
-          'Would you like to verify',
+          'We’ve sent a verification email to',
           textAlign: TextAlign.center,
           style: FabTypography.displayRegular14.copyWith(
             color: FabColors.greyscale700,
           ),
         ),
         FabTextStyled(
-          'johndoe@gmail.com now?',
+          'johndoe@gmail.com',
           textAlign: TextAlign.center,
           style: FabTypography.displayRegular14.copyWith(
             color: FabColors.greyscale700,
@@ -181,58 +240,17 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
         PaddingGap.md(),
 
         FabTextStyled(
-          'Verifying your email keeps your account secure and ensures you get important updates.',
+          'Please verify your email address by clicking on the verification link in the confirmation email.',
           textAlign: TextAlign.center,
 
-          style: FabTypography.displayRegular16.copyWith(
+          style: FabTypography.displayRegular14.copyWith(
             color: FabColors.greyscale400,
           ),
         ),
 
         PaddingGap.lg(),
 
-        // Register Button
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: FabButton.primary(
-            isLoading: _isLoading,
-            child: Text(
-              'Verify Email',
-              style: FabTypography.body.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            size: FabButtonSize.large,
-            onPressed: () => {
-              $.navigator.push(SetupProfileRoute(
-                onResult: widget.onResult,
-              ))
-            },
-          ),
-        ),
-
-        PaddingGap.md(),
-
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: FabButton.secondary(
-            child: Text(
-              'Change Email',
-              style: FabTypography.displayMedium16.copyWith(
-                color: FabColors.greyscale700,
-              ),
-            ),
-            size: FabButtonSize.large,
-            onPressed: () {
-              $.navigator.replace(ChangeEmailRoute(
-                onResult: widget.onResult,
-              ));
-            },
-          ),
-        ),
+        
       ],
     );
   }

@@ -1,10 +1,10 @@
-name: job_portal_mobile
+name: event_mobile
 
 repository:
   type: github
-  origin: https://github.com/elisofttechnology/job_portal_mobile
+  origin: https://github.com/zhofran/event-mobile.git
   owner: elisofttechnology
-  name: job_portal_mobile
+  name: event_mobile
 
 # To tell melos to use fvm as flutter sdk
 sdkPath: .fvm/flutter_sdk
@@ -87,26 +87,24 @@ scripts:
 
   generate:
     description: Generate codes and assets for all packages.
-    run:  |
-      echo "Generating assets for design package..." && \
-      cd design && fluttergen && cd .. && \
-      echo "Generating codes for all packages..." && \
-      melos exec -c 1 --depends-on="build_runner" -- \
-        fvm dart run build_runner build -d
+    run: |
+      echo Generating assets for design package...
+      cd design && fluttergen && cd ..
+      echo Generating codes for all packages...
+      melos exec -c 1 --depends-on="build_runner" -- fvm dart run build_runner build -d
 
   generate:watch:
     description: Watch and generate codes automatically when files change.
-    run:  |
-      echo "Initial asset generation for design package..." && \
-      cd design && fluttergen && cd .. && \
-      echo "Starting watch mode for code generation..." && \
-      melos exec -c 1 --depends-on="build_runner" -- \
-        fvm dart run build_runner watch -d
+    run: |
+      echo Initial asset generation for design package...
+      cd design && fluttergen && cd ..
+      echo Starting watch mode for code generation...
+      melos exec -c 1 --depends-on="build_runner" -- fvm dart run build_runner watch -d
 
   generate:assets:
     description: Generate assets only for design package.
     run: |
-      echo "Generating assets for design package..." && \
+      echo Generating assets for design package...
       cd design && fluttergen && cd ..
 
   watch:dev:

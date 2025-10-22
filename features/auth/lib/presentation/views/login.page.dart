@@ -15,11 +15,16 @@ import '../../../domain/forms/login.form.dart';
 import '../cubits/login.cubit.dart';
 
 @RoutePage()
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   LoginPage({required this.onResult, super.key});
 
   final Function(bool didLogin) onResult;
 
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final loginCubit = $.get<LoginCubit>();
 
   Future<void> login({
@@ -29,8 +34,16 @@ class LoginPage extends StatelessWidget {
     final isSucceeded = await loginCubit.login(email: email, password: password);
 
     if (isSucceeded) {
-      onResult(true);
+      widget.onResult(true);
     }
+  }
+
+  bool _obscureText = true;
+
+  void toggleObscureText() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
   }
 
   @override
@@ -147,10 +160,18 @@ class LoginPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Let’s get started',
+        const FabTextStyled(
+          'Back to Where the Events Happen',
           style: FabTypography.displaySemiBold22,
-        )
+        ),
+        
+        PaddingGap.xs(),
+
+        FabTextStyled(
+          'Log in to continue your journey and manage your events with ease.',
+          style: FabTypography.displayRegular14
+              .copyWith(color: FabColors.greyscale400),
+        ),
       ],
     );
   }
@@ -265,10 +286,16 @@ class LoginPage extends StatelessWidget {
               labelText: 'Password',
               hintText: 'Input your password',
               textInputAction: TextInputAction.send,
-              obscureText: true,
+              obscureText: _obscureText,
               size: FabTextfieldSize.large,
               prefixIcon: Icon(CupertinoIcons.lock, color: FabColors.primary300),
-              suffixIcon: Icon(CupertinoIcons.eye, color: FabColors.primary300),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureText ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
+                  color: FabColors.primary300,
+                ),
+                onPressed: toggleObscureText,
+              ),
               onSubmitted: () => data.submit(
                 onValid: (model) => login(
                   email: model.email,
@@ -285,10 +312,10 @@ class LoginPage extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () {
-                  // TODO: Navigate to forgot password page
+                  // $.navigator.push(AddEventRoute());
                 },
                 child: Text(
-                  'Lupa Password?',
+                  'Forget Password?',
                   style: FabTypography.displayLight14.copyWith(
                     color: FabColors.primary,
                   ),
@@ -296,32 +323,36 @@ class LoginPage extends StatelessWidget {
               ),
             ),
             
-            PaddingGap.md(),
-            
             // Login Button
             ReactiveLoginFormFormConsumer(
               builder: (_, __, ___) {
-                return Container(
-                  width: double.infinity,
-                  height: 52,
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: FabButton.primary(
+                    onPressed: () 
+                    {
+                      $.navigator.replace(JobListingRoute());
+                    },
+                    // => data.submit(
+                    //   onValid: (model) => login(
+                    //     email: model.email,
+                    //     password: model.password,
+                    //   ),
+                    //   onNotValid: () {
+                    //     // Form is invalid, errors will be shown automatically
+                    //     // because markAllAsTouched() is called in submit()
+                    //     setState(() {
+                    //       data.form.markAllAsTouched();
+                    //     });
+                    //   },
+                    // ),
+                    size: FabButtonSize.large,
+                    width: double.infinity,
                     child: Text(
                       'Login',
-                      style: FabTypography.body.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                      style: FabTypography.displaySemiBold16.copyWith(
+                        color: FabColors.greyscale0,
                       ),
-                    ),
-                    size: FabButtonSize.large,
-                    onPressed: () => data.submit(
-                      onValid: (model) => login(
-                        email: model.email,
-                        password: model.password,
-                      ),
-                      onNotValid: () {
-                        // Form is invalid, errors will be shown automatically
-                        // because markAllAsTouched() is called in submit()
-                      },
                     ),
                   ),
                 );
@@ -332,10 +363,6 @@ class LoginPage extends StatelessWidget {
       },
     );
   }
-
-
-
-
 
   Widget _buildFooter() {
     return Column(
@@ -351,8 +378,8 @@ class LoginPage extends StatelessWidget {
             ),
             GestureDetector(
               onTap: () {
-                        $.navigator.replace(RegisterRoute(onResult: onResult));
-                      },
+                $.navigator.replace(RegisterRoute(onResult: widget.onResult));
+              },
               child: Text(
                 'Daftar Sekarang',
                 style: FabTypography.footnote.copyWith(

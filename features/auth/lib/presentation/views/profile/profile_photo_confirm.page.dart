@@ -100,11 +100,11 @@ class _ProfilePhotoConfirmPageState extends State<ProfilePhotoConfirmPage> {
         children: [ 
           FabButton.secondary(
             onPressed: () {
-              $.navigator.push(
-                VerifyEmailRoute(
-                  onResult: widget.onResult,
-                )
-              );
+              // $.navigator.push(
+              //   VerifyEmailRoute(
+              //     onResult: widget.onResult,
+              //   )
+              // );
             },
             isIconOnly: true,
             iconWidget: Assets.images.icons.arrowLeftSLine.svg(

@@ -36,9 +36,10 @@ class AuthGuard extends AutoRouteGuard {
       resolver.next();
     } else {
       await resolver.redirect(
-        LoginRoute(
-          onResult: (didLogin) => resolver.next(didLogin),
-        ),
+        SplashRoute()
+        // LoginRoute(
+        //   onResult: (didLogin) => resolver.next(didLogin),
+        // ),
       );
     }
   }

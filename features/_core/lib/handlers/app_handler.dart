@@ -62,14 +62,14 @@ class AppHandler extends StatelessWidget {
           if (state == NetworkState.connected) {
             $.dialog.popDialog();
           } else if (state == NetworkState.disconnected) {
-            $.dialog.showMaterialSheet(
-              builder: (_) => const SizedBox(
-                height: 50,
-                child: Center(
-                  child: Text('Connected'),
-                ),
-              ),
-            );
+            // $.dialog.showMaterialSheet(
+            //   builder: (_) => const SizedBox(
+            //     height: 50,
+            //     child: Center(
+            //       child: Text('Connected'),
+            //     ),
+            //   ),
+            // );
           }
         },
         child: BlocBuilder<TranslationCubit, Locale>(

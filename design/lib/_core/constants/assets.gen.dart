@@ -44,6 +44,24 @@ class $AssetsImagesGen {
   /// File path: assets/images/notif_permission.png
   AssetGenImage get notifPermission => const AssetGenImage('assets/images/notif_permission.png');
 
+  /// File path: assets/images/onboarding_1.png
+  AssetGenImage get onboarding1 => const AssetGenImage('assets/images/onboarding_1.png');
+
+  /// File path: assets/images/onboarding_2.png
+  AssetGenImage get onboarding2 => const AssetGenImage('assets/images/onboarding_2.png');
+
+  /// File path: assets/images/onboarding_3.png
+  AssetGenImage get onboarding3 => const AssetGenImage('assets/images/onboarding_3.png');
+
+  /// File path: assets/images/onboarding_4.png
+  AssetGenImage get onboarding4 => const AssetGenImage('assets/images/onboarding_4.png');
+
+  /// File path: assets/images/onboarding_5.png
+  AssetGenImage get onboarding5 => const AssetGenImage('assets/images/onboarding_5.png');
+
+  /// File path: assets/images/set_successful.png
+  AssetGenImage get setSuccessful => const AssetGenImage('assets/images/set_successful.png');
+
   /// File path: assets/images/splash_logo_dark.png
   AssetGenImage get splashLogoDark => const AssetGenImage('assets/images/splash_logo_dark.png');
 
@@ -59,6 +77,12 @@ class $AssetsImagesGen {
         linkedin,
         locationPermission,
         notifPermission,
+        onboarding1,
+        onboarding2,
+        onboarding3,
+        onboarding4,
+        onboarding5,
+        setSuccessful,
         splashLogoDark,
         splashLogoLight
       ];
@@ -140,8 +164,11 @@ class $AssetsImagesLogosGen {
   /// File path: assets/images/logos/ceria_corp.png
   AssetGenImage get ceriaCorp => const AssetGenImage('assets/images/logos/ceria_corp.png');
 
+  /// File path: assets/images/logos/mining.png
+  AssetGenImage get mining => const AssetGenImage('assets/images/logos/mining.png');
+
   /// List of all assets
-  List<AssetGenImage> get values => [ceriaCorp];
+  List<AssetGenImage> get values => [ceriaCorp, mining];
 }
 
 class $AssetsImagesIconsArrowGen {

@@ -139,9 +139,6 @@ class _ProfileJobPageState extends State<ProfileJobPage> {
   }
 
 
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

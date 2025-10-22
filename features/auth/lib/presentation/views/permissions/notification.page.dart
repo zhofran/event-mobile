@@ -90,6 +90,42 @@ class _PermissionNotificationPageState extends State<PermissionNotificationPage>
                   ),
                 ),
               ),
+
+              Container(
+                width: MediaQuery.of(context).size.width * 0.9,
+                height: 52,
+                child: FabButton.primary(
+                  size: FabButtonSize.large,
+                  onPressed: () {
+                    // if (currentPage < slides.length - 1) {
+                    //   _pageController.nextPage(
+                    //     duration: const Duration(milliseconds: 300),
+                    //     curve: Curves.easeInOut,
+                    //   );
+                    // } else {
+                    //   $.navigator.replace(RegisterRoute(onResult: (bool _) {}));
+                    // }
+                  },
+                  child: Text(
+                    'Enable Notifications',
+                    style: FabTypography.body.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  )
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  $.navigator.replace(LoginRoute(onResult: (bool _) {}));
+                },
+                child: Text(
+                  'Skip',
+                  style: FabTypography.displayLight14.copyWith(
+                    color: FabColors.disabledText,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -100,37 +136,37 @@ class _PermissionNotificationPageState extends State<PermissionNotificationPage>
   Widget _buildAppBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-      child: Row(
+      child: const Row(
         children: [ 
-          FabButton.secondary(
-            onPressed: () {
-              $.navigator.replace(LoginRoute(onResult: widget.onResult));
-            },
-            isIconOnly: true,
-            iconWidget: Assets.images.icons.arrowLeftSLine.svg(
-              width: 20,
-              height: 20,
-              package: 'design',
-            ),
-            child: const SizedBox.shrink(),
-          ),
-          const Expanded(
+          // FabButton.secondary(
+          //   onPressed: () {
+          //     $.navigator.replace(LoginRoute(onResult: widget.onResult));
+          //   },
+          //   isIconOnly: true,
+          //   iconWidget: Assets.images.icons.arrowLeftSLine.svg(
+          //     width: 20,
+          //     height: 20,
+          //     package: 'design',
+          //   ),
+          //   child: const SizedBox.shrink(),
+          // ),
+          Expanded(
             child: FabTextStyled(
               'Notification Permission',
               style: FabTypography.displaySemiBold18,
               textAlign: TextAlign.center,
             ),
           ),
-          FabButton.secondary(
-            onPressed: () => {},
-            isIconOnly: true,
-            iconWidget: Assets.images.icons.questionLine.svg(
-              width: 20,
-              height: 20,
-              package: 'design',
-            ),
-            child: const SizedBox.shrink(),
-          ),
+          // FabButton.secondary(
+          //   onPressed: () => {},
+          //   isIconOnly: true,
+          //   iconWidget: Assets.images.icons.questionLine.svg(
+          //     width: 20,
+          //     height: 20,
+          //     package: 'design',
+          //   ),
+          //   child: const SizedBox.shrink(),
+          // ),
         ],
       ),
     );
@@ -139,7 +175,6 @@ class _PermissionNotificationPageState extends State<PermissionNotificationPage>
   Widget _buildRegisterForm() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // image from Asset
         Center(
@@ -151,79 +186,34 @@ class _PermissionNotificationPageState extends State<PermissionNotificationPage>
           ),
         ),
 
-        PaddingGap.xl(),
+        PaddingGap.md(),
 
         FabTextStyled(
-          'Enable push notifications?',
+          'Stay Updated on What Matters',
           textAlign: TextAlign.center,
           style: FabTypography.displaySemiBold22.copyWith(
             color: FabColors.greyscale700,
           ),
         ),
 
-        PaddingGap.xl(),
+        PaddingGap.sm(),
 
         FabTextStyled(
-          'For job alerts, interview updates, and important opportunities.',
+          'Turn on notifications to get event reminders, speaker invites, and sponsor opportunities - all in real time.',
           textAlign: TextAlign.center,
-          style: FabTypography.displayRegular16.copyWith(
+          style: FabTypography.displayRegular14.copyWith(
             color: FabColors.greyscale700,
           ),
         ),
 
-        PaddingGap.xl(),
+        PaddingGap.sm(),
 
         FabTextStyled(
-          'You can change this anytime in settings.',
+          'You can manage your preferences anytime in Settings.',
           textAlign: TextAlign.center,
 
-          style: FabTypography.displayRegular16.copyWith(
+          style: FabTypography.displayRegular12.copyWith(
             color: FabColors.greyscale400,
-          ),
-        ),
-
-        PaddingGap.lg(),
-
-        // Register Button
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: FabButton.primary(
-            isLoading: _isLoading,
-            child: Text(
-              'Enable',
-              style: FabTypography.body.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            size: FabButtonSize.large,
-            onPressed: () => {
-              $.navigator.push(PermissionLocationRoute(
-                onResult: widget.onResult,
-              ))
-            },
-          ),
-        ),
-
-        PaddingGap.md(),
-
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: FabButton.secondary(
-            child: Text(
-              'Later',
-              style: FabTypography.displayMedium16.copyWith(
-                color: FabColors.greyscale700,
-              ),
-            ),
-            size: FabButtonSize.large,
-            onPressed: () {
-              $.navigator.replace(ChangeEmailRoute(
-                onResult: widget.onResult,
-              ));
-            },
           ),
         ),
       ],

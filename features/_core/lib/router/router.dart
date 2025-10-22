@@ -134,6 +134,21 @@ class FeaturesRouter extends $FeaturesRouter {
               ],
             ),
             AutoRoute(
+              title: (_, __) => 'Splash',
+              path: 'splash',
+              page: SplashRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'OnBoarding1',
+              path: 'onboarding1',
+              page: OnBoarding1Route.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Role Selection',
+              path: 'role-selection',
+              page: RoleSelectionRoute.page,
+            ),
+            AutoRoute(
               title: (_, __) => $.tr.auth.title,
               path: 'login',
               page: LoginRoute.page,
@@ -212,6 +227,131 @@ class FeaturesRouter extends $FeaturesRouter {
               title: (_, __) => 'Permission Location',
               path: 'permission-location',
               page: PermissionLocationRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Register Attendee',
+              path: 'register-attendee',
+              page: AttendeeRegisterRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Topic Attendee',
+              path: 'topic-attendee',
+              page: AttendeeTopicRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Location Attendee',
+              path: 'location-attendee',
+              page: AttendeeLocationRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Forgot Password',
+              path: 'forgot-password',
+              page: ForgotPasswordRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Set New Password',
+              path: 'set-new-password',
+              page: SetNewPasswordRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Set Successful',
+              path: 'set-successful',
+              page: SetSuccessfulRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Register Speaker',
+              path: 'register-speaker',
+              page: SpeakerRegisterRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Specialize Speaker',
+              path: 'specialize-speaker',
+              page: SpeakerSpecializeRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Background Speaker',
+              path: 'background-speaker',
+              page: SpeakerBackgroundRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Location Speaker',
+              path: 'location-speaker',
+              page: SpeakerLocationRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Requirements Speaker',
+              path: 'requirement-speaker',
+              page: SpeakerRequirementRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Register Sponsor',
+              path: 'register-sponsor',
+              page: SponsorRegisterRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Detail Sponsor',
+              path: 'detail-sponsor',
+              page: SponsorDetailRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Operate Sponsor',
+              path: 'operate-sponsor',
+              page: SponsorOperateRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Goals Sponsor',
+              path: 'goal-sponsor',
+              page: SponsorGoalRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Products Sponsor',
+              path: 'product-sponsor',
+              page: SponsorProductRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Campaign Sponsor',
+              path: 'campaign-sponsor',
+              page: SponsorCampaignRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Verification Sponsor',
+              path: 'verify-sponsor',
+              page: SponsorVerificationRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Register EO',
+              path: 'register-eo',
+              page: EORegisterRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Details EO',
+              path: 'detail-eo',
+              page: EODetailRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Location EO',
+              path: 'location-eo',
+              page: EOLocationRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Representative EO',
+              path: 'representative-eo',
+              page: EORepresentativeRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Register Vendor',
+              path: 'register-vendor',
+              page: VendorRegisterRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Detail Vendor',
+              path: 'detail-vendor',
+              page: VendorDetailRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Location Vendor',
+              path: 'location-vendor',
+              page: VendorLocationRoute.page,
             ),
             CustomRoute(
               page: MaterialDialogWrapperRoute.page,
