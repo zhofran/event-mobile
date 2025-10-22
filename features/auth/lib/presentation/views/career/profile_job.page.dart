@@ -234,20 +234,6 @@ class _ProfileJobPageState extends State<ProfileJobPage> {
 
         PaddingGap.xl(),
         
-        // Search field using FabTextfield
-        FabTextfield(
-          formControl: form.control('searchJob') as FormControl<String>,
-          hintText: 'e.g Product Designer, Social Media Sp...',
-          prefixIcon: Icon(
-            CupertinoIcons.search,
-            color: FabColors.greyscale400,
-            size: 20,
-          ),
-          size: FabTextfieldSize.large,
-        ),
-        
-        PaddingGap.lg(),
-        
         // Selected job badges
         if (_selectedJobs.isNotEmpty) ...[
           _buildSelectedJobBadges(),

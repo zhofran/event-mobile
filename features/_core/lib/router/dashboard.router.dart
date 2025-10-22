@@ -24,8 +24,10 @@ class DashboardRouter extends StatelessWidget {
       ],
       child: AutoTabsScaffold(
         routes: const [
-          ProductsRouter(),
-          SettingsRoute(),
+          DiscoverRouter(),      // Keep this as is since it seems to work
+          JobAppliedRouter(),    // Keep this as is
+          JobListingRouter(),    // Keep this as is  
+          SettingsRoute(),       // Keep this as is
         ],
         navigatorObservers: () => [HeroController()],
         bottomNavigationBuilder: (_, tabsRouter) {
@@ -36,9 +38,19 @@ class DashboardRouter extends StatelessWidget {
                 onTap: tabsRouter.setActiveIndex,
                 items: [
                   CupertinoNavigationBarItem(
-                    label: $.tr.products.title,
+                    label: $.tr.discover.title,
                     icon: Icon(UIcons.regularRounded.bags_shopping),
                     selectedIcon: Icon(UIcons.solidRounded.bags_shopping),
+                  ),
+                  CupertinoNavigationBarItem(
+                    label: 'Applied',
+                    icon: Icon(UIcons.regularRounded.briefcase),
+                    selectedIcon: Icon(UIcons.solidRounded.briefcase),
+                  ),
+                  CupertinoNavigationBarItem(
+                    label: 'Jobs',
+                    icon: Icon(UIcons.regularRounded.search),
+                    selectedIcon: Icon(UIcons.solidRounded.search),
                   ),
                   CupertinoNavigationBarItem(
                     label: $.tr.settings.title,

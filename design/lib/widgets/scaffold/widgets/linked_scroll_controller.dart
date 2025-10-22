@@ -21,11 +21,12 @@ import 'package:flutter/rendering.dart';
 /// Without the keys, Flutter may reuse a controller after it has been disposed,
 /// which can cause the controller offsets to fall out of sync.
 class LinkedScrollControllerGroup {
-  LinkedScrollControllerGroup() {
+  LinkedScrollControllerGroup({this.maxSyncOffset = double.infinity}) {
     _offsetNotifier = _LinkedScrollControllerGroupOffsetNotifier(this);
   }
 
   final _allControllers = <_LinkedScrollController>[];
+  final double maxSyncOffset;
 
   late _LinkedScrollControllerGroupOffsetNotifier _offsetNotifier;
 
@@ -42,8 +43,11 @@ class LinkedScrollControllerGroup {
 
   /// Creates a new controller that is linked to any existing ones.
   ScrollController addAndGet() {
-    final initialScrollOffset = _attachedControllers.isEmpty ? 0.0 : _attachedControllers.first.position.pixels;
-    final controller = _LinkedScrollController(this, initialScrollOffset: initialScrollOffset);
+    final initialScrollOffset = _attachedControllers.isEmpty
+        ? 0.0
+        : _attachedControllers.first.position.pixels;
+    final controller =
+        _LinkedScrollController(this, initialScrollOffset: initialScrollOffset);
     _allControllers.add(controller);
     controller.addListener(_offsetNotifier.notifyListeners);
 
@@ -71,7 +75,8 @@ class LinkedScrollControllerGroup {
   }) async {
     final animations = <Future<void>>[];
     for (final controller in _attachedControllers) {
-      animations.add(controller.animateTo(offset, duration: duration, curve: curve));
+      animations
+          .add(controller.animateTo(offset, duration: duration, curve: curve));
     }
 
     await Future.wait<void>(animations);
@@ -125,7 +130,9 @@ class _LinkedScrollControllerGroupOffsetNotifier extends ChangeNotifier {
 /// A scroll controller that mirrors its movements to a peer, which must also
 /// be a [_LinkedScrollController].
 class _LinkedScrollController extends ScrollController {
-  _LinkedScrollController(this._controllers, {required super.initialScrollOffset}) : super(keepScrollOffset: false);
+  _LinkedScrollController(this._controllers,
+      {required super.initialScrollOffset})
+      : super(keepScrollOffset: false);
   final LinkedScrollControllerGroup _controllers;
 
   @override
@@ -141,7 +148,8 @@ class _LinkedScrollController extends ScrollController {
         '_LinkedScrollControllers can only be used with'
         ' _LinkedScrollPositions.');
     final linkedPosition = position as _LinkedScrollPosition;
-    assert(linkedPosition.owner == this, '_LinkedScrollPosition cannot change controllers once created.');
+    assert(linkedPosition.owner == this,
+        '_LinkedScrollPosition cannot change controllers once created.');
     super.attach(position);
   }
 
@@ -161,8 +169,9 @@ class _LinkedScrollController extends ScrollController {
   }
 
   @override
-  double get initialScrollOffset =>
-      _controllers._attachedControllers.isEmpty ? super.initialScrollOffset : _controllers.offset;
+  double get initialScrollOffset => _controllers._attachedControllers.isEmpty
+      ? super.initialScrollOffset
+      : _controllers.offset;
 
   @override
   _LinkedScrollPosition get position => super.position as _LinkedScrollPosition;
@@ -175,7 +184,9 @@ class _LinkedScrollController extends ScrollController {
   Iterable<_LinkedScrollActivity> linkWithPeers(_LinkedScrollPosition driver) {
     assert(canLinkWithPeers);
 
-    return _allPeersWithClients.map((peer) => peer.link(driver)).expand((e) => e);
+    return _allPeersWithClients
+        .map((peer) => peer.link(driver))
+        .expand((e) => e);
   }
 
   Iterable<_LinkedScrollActivity> link(_LinkedScrollPosition driver) {
@@ -246,17 +257,21 @@ class _LinkedScrollPosition extends ScrollPositionWithSingleContext {
       return 0;
     }
 
-    updateUserScrollDirection(newPixels - pixels > 0.0 ? ScrollDirection.forward : ScrollDirection.reverse);
+    updateUserScrollDirection(newPixels - pixels > 0.0
+        ? ScrollDirection.forward
+        : ScrollDirection.reverse);
 
     // ignore: avoid_nested_if
     if (owner.canLinkWithPeers) {
+      final maxSync = owner._controllers.maxSyncOffset;
       _peerActivities.addAll(owner.linkWithPeers(this));
       for (final activity in _peerActivities) {
-        if (newPixels <= 94) {
+        if (newPixels <= maxSync) {
           activity.moveTo(newPixels);
         } else {
-          if (pixels <= 94 && activity.delegate.owner.position.pixels <= 94) {
-            activity.moveTo(94);
+          if (pixels <= maxSync &&
+              activity.delegate.owner.position.pixels <= maxSync) {
+            activity.moveTo(maxSync);
           }
         }
       }
@@ -275,17 +290,21 @@ class _LinkedScrollPosition extends ScrollPositionWithSingleContext {
       return;
     }
 
-    updateUserScrollDirection(newPixels - pixels > 0.0 ? ScrollDirection.forward : ScrollDirection.reverse);
+    updateUserScrollDirection(newPixels - pixels > 0.0
+        ? ScrollDirection.forward
+        : ScrollDirection.reverse);
 
     // ignore: avoid_nested_if
     if (owner.canLinkWithPeers) {
+      final maxSync = owner._controllers.maxSyncOffset;
       _peerActivities.addAll(owner.linkWithPeers(this));
       for (final activity in _peerActivities) {
-        if (newPixels <= 94) {
+        if (newPixels <= maxSync) {
           activity.moveTo(newPixels);
         } else {
-          if (pixels <= 94 && activity.delegate.owner.position.pixels <= 94) {
-            activity.moveTo(94);
+          if (pixels <= maxSync &&
+              activity.delegate.owner.position.pixels <= maxSync) {
+            activity.moveTo(maxSync);
           }
         }
       }

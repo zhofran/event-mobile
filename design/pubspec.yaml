@@ -25,7 +25,27 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/images/logos/
     - assets/images/icons/
+    - assets/images/icons/arrow/
+    - assets/images/icons/building/
+    - assets/images/icons/bussines/
+    - assets/images/icons/communication/
+    - assets/images/icons/design/
+    - assets/images/icons/development/
+    - assets/images/icons/device/
+    - assets/images/icons/document/
+    - assets/images/icons/editor/
+    - assets/images/icons/finance/
+    - assets/images/icons/food/
+    - assets/images/icons/helath/
+    - assets/images/icons/logo/
+    - assets/images/icons/map/
+    - assets/images/icons/media/
+    - assets/images/icons/other/
+    - assets/images/icons/system/
+    - assets/images/icons/user_faces/
+    - assets/images/icons/weather/
   fonts:
     - family: PlusJakartaSans
       fonts:

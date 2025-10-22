@@ -1,6 +1,9 @@
 export 'package:feature_auth/auth.dart';
 export 'package:feature_cart/cart.dart';
-export 'package:feature_products/products.dart';
+export 'package:feature_company_profile/company_profile.dart';
+export 'package:feature_discover/discover.dart';
+export 'package:feature_job_applied/job_applied.dart';
+export 'package:feature_job_listing/job_listing.dart';
 export 'package:feature_settings/settings.dart';
 export 'package:feature_user/user.dart';
 

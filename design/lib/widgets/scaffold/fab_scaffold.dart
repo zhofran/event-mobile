@@ -2,10 +2,10 @@
 
 import 'dart:async';
 
+import 'package:deps/design/design.dart';
 import 'package:deps/packages/easy_refresh.dart';
 import 'package:flutter/material.dart';
 
-import '../../_core/constants/fab_theme.dart';
 import '../_core/overridens/overriden_transitionable_navigation_bar.dart';
 import 'models/fab_appbar_settings.dart';
 import 'utils/helpers.dart';
@@ -65,7 +65,10 @@ class _SuperScaffoldState extends State<FabScaffold> {
     super.initState();
     _keys = NavigationBarStaticComponentsKeys();
     _refreshListenable = IndicatorStateListenable();
-    _syncScrollController = LinkedScrollControllerGroup();
+    // Use dynamic maxSyncOffset based on search bar height
+    _syncScrollController = LinkedScrollControllerGroup(
+      maxSyncOffset: widget.measures.getSearchBarHeight,
+    );
     _activeIndex = ValueNotifier(0);
     _scrollControllers = List.generate(
       widget.children.length,
@@ -76,7 +79,8 @@ class _SuperScaffoldState extends State<FabScaffold> {
       final newIndex = widget.tabController?.animation!.value.round();
 
       if (_activeIndex.value != newIndex) {
-        _activeIndex.value = widget.tabController?.animation?.value.round() ?? 0;
+        _activeIndex.value =
+            widget.tabController?.animation?.value.round() ?? 0;
       }
     });
   }
@@ -101,7 +105,8 @@ class _SuperScaffoldState extends State<FabScaffold> {
       keys: _keys,
       route: ModalRoute.of(context),
       userLeading: widget.appBarSettings.leading,
-      automaticallyImplyLeading: widget.appBarSettings.automaticallyImplyLeading,
+      automaticallyImplyLeading:
+          widget.appBarSettings.automaticallyImplyLeading,
       automaticallyImplyTitle: true,
       previousPageTitle: widget.appBarSettings.previousPageTitle,
       userMiddle: smallTitle,
@@ -119,8 +124,10 @@ class _SuperScaffoldState extends State<FabScaffold> {
       ),
       userLargeTitle: Text(
         widget.appBarSettings.largeTitle!.text,
-        style: context.fabTheme.appBarLargeTitleStyle.copyWith(inherit: false),
         overflow: TextOverflow.ellipsis,
+        style: FabTypography.displaySemiBold18.copyWith(
+          color: FabColors.greyscale900,
+        ),
       ),
       appbarBottom: widget.appBarSettings.toolbar!.child,
       padding: null,
@@ -132,52 +139,56 @@ class _SuperScaffoldState extends State<FabScaffold> {
   Widget build(BuildContext context) {
     final components = _configureComponents();
 
-    print('AMK');
+    return ValueListenableBuilder(
+      valueListenable: _store.searchBarHasFocus,
+      builder: (_, searchBarHasFocus, __) {
+        return PopScope(
+          canPop: !searchBarHasFocus,
+          child: Scaffold(
+            backgroundColor: FabColors.greyscale0,
+            body: Stack(
+              alignment: Alignment.center,
+              children: [
+                Body(
+                  measures: widget.measures,
+                  scrollControllers: _scrollControllers,
+                  searchBar: widget.appBarSettings.searchBar!,
+                  refreshListenable: _refreshListenable,
+                  tabController: widget.tabController,
+                  onRefreshes: widget.onRefreshes,
+                  children: widget.children,
+                ),
+                SearchBarResult(
+                  measures: widget.measures,
+                  searchBar: widget.appBarSettings.searchBar!,
+                ),
+                AnimatedAppBarBuilder(
+                  keys: _keys,
+                  components: components,
+                  syncScrollController: _syncScrollController,
+                  appBarSettings: widget.appBarSettings,
+                  measures: widget.measures,
+                  shouldTransiteBetweenRoutes:
+                      widget.shouldTransiteBetweenRoutes,
+                ),
+                ValueListenableBuilder(
+                  valueListenable: _activeIndex,
+                  builder: (_, index, __) {
+                    final hasRefresher =
+                        widget.onRefreshes.elementAtOrNull(index) != null;
 
-    return PopScope(
-      // TODO: bakılacak
-      canPop: !_store.searchBarHasFocus.value,
-      child: Scaffold(
-        backgroundColor: context.fabTheme.backgroundColor,
-        body: Stack(
-          alignment: Alignment.center,
-          children: [
-            Body(
-              measures: widget.measures,
-              scrollControllers: _scrollControllers,
-              searchBar: widget.appBarSettings.searchBar!,
-              refreshListenable: _refreshListenable,
-              tabController: widget.tabController,
-              onRefreshes: widget.onRefreshes,
-              children: widget.children,
-            ),
-            SearchBarResult(
-              measures: widget.measures,
-              searchBar: widget.appBarSettings.searchBar!,
-            ),
-            AnimatedAppBarBuilder(
-              keys: _keys,
-              components: components,
-              syncScrollController: _syncScrollController,
-              appBarSettings: widget.appBarSettings,
-              measures: widget.measures,
-              shouldTransiteBetweenRoutes: widget.shouldTransiteBetweenRoutes,
-            ),
-            ValueListenableBuilder(
-              valueListenable: _activeIndex,
-              builder: (_, index, __) {
-                final hasRefresher = widget.onRefreshes.elementAtOrNull(index) != null;
+                    if (hasRefresher) {
+                      return Refresher(refreshListenable: _refreshListenable);
+                    }
 
-                if (hasRefresher) {
-                  return Refresher(refreshListenable: _refreshListenable);
-                }
-
-                return const SizedBox();
-              },
+                    return const SizedBox();
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

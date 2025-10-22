@@ -21,6 +21,7 @@ class PaginatedGridList<T, C extends PaginatedListCubit<T>> extends StatefulWidg
     this.offset = 0,
     this.limit = 20,
     this.localFilter,
+    this.crossAxisCount = 2,
   });
 
   final int index;
@@ -32,6 +33,7 @@ class PaginatedGridList<T, C extends PaginatedListCubit<T>> extends StatefulWidg
   final int limit;
   final int offset;
   final Widget Function(BuildContext context) skeletonBuilder;
+  final int crossAxisCount;
 
   @override
   State<PaginatedGridList<T, C>> createState() => _PaginatedGridListState<T, C>();
@@ -84,50 +86,47 @@ class _PaginatedGridListState<T, C extends PaginatedListCubit<T>> extends State<
           failed: (failure) => _pagingController.error = failure.message,
         );
       },
-      child: SliverPadding(
-        padding: $.paddings.sm.horizontal,
-        sliver: PagedSliverGrid<int, T>(
-          pagingController: _pagingController,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            childAspectRatio: ((context.width - ($.paddings.sm * 3)) / 2) / widget.itemHeight,
-            crossAxisSpacing: $.paddings.sm,
-            mainAxisSpacing: $.paddings.sm,
-            crossAxisCount: 2,
-          ),
-          builderDelegate: PagedChildBuilderDelegate<T>(
-            animateTransitions: true,
-            itemBuilder: (context, item, index) {
-              return widget.itemBuilder(context, item, index);
-            },
-            noItemsFoundIndicatorBuilder: (_) {
-              return FabEmptyList(
-                icon: UIcons.solidRounded.bags_shopping,
-                title: 'no product found.',
-                subtitle: 'the product list is currently empty.',
-              );
-            },
-            firstPageProgressIndicatorBuilder: (_) {
-              return SizedBox(
-                height: context.height,
-                child: GridView.builder(
-                  itemCount: 8,
-                  padding: EdgeInsets.zero,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: $.paddings.sm,
-                    crossAxisSpacing: $.paddings.sm,
-                    childAspectRatio: ((context.width - ($.paddings.sm * 3)) / 2) / widget.itemHeight,
-                  ),
-                  itemBuilder: (context, index) {
-                    return widget.skeletonBuilder(context);
-                  },
+      child: PagedSliverGrid<int, T>(
+        pagingController: _pagingController,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          childAspectRatio: ((context.width - ($.paddings.sm * (widget.crossAxisCount + 1))) / widget.crossAxisCount) / widget.itemHeight,
+          crossAxisSpacing: $.paddings.sm,
+          mainAxisSpacing: $.paddings.sm,
+          crossAxisCount: widget.crossAxisCount,
+        ),
+        builderDelegate: PagedChildBuilderDelegate<T>(
+          animateTransitions: true,
+          itemBuilder: (context, item, index) {
+            return widget.itemBuilder(context, item, index);
+          },
+          noItemsFoundIndicatorBuilder: (_) {
+            return FabEmptyList(
+              icon: UIcons.solidRounded.bags_shopping,
+              title: 'no product found.',
+              subtitle: 'the product list is currently empty.',
+            );
+          },
+          firstPageProgressIndicatorBuilder: (_) {
+            return SizedBox(
+              height: context.height,
+              child: GridView.builder(
+                itemCount: 8,
+                padding: EdgeInsets.zero,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: widget.crossAxisCount,
+                  mainAxisSpacing: $.paddings.sm,
+                  crossAxisSpacing: $.paddings.sm,
+                  childAspectRatio: ((context.width - ($.paddings.sm * (widget.crossAxisCount + 1))) / widget.crossAxisCount) / widget.itemHeight,
                 ),
-              );
-            },
-            newPageProgressIndicatorBuilder: (_) {
-              return widget.skeletonBuilder(context);
-            },
-          ),
+                itemBuilder: (context, index) {
+                  return widget.skeletonBuilder(context);
+                },
+              ),
+            );
+          },
+          newPageProgressIndicatorBuilder: (_) {
+            return widget.skeletonBuilder(context);
+          },
         ),
       ),
     );

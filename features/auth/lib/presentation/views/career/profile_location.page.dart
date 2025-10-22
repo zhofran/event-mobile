@@ -232,24 +232,10 @@ class _ProfileLocationPageState extends State<ProfileLocationPage> {
 
         // Welcome text section
         FabTextStyled(
-          'Where are you located?',
+          'Where are you open to exploring opportunities?',
           style: FabTypography.heading3SemiBold.copyWith(
             color: FabColors.greyscale700,
           ),
-        ),
-
-        PaddingGap.xl(),
-        
-        // Search field using FabTextfield
-        FabTextfield(
-          formControl: form.control('searchLocation') as FormControl<String>,
-          hintText: 'e.g Jakarta, Surabaya, Bandung...',
-          prefixIcon: Icon(
-            CupertinoIcons.search,
-            color: FabColors.greyscale400,
-            size: 20,
-          ),
-          size: FabTextfieldSize.large,
         ),
         
         PaddingGap.lg(),

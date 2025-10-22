@@ -7,13 +7,13 @@ part 'cart_item.model.freezed.dart';
 sealed class CartItemModel with _$CartItemModel {
   factory CartItemModel({
     required int id,
-    required ProductModel product,
+    required DiscoverModel product,
     required int quantity,
   }) = _CartItemModel;
 
   factory CartItemModel.empty() => CartItemModel(
         id: 0,
-        product: ProductModel.empty(),
+        product: DiscoverModel.empty(),
         quantity: 0,
       );
 

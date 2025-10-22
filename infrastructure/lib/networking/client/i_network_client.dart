@@ -16,7 +16,7 @@ abstract interface class INetworkClient {
   ///
   /// This method abstracts the complexities of network communication, providing a unified
   /// interface for making different types of requests.
-  ///
+  ///  
   /// [T]: The expected return type of the response data.
   /// [url]: The URL endpoint for the network request.
   /// [requestType]: The type of HTTP request to make (GET, POST, etc.).

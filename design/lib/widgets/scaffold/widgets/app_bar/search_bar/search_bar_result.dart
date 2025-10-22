@@ -30,7 +30,7 @@ class SearchBarResult extends StatelessWidget {
             child: Container(
               width: $.context.mqSize.width,
               height: $.context.mqSize.height,
-              color: context.fabTheme.backgroundColor,
+              color: FabColors.greyscale25,
               padding: EdgeInsets.only(
                 top: measures.getSafeZoneTopPadding + measures.getSearchBarHeight + measures.searchToolbarHeight,
               ),

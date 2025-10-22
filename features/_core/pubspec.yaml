@@ -13,8 +13,14 @@ dependencies:
     path: ../auth
   feature_cart:
     path: ../cart
-  feature_products:
-    path: ../products
+  feature_company_profile:
+    path: ../company_profile
+  feature_discover:
+    path: ../discover
+  feature_job_applied:
+    path: ../job_applied
+  feature_job_listing:
+    path: ../job_listing
   feature_settings:
     path: ../settings
   feature_user:

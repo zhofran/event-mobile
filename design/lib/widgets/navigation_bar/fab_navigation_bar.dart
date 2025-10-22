@@ -27,7 +27,7 @@ class FabNavigationBar extends StatelessWidget {
         ),
       ),
       child: CupertinoTabBar(
-        backgroundColor: context.fabTheme.backgroundColor,
+        backgroundColor: FabColors.greyscale25,
         activeColor: context.fabTheme.primaryColor,
         inactiveColor: context.fabTheme.inactiveColor,
         currentIndex: currentIndex,

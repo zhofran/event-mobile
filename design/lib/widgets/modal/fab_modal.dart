@@ -21,7 +21,7 @@ class FabModal extends StatelessWidget {
     return ClipRRect(
       borderRadius: const BorderRadius.all(Radius.circular(16)),
       child: SheetContentScaffold(
-        backgroundColor: context.fabTheme.backgroundColor,
+        backgroundColor: FabColors.greyscale25,
         body: PaddingSymmetric.xs(
           vertical: true,
           child: FabScaffold(

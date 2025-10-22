@@ -33,42 +33,49 @@ class AppBarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.antiAlias,
-      children: [
-        TopToolbarWidget(
-          measures: measures,
-          keys: keys,
-          components: components,
-          backIcon: appBarSettings.backIcon,
-          animationStatus: animationStatus,
-          appBarSettings: appBarSettings,
-          middleVisible: appBarSettings.alwaysShowTitle ? null : _store.largeTitleOpacity.value != 0,
-        ),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.end,
+    return ValueListenableBuilder(
+      valueListenable: _store.largeTitleOpacity,
+      builder: (_, largeTitleOpacity, __) {
+        return Stack(
+          clipBehavior: Clip.antiAlias,
           children: [
-            LargeTitleWidget(
+            TopToolbarWidget(
               measures: measures,
+              keys: keys,
+              components: components,
+              backIcon: appBarSettings.backIcon,
               animationStatus: animationStatus,
               appBarSettings: appBarSettings,
-              components: components,
+              middleVisible: appBarSettings.alwaysShowTitle
+                  ? null
+                  : largeTitleOpacity != 0,
             ),
-            SearchBarWidget(
-              measures: measures,
-              searchBar: appBarSettings.searchBar!,
-              editingController: editingController,
-              focusNode: focusNode,
-              keys: keys,
-            ),
-            BottomToolbarWidget(
-              measures: measures,
-              appBarSettings: appBarSettings,
-              toolbar: components.appbarBottom!,
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                LargeTitleWidget(
+                  measures: measures,
+                  animationStatus: animationStatus,
+                  appBarSettings: appBarSettings,
+                  components: components,
+                ),
+                SearchBarWidget(
+                  measures: measures,
+                  searchBar: appBarSettings.searchBar!,
+                  editingController: editingController,
+                  focusNode: focusNode,
+                  keys: keys,
+                ),
+                BottomToolbarWidget(
+                  measures: measures,
+                  appBarSettings: appBarSettings,
+                  toolbar: components.appbarBottom!,
+                ),
+              ],
             ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 }

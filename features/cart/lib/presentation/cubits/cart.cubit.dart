@@ -19,7 +19,7 @@ class CartCubit extends Cubit<CartState> {
 
   final INetworkClient _client;
 
-  void addToCart(ProductModel product) {
+  void addToCart(DiscoverModel product) {
     emit(
       state.copyWith(
         cartItems: [

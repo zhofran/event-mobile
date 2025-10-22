@@ -7,7 +7,7 @@ import 'package:deps/packages/hydrated_bloc.dart';
 import 'package:deps/packages/injectable.dart';
 import 'package:feature_auth/_core/_i18n/i18n_mixin.dart';
 import 'package:feature_cart/_core/_i18n/i18n_mixin.dart';
-import 'package:feature_products/_core/_i18n/i18n_mixin.dart';
+import 'package:feature_discover/_core/_i18n/i18n_mixin.dart';
 import 'package:feature_settings/_core/_i18n/i18n_mixin.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +20,7 @@ class TranslationCubit extends HydratedCubit<Locale>
         DesignTranslationMixin,
         CoreTranslationMixin,
         AuthTranslationMixin,
-        ProductsTranslationMixin,
+        DiscoverTranslationMixin,
         CartTranslationMixin,
         SettingsTranslationMixin {
   TranslationCubit() : super(AppLocaleUtils.findDeviceLocale().flutterLocale);

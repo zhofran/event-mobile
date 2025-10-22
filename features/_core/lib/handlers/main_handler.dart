@@ -16,6 +16,7 @@ import 'package:deps/packages/talker_dio_logger.dart';
 import 'package:deps/packages/talker_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../_core/super/super.dart';
 import '_core/error_page.dart';
@@ -53,7 +54,9 @@ final class MainHandler {
     };
 
     // Use the determined default value in the fromEnvironment constructor
-    return const bool.hasEnvironment('flavor') ? const String.fromEnvironment('flavor') : defaultValue;
+    return const bool.hasEnvironment('flavor')
+        ? const String.fromEnvironment('flavor')
+        : defaultValue;
   }
 
   static Future<void> init({
@@ -72,17 +75,34 @@ final class MainHandler {
         // Init widgets binding
         final binding = WidgetsFlutterBinding.ensureInitialized();
 
+        // Configure status bar style for light background
+        SystemChrome.setSystemUIOverlayStyle(
+          const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness:
+                Brightness.dark, // Dark icons for light background
+            statusBarBrightness:
+                Brightness.light, // Light status bar background
+            systemNavigationBarColor: Colors.white,
+            systemNavigationBarIconBrightness: Brightness.dark,
+          ),
+        );
+
         // Init service locator
         initLocator(_env(env));
 
         // Configure observers
         if (observerSettings!.blocObserverEnabled) {
-          Bloc.observer = BlocTalkerObserver(talker: $.get<Talker>(), settings: observerSettings!.blocSettings);
+          Bloc.observer = BlocTalkerObserver(
+              talker: $.get<Talker>(),
+              settings: observerSettings!.blocSettings);
         }
 
         if (observerSettings!.dioObserverEnabled) {
           $.get<INetworkClient>().setObserver(
-                DioTalkerObserver(talker: $.get<Talker>(), settings: observerSettings!.dioSettings),
+                DioTalkerObserver(
+                    talker: $.get<Talker>(),
+                    settings: observerSettings!.dioSettings),
               );
         }
 
@@ -128,13 +148,15 @@ final class MainHandler {
                   AppHandler(
                     appSettings: appSettings!,
                     savedThemeMode: savedThemeMode,
-                    routerObserverEnabled: observerSettings!.routerObserverEnabled,
+                    routerObserverEnabled:
+                        observerSettings!.routerObserverEnabled,
                   ),
                 )
               : AppHandler(
                   appSettings: appSettings!,
                   savedThemeMode: savedThemeMode,
-                  routerObserverEnabled: observerSettings!.routerObserverEnabled,
+                  routerObserverEnabled:
+                      observerSettings!.routerObserverEnabled,
                 ),
         );
       },

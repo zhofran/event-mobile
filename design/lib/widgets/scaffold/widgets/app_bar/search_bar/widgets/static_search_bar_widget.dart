@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../../_core/constants/fab_theme.dart';
+import '../../../../../../design.dart';
 import '../../../../../_core/overridens/overriden_transitionable_navigation_bar.dart';
 import '../../../../models/fab_appbar_action_settings.dart';
 import '../../../../models/fab_appbar_search_bar_settings.dart';
@@ -54,8 +55,9 @@ class StaticSearchBarWidget extends StatelessWidget {
                   opacity: _store.searchBarHasFocus.value ? 1 : 0,
                   child: Text(
                     searchBar.cancelButtonText,
-                    style: context.fabTheme.appBarActionsStyle
-                        .copyWith(color: CupertinoTheme.of(context).primaryContrastingColor),
+                    style: context.fabTheme.appBarActionsStyle.copyWith(
+                        color:
+                            CupertinoTheme.of(context).primaryContrastingColor),
                     maxLines: 1,
                   ),
                 ),
@@ -64,55 +66,116 @@ class StaticSearchBarWidget extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Flexible(
-                  child: CupertinoSearchTextField(
-                    padding: const EdgeInsetsDirectional.fromSTEB(5.5, 0, 5.5, 0),
-                    prefixInsets: const EdgeInsetsDirectional.fromSTEB(8, 0, 0, 2),
-                    suffixInsets: const EdgeInsetsDirectional.fromSTEB(0, 0, 8, 0),
-                    borderRadius: searchBar.borderRadius,
-                    prefixIcon: Opacity(
-                      opacity: _store.searchBarHasFocus.value ? 0 : _store.opacity.value,
-                      child: searchBar.prefixIcon,
+                Expanded(
+                  child: Container(
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: FabColors.greyscale0,
+                      borderRadius: searchBar.borderRadius,
+                      border: Border.all(
+                        color: FabColors.greyscale300,
+                        width: 1,
+                      ),
                     ),
-                    placeholder: searchBar.placeholderText,
-                    placeholderStyle: context.fabTheme.bodyStyle.copyWith(
-                      color: context.fabTheme.inactiveColor.withOpacity(_store.opacity.value),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          // Search Icon
+                          ValueListenableBuilder<bool>(
+                            valueListenable: _store.searchBarHasFocus,
+                            builder: (context, hasFocus, child) {
+                              return ValueListenableBuilder<double>(
+                                valueListenable: _store.opacity,
+                                builder: (context, opacity, child) {
+                                  return Opacity(
+                                    opacity: hasFocus ? 0 : opacity,
+                                    child: Icon(
+                                      CupertinoIcons.search,
+                                      color: FabColors.greyscale500,
+                                      size: 20,
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 12),
+                          // TextField
+                          Expanded(
+                            child: ValueListenableBuilder<double>(
+                              valueListenable: _store.opacity,
+                              builder: (context, opacity, child) {
+                                return TextField(
+                                  style:
+                                      FabTypography.displayRegular14.copyWith(
+                                    color: FabColors.greyscale900,
+                                    height: 1.6,
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: searchBar.placeholderText,
+                                    hintStyle:
+                                        FabTypography.displayRegular14.copyWith(
+                                      color: FabColors.greyscale500
+                                          .withOpacity(opacity),
+                                      height: 1.6,
+                                    ),
+                                    border: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    contentPadding: EdgeInsets.zero,
+                                    isDense: true,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    style: context.fabTheme.bodyStyle,
-                    backgroundColor: context.fabTheme.surfaceColor,
                   ),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    for (final FabAppBarActionSettings searchAction in searchBar.actions)
-                      searchAction.behavior == FabAppBarActionSettingsBehavior.alwaysVisible
+                    for (final FabAppBarActionSettings searchAction
+                        in searchBar.actions)
+                      searchAction.behavior ==
+                              FabAppBarActionSettingsBehavior.alwaysVisible
                           ? searchAction
                           : const SizedBox(),
                     AnimatedCrossFade(
                       firstChild: Center(
                         child: Row(
                           children: searchBar.actions
-                              .where((e) => e.behavior == FabAppBarActionSettingsBehavior.visibleOnFocus)
+                              .where((e) =>
+                                  e.behavior ==
+                                  FabAppBarActionSettingsBehavior
+                                      .visibleOnFocus)
                               .toList(),
                         ),
                       ),
                       secondChild: const SizedBox(),
-                      crossFadeState:
-                          _store.searchBarHasFocus.value ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+                      crossFadeState: _store.searchBarHasFocus.value
+                          ? CrossFadeState.showFirst
+                          : CrossFadeState.showSecond,
                       duration: measures.getSlowAnimationDuration,
                     ),
                     AnimatedCrossFade(
                       firstChild: Center(
                         child: Row(
                           children: searchBar.actions
-                              .where((e) => e.behavior == FabAppBarActionSettingsBehavior.visibleOnUnFocus)
+                              .where((e) =>
+                                  e.behavior ==
+                                  FabAppBarActionSettingsBehavior
+                                      .visibleOnUnFocus)
                               .toList(),
                         ),
                       ),
                       secondChild: const SizedBox(),
-                      crossFadeState:
-                          _store.searchBarHasFocus.value ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                      crossFadeState: _store.searchBarHasFocus.value
+                          ? CrossFadeState.showSecond
+                          : CrossFadeState.showFirst,
                       duration: measures.getSlowAnimationDuration,
                     ),
                     AnimatedContainer(

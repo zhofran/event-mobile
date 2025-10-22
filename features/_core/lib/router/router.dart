@@ -6,7 +6,11 @@ import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
 import 'package:feature_auth/_core/router.dart';
 import 'package:feature_cart/_core/router.dart';
-import 'package:feature_products/_core/router.dart';
+import 'package:feature_company_profile/_core/router.dart';
+import 'package:feature_company_profile/company_profile.dart';
+import 'package:feature_discover/_core/router.dart';
+import 'package:feature_job_applied/_core/router.dart';
+import 'package:feature_job_listing/_core/router.dart';
 import 'package:flutter/material.dart';
 
 import '../_core/super/_core/dialog/cupertino/cupertino_dialog_builder.dart';
@@ -28,10 +32,13 @@ class CustomPageRoute<T> extends MaterialPageRoute<T> {
 @AutoRouterConfig(
   modules: [
     AuthFeatureRouter,
-    ProductsFeatureRouter,
+    DiscoverFeatureRouter,
     SettingsFeatureRouter,
     UserFeatureRouter,
     CartFeatureRouter,
+    CompanyProfileFeatureRouter,
+    JobAppliedFeatureRouter,
+    JobListingFeatureRouter,
   ],
 )
 class FeaturesRouter extends $FeaturesRouter {
@@ -70,17 +77,52 @@ class FeaturesRouter extends $FeaturesRouter {
               initial: true,
               children: [
                 AutoRoute(
-                  page: ProductsRouter.page,
+                  page: DiscoverRouter.page,
                   children: [
                     AutoRoute(
-                      title: (_, __) => $.tr.products.title,
-                      path: 'products',
-                      page: ProductsRoute.page,
+                      title: (_, __) => $.tr.discover.title,
+                      path: 'discover',
+                      page: DiscoverRoute.page,
                       initial: true,
                     ),
                     AutoRoute(
-                      path: 'product:id',
-                      page: ProductDetailsRoute.page,
+                      path: 'product-details',
+                      page: DiscoverDetailsRoute.page,
+                    ),
+                    AutoRoute(
+                      title: (_, __) => 'Company Profile',
+                      path: 'company-profile',
+                      page: CompanyProfileRoute.page,
+                    ),
+                  ],
+                ),
+                AutoRoute(
+                  page: JobAppliedRouter.page,
+                  children: [
+                    AutoRoute(
+                      title: (_, __) => 'Applied',
+                      path: 'applied',
+                      page: JobAppliedRoute.page,
+                      initial: true,
+                    ),
+                    AutoRoute(
+                      path: 'applied-details',
+                      page: JobAppliedDetailsRoute.page,
+                    ),
+                  ],
+                ),
+                AutoRoute(
+                  page: JobListingRouter.page,
+                  children: [
+                    AutoRoute(
+                      title: (_, __) => 'Jobs',
+                      path: 'jobs',
+                      page: JobListingRoute.page,
+                      initial: true,
+                    ),
+                    AutoRoute(
+                      path: 'job-details',
+                      page: JobListingDetailsRoute.page,
                     ),
                   ],
                 ),
@@ -150,6 +192,26 @@ class FeaturesRouter extends $FeaturesRouter {
               title: (_, __) => 'Profile Photo',
               path: 'profile-photo',
               page: ProfilePhotoRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Profile Photo Confirm',
+              path: 'profile-photo-confirm',
+              page: ProfilePhotoConfirmRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Profile Completed',
+              path: 'profile-completed',
+              page: ProfileCompletedRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Permission Notification',
+              path: 'permission-notification',
+              page: PermissionNotificationRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Permission Location',
+              path: 'permission-location',
+              page: PermissionLocationRoute.page,
             ),
             CustomRoute(
               page: MaterialDialogWrapperRoute.page,

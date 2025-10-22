@@ -52,7 +52,12 @@ class _ProfilePhotoPageState extends State<ProfilePhotoPage> {
     });
 
     // For now, just call onResult with true
-    widget.onResult(true);
+    // widget.onResult(true);
+    await $.navigator.push(
+      ProfilePhotoConfirmRoute(
+        onResult: widget.onResult,
+      ),
+    );
   }
 
   @override

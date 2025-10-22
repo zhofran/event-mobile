@@ -23,55 +23,83 @@ class LargeTitleWidget extends StatelessWidget {
 
   Store get _store => Store.instance();
 
-  double get _largeTitleOpacity => _store.largeTitleOpacity.value == 0 ? 1 : 0;
-
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: appBarSettings.largeTitle!.padding,
-      child: AnimatedOpacity(
-        duration: measures.getSlowAnimationDuration,
-        opacity: _store.searchBarHasFocus.value
-            ? (appBarSettings.searchBar!.animationBehavior == SearchBarAnimationBehavior.top ? 0 : _largeTitleOpacity)
-            : _largeTitleOpacity,
-        child: AnimatedContainer(
-          clipBehavior: Clip.hardEdge,
-          color: $.theme.backgroundColor,
-          height: _store.searchBarHasFocus.value
-              ? (appBarSettings.searchBar!.animationBehavior == SearchBarAnimationBehavior.top
-                  ? 0
-                  : _store.largeTitleHeight.value)
-              : _store.largeTitleHeight.value,
-          duration:
-              animationStatus == SearchBarAnimationStatus.paused ? Duration.zero : measures.getSlowAnimationDuration,
-          child: Padding(
-            padding: EdgeInsets.only(bottom: measures.largeTitleHeight > 0 ? 4.0 : 0),
-            child: Stack(
-              children: [
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Transform.scale(
-                          scale: _store.largeTitleScale.value,
-                          filterQuality: FilterQuality.high,
-                          alignment: Alignment.bottomLeft,
-                          child: components.largeTitle,
+    return ValueListenableBuilder(
+      valueListenable: _store.searchBarHasFocus,
+      builder: (_, searchBarHasFocus, __) {
+        return ValueListenableBuilder(
+          valueListenable: _store.largeTitleHeight,
+          builder: (_, largeTitleHeight, __) {
+            return ValueListenableBuilder(
+              valueListenable: _store.largeTitleOpacity,
+              builder: (_, largeTitleOpacity, __) {
+                return ValueListenableBuilder(
+                  valueListenable: _store.largeTitleScale,
+                  builder: (_, largeTitleScale, __) {
+                    final opacity = largeTitleOpacity == 0 ? 1.0 : 0.0;
+
+                    return Padding(
+                      padding: appBarSettings.largeTitle!.padding,
+                      child: AnimatedOpacity(
+                        duration: measures.getSlowAnimationDuration,
+                        opacity: searchBarHasFocus
+                            ? (appBarSettings.searchBar!.animationBehavior ==
+                                    SearchBarAnimationBehavior.top
+                                ? 0
+                                : opacity)
+                            : opacity,
+                        child: AnimatedContainer(
+                          clipBehavior: Clip.hardEdge,
+                          color: $.theme.backgroundColor,
+                          height: searchBarHasFocus
+                              ? (appBarSettings.searchBar!.animationBehavior ==
+                                      SearchBarAnimationBehavior.top
+                                  ? 0
+                                  : largeTitleHeight)
+                              : largeTitleHeight,
+                          duration:
+                              animationStatus == SearchBarAnimationStatus.paused
+                                  ? Duration.zero
+                                  : measures.getSlowAnimationDuration,
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                                bottom:
+                                    measures.largeTitleHeight > 0 ? 4.0 : 0),
+                            child: Stack(
+                              children: [
+                                Positioned(
+                                  bottom: 0,
+                                  left: 0,
+                                  right: 0,
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Transform.scale(
+                                          scale: largeTitleScale,
+                                          filterQuality: FilterQuality.high,
+                                          alignment: Alignment.bottomLeft,
+                                          child: components.largeTitle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      components.largeTitleActions!,
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      components.largeTitleActions!,
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 }

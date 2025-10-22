@@ -35,13 +35,13 @@ class AnimatedAppBarBuilder extends StatefulWidget {
   State<AnimatedAppBarBuilder> createState() => _AnimatedAppBarBuilderState();
 }
 
-class _AnimatedAppBarBuilderState extends State<AnimatedAppBarBuilder> with TickerProviderStateMixin {
+class _AnimatedAppBarBuilderState extends State<AnimatedAppBarBuilder>
+    with TickerProviderStateMixin {
   late final Animation _animation;
   late final AnimationController _animationController;
   late final TextEditingController _editingController;
   late final FocusNode _focusNode;
 
-  double _offset = 0;
   bool _isCollapsed = false;
 
   @override
@@ -57,18 +57,29 @@ class _AnimatedAppBarBuilderState extends State<AnimatedAppBarBuilder> with Tick
   @override
   void initState() {
     super.initState();
-    _editingController = widget.appBarSettings.searchBar!.searchController ?? TextEditingController();
-    _focusNode = widget.appBarSettings.searchBar!.searchFocusNode ?? FocusNode();
-    _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
+    _editingController = widget.appBarSettings.searchBar!.searchController ??
+        TextEditingController();
+    _focusNode =
+        widget.appBarSettings.searchBar!.searchFocusNode ?? FocusNode();
+    _animationController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 400));
     _animation = ColorTween(
       begin: $.theme.appBarExpandedColor,
-      end: $.theme.appBarCollapsedColor.withOpacity(widget.appBarSettings.hasBackgroundBlur ? 0.5 : 1),
-    ).animate(CurvedAnimation(curve: Curves.linear, parent: _animationController))
-      ..addListener(() {
-        setState(() {});
-      });
+      end: $.theme.appBarCollapsedColor
+          .withOpacity(widget.appBarSettings.hasBackgroundBlur ? 0.5 : 1),
+    ).animate(
+        CurvedAnimation(curve: Curves.linear, parent: _animationController));
 
     widget.syncScrollController.addOffsetChangedListener(_scrollListener);
+
+    // Initial calculation after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _store.calculate(
+        widget.syncScrollController.offset,
+        measures: widget.measures,
+        settings: widget.appBarSettings,
+      );
+    });
   }
 
   Store get _store => Store.instance();
@@ -76,12 +87,16 @@ class _AnimatedAppBarBuilderState extends State<AnimatedAppBarBuilder> with Tick
   void _scrollListener() {
     final scrollOffset = widget.syncScrollController.offset;
 
-    _offset = scrollOffset;
     _store.offset.value = scrollOffset;
 
+    // Calculate store values when scroll changes
+    _store.calculate(
+      scrollOffset,
+      measures: widget.measures,
+      settings: widget.appBarSettings,
+    );
+
     _checkIfCollapsed(scrollOffset);
-/*     _store.calculate(scrollOffset, measures: widget.measures, settings: widget.appBarSettings); */
-/*     setState(() {}); */
   }
 
   void _checkIfCollapsed(double scrollOffset) {
@@ -92,10 +107,13 @@ class _AnimatedAppBarBuilderState extends State<AnimatedAppBarBuilder> with Tick
     var isCollapsed = false;
 
     if (scrollBehavior == SearchBarScrollBehavior.floated) {
-      isCollapsed =
-          scrollOffset >= widget.measures.largeTitleHeight + widget.measures.getSearchBarHeight - titleFadeOutPadding;
+      isCollapsed = scrollOffset >=
+          widget.measures.largeTitleHeight +
+              widget.measures.getSearchBarHeight -
+              titleFadeOutPadding;
     } else {
-      isCollapsed = scrollOffset >= widget.measures.largeTitleHeight - titleFadeOutPadding;
+      isCollapsed = scrollOffset >=
+          widget.measures.largeTitleHeight - titleFadeOutPadding;
     }
 
     if (_isCollapsed != isCollapsed) {
@@ -111,15 +129,9 @@ class _AnimatedAppBarBuilderState extends State<AnimatedAppBarBuilder> with Tick
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: _store.offset,
-      builder: (_, __, ___) {
-        _store.calculate(
-          _offset,
-          measures: widget.measures,
-          settings: widget.appBarSettings,
-        );
-
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
         return AnimatedAppBar(
           measures: widget.measures,
           animationController: _animationController,

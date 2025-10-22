@@ -70,6 +70,9 @@ class Body extends StatelessWidget {
   }) {
     final key = PageStorageKey<String>(scrollController.hashCode.toString());
 
+    // Ensure child is a Sliver widget - wrap if necessary
+    final Widget sliverChild = _ensureSliver(child);
+
     return OverridenCupertinoScrollbar(
       controller: scrollController,
       padding: EdgeInsets.only(top: measures.getAppBarHeightWSafeZone),
@@ -84,7 +87,8 @@ class Body extends StatelessWidget {
             if (searchBar.scrollBehavior == SearchBarScrollBehavior.floated)
               Snap.avoidZone(0, measures.getSearchBarHeight),
             if (searchBar.scrollBehavior == SearchBarScrollBehavior.floated)
-              Snap.avoidZone(measures.getSearchBarHeight, measures.largeTitleHeight + measures.getSearchBarHeight),
+              Snap.avoidZone(measures.getSearchBarHeight,
+                  measures.largeTitleHeight + measures.getSearchBarHeight),
             if (searchBar.scrollBehavior == SearchBarScrollBehavior.pinned)
               Snap.avoidZone(0, measures.largeTitleHeight),
           ],
@@ -99,7 +103,8 @@ class Body extends StatelessWidget {
                       ? Duration.zero
                       : measures.getSlowAnimationDuration,
                   height: _store.searchBarHasFocus.value
-                      ? (searchBar.animationBehavior == SearchBarAnimationBehavior.top
+                      ? (searchBar.animationBehavior ==
+                              SearchBarAnimationBehavior.top
                           ? measures.getAppBarFocusedHeightWSafeZone
                           : measures.getAppBarHeightWSafeZone)
                       : measures.getAppBarHeightWSafeZone,
@@ -107,10 +112,27 @@ class Body extends StatelessWidget {
               },
             ),
           ),
-          child,
+          sliverChild,
         ],
       ),
     );
+  }
+
+  /// Ensures the child widget is a Sliver widget
+  Widget _ensureSliver(Widget child) {
+    // Check if widget is already a Sliver type by checking runtime type name
+    final typeName = child.runtimeType.toString();
+    if (typeName.startsWith('Sliver') ||
+        typeName.contains('SliverToBoxAdapter') ||
+        typeName.contains('SliverList') ||
+        typeName.contains('SliverGrid') ||
+        typeName.contains('SliverPadding') ||
+        typeName.contains('SliverAppBar')) {
+      return child;
+    }
+
+    // Wrap non-Sliver widgets with SliverToBoxAdapter
+    return SliverToBoxAdapter(child: child);
   }
 
   @override
@@ -126,8 +148,8 @@ class Body extends StatelessWidget {
             ],
           )
         : _childBuilder(
-            scrollController: ScrollController(),
-            child: SliverToBoxAdapter(child: children.first),
+            scrollController: scrollControllers.first,
+            child: children.first,
           );
 
     return ValueListenableBuilder(

@@ -80,26 +80,38 @@ class TopToolbarWidget extends StatelessWidget {
       );
     }
 
-    return AnimatedContainer(
-      clipBehavior: Clip.hardEdge,
-      color: $.theme.backgroundColor,
-      duration: animationStatus == SearchBarAnimationStatus.paused ? Duration.zero : measures.getSlowAnimationDuration,
-      height: _store.searchBarHasFocus.value
-          ? (appBarSettings.searchBar!.animationBehavior == SearchBarAnimationBehavior.top
-              ? measures.getSafeZoneTopPadding
-              : measures.getTopToolbarHeightWSafeZone)
-          : measures.getTopToolbarHeightWSafeZone,
-      child: AnimatedOpacity(
-        duration:
-            animationStatus == SearchBarAnimationStatus.paused ? Duration.zero : measures.getSlowAnimationDuration,
-        opacity: _store.searchBarHasFocus.value
-            ? (appBarSettings.searchBar!.animationBehavior == SearchBarAnimationBehavior.top ? 0 : 1)
-            : 1,
-        child: SafeArea(
-          bottom: false,
-          child: paddedToolbar,
-        ),
-      ),
+    return ValueListenableBuilder(
+      valueListenable: _store.searchBarHasFocus,
+      builder: (_, searchBarHasFocus, __) {
+        return AnimatedContainer(
+          clipBehavior: Clip.hardEdge,
+          color: $.theme.backgroundColor,
+          duration: animationStatus == SearchBarAnimationStatus.paused
+              ? Duration.zero
+              : measures.getSlowAnimationDuration,
+          height: searchBarHasFocus
+              ? (appBarSettings.searchBar!.animationBehavior ==
+                      SearchBarAnimationBehavior.top
+                  ? measures.getSafeZoneTopPadding
+                  : measures.getTopToolbarHeightWSafeZone)
+              : measures.getTopToolbarHeightWSafeZone,
+          child: AnimatedOpacity(
+            duration: animationStatus == SearchBarAnimationStatus.paused
+                ? Duration.zero
+                : measures.getSlowAnimationDuration,
+            opacity: searchBarHasFocus
+                ? (appBarSettings.searchBar!.animationBehavior ==
+                        SearchBarAnimationBehavior.top
+                    ? 0
+                    : 1)
+                : 1,
+            child: SafeArea(
+              bottom: false,
+              child: paddedToolbar,
+            ),
+          ),
+        );
+      },
     );
   }
 }
