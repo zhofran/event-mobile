@@ -59,7 +59,7 @@ class _JobAppliedPageState extends State<JobAppliedPage>
                   child: FabImage(
                     width: 40,
                     height: 40,
-                    uri: $.get<UserCubit>().state.avatar,
+                    uri: $.get<UserCubit>().state.avatar ?? '',
                     onPressed: $.get<UserCubit>().logout,
                   ),
                 ),

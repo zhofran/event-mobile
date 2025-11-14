@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:developer';
 
 import 'package:deps/design/design.dart';
 import 'package:deps/features/features.dart';
@@ -19,6 +19,8 @@ class AttendeeRegisterPage extends StatefulWidget {
 
 class _AttendeeRegisterPageState extends State<AttendeeRegisterPage> {
   late FormGroup form;
+
+  String? photo;
   
   @override
   void initState() {
@@ -59,8 +61,7 @@ class _AttendeeRegisterPageState extends State<AttendeeRegisterPage> {
                   PaddingGap.xl(),
 
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24.0, vertical: 16.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                     child: ReactiveForm(
                       formGroup: form,
                       child: _buildRegisterForm(),
@@ -71,11 +72,17 @@ class _AttendeeRegisterPageState extends State<AttendeeRegisterPage> {
             ),
 
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(24),
               child: FabButton.primary(
                 onPressed: () {
+                  final dataAttendee = {
+                    'firstName': form.control('firstName').value,
+                    'lastName': form.control('lastName').value,
+                    'bio': form.control('bio').value,
+                    'avatar': photo ?? ''
+                  };
                   $.navigator.push(
-                    AttendeeTopicRoute(),
+                    AttendeeTopicRoute(dataAttendee: dataAttendee),
                   );
                 },
                 size: FabButtonSize.large,
@@ -134,15 +141,16 @@ class _AttendeeRegisterPageState extends State<AttendeeRegisterPage> {
   }
 
   Widget _buildPhotoAvatar() {
-  return PhotoAvatar(
-    size: 120,
-    backgroundColor: FabColors.primary0,
-    iconColor: FabColors.primary200,
-    onImagePicked: (File? image) {
-      print('Image picked: ${image?.path}');
-    },
-  );
-}
+    return PhotoAvatar(
+      size: 120,
+      backgroundColor: FabColors.primary0,
+      iconColor: FabColors.primary200,
+      onImagePicked: (image) {
+        photo = image?.path;
+        log('Image picked: ${image?.path}', name: 'Attedee Register');
+      },
+    );
+  }
 
   Widget _buildWelcomeSection() {
     return Column(

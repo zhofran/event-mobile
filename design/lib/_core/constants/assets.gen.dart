@@ -23,6 +23,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/email_verify.png
   AssetGenImage get emailVerify => const AssetGenImage('assets/images/email_verify.png');
 
+  /// File path: assets/images/event_approval.png
+  AssetGenImage get eventApproval => const AssetGenImage('assets/images/event_approval.png');
+
   /// File path: assets/images/example_posting.png
   AssetGenImage get examplePosting => const AssetGenImage('assets/images/example_posting.png');
 
@@ -68,10 +71,14 @@ class $AssetsImagesGen {
   /// File path: assets/images/splash_logo_light.png
   AssetGenImage get splashLogoLight => const AssetGenImage('assets/images/splash_logo_light.png');
 
+  /// File path: assets/images/test_event.png
+  AssetGenImage get testEvent => const AssetGenImage('assets/images/test_event.png');
+
   /// List of all assets
   List<AssetGenImage> get values => [
         checklist,
         emailVerify,
+        eventApproval,
         examplePosting,
         google,
         linkedin,
@@ -84,7 +91,8 @@ class $AssetsImagesGen {
         onboarding5,
         setSuccessful,
         splashLogoDark,
-        splashLogoLight
+        splashLogoLight,
+        testEvent
       ];
 }
 

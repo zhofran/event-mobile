@@ -205,7 +205,7 @@ class _SponsorProductPageState extends State<SponsorProductPage> {
         PhotoAvatar(
           size: 90,
           shape: BoxShape.rectangle,
-          backgroundColor: FabColors.greyscale100,
+          backgroundColor: FabColors.background,
           iconColor: FabColors.primary200,
           onImagePicked: (File? image) {
             print('Image picked: ${image?.path}');

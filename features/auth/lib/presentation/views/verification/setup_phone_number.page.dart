@@ -331,13 +331,13 @@ class _SetupPhoneNumberPageState extends State<SetupPhoneNumberPage> {
             ),
             size: FabButtonSize.large,
             onPressed: () => {
-              $.navigator.push(OTPVerificationRoute(
-                onResult: (result) {
-                  if (result) {
-                    $.navigator.pop();
-                  }
-                },
-              ))
+              // $.navigator.push(OTPVerificationRoute(
+              //   onResult: (result) {
+              //     if (result) {
+              //       $.navigator.pop();
+              //     }
+              //   },
+              // ))
             },
           ),
         ),

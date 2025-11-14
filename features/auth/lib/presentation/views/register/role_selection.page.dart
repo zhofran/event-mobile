@@ -3,6 +3,8 @@ import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
 import 'package:flutter/material.dart';
 
+import '../../cubits/register.cubit.dart';
+
 @RoutePage()
 class RoleSelectionPage extends StatefulWidget {
   const RoleSelectionPage({required this.onResult, super.key});
@@ -14,6 +16,8 @@ class RoleSelectionPage extends StatefulWidget {
 }
 
 class _RoleSelectionPageState extends State<RoleSelectionPage> {
+  final registerCubit = $.get<RegisterCubit>();
+
   String? _selectedRole = 'Attendee';
 
   final List<Map<String, dynamic>> roles = [
@@ -65,11 +69,11 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                   _buildWelcomeText(),
 
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       children: roles.map((role) {
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
+                          padding: const EdgeInsets.only(bottom: 12),
                           child: _buildRoleTile(
                             icon: role['icon'],
                             title: role['title'],
@@ -85,28 +89,33 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
             ),
 
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(24),
               child: FabButton.primary(
                 onPressed: _selectedRole == null ? null : () {
                   if (_selectedRole == 'Attendee') {
+                    registerCubit.selectRole(roleID: 2);
                     $.navigator.push(
-                      AttendeeRegisterRoute(),
+                     const  AttendeeRegisterRoute(),
                     );
                   } else if (_selectedRole == 'Speaker') {
+                    registerCubit.selectRole(roleID: 3);
                     $.navigator.push(
-                      SpeakerRegisterRoute(),
+                      const SpeakerRegisterRoute(),
                     );
                   } else if (_selectedRole == 'Sponsor') {
+                    registerCubit.selectRole(roleID: 4);
                     $.navigator.push(
-                      SponsorRegisterRoute(),
+                      const SponsorRegisterRoute(),
                     );
                   } else if (_selectedRole == 'Event Organizer') {
+                    registerCubit.selectRole(roleID: 5);
                     $.navigator.push(
-                      EORegisterRoute(),
+                      const EORegisterRoute(),
                     );
                   } else if (_selectedRole == 'Vendor') {
+                    registerCubit.selectRole(roleID: 6);
                     $.navigator.push(
-                      VendorRegisterRoute(),
+                      const VendorRegisterRoute(),
                     );
                   }
                 },
@@ -121,14 +130,14 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
               ),
             ),
           ],
-        )
-      )
+        ),
+      ),
     );
   }
 
   Widget _buildAppBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Row(
         children: [ 
           FabButton.secondary(
@@ -167,7 +176,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
 
   Widget _buildWelcomeText() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -250,8 +259,9 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
               // )
               ,
             ),
-                ),
-        ),)
+          ),
+        ),
+      ),
     );
   }
 }

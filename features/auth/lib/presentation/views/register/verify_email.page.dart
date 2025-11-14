@@ -102,28 +102,28 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                 padding: const EdgeInsets.all(18),
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Got nothing? ',
-                          style: FabTypography.displayRegular14.copyWith(
-                            color: FabColors.greyscale400,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            $.navigator.replace(LoginRoute(onResult: widget.onResult));
-                          },
-                          child: Text(
-                            'Resend',
-                            style: FabTypography.displayRegular14.copyWith(
-                              color: FabColors.primary200,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.center,
+                    //   children: [
+                    //     Text(
+                    //       'Got nothing? ',
+                    //       style: FabTypography.displayRegular14.copyWith(
+                    //         color: FabColors.greyscale400,
+                    //       ),
+                    //     ),
+                    //     GestureDetector(
+                    //       onTap: () {
+                    //         $.navigator.replace(LoginRoute(onResult: widget.onResult));
+                    //       },
+                    //       child: Text(
+                    //         'Resend',
+                    //         style: FabTypography.displayRegular14.copyWith(
+                    //           color: FabColors.primary200,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
 
                     PaddingGap.md(),
 
@@ -134,11 +134,12 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                       child: FabButton.primary(
                         isLoading: _isLoading,
                         size: FabButtonSize.large,
-                        onPressed: () => {
-                          $.navigator.replace(widget.move)
+                        onPressed: () {
+                          // $.navigator.replace(widget.move)
+                          // $.navigator.push(OTPVerificationRoute(onResult: widget.onResult));
                         },
                         child: Text(
-                          'Open Email App',
+                          'Input OTP',
                           style: FabTypography.body.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,

@@ -3,6 +3,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+import 'dart:developer';
+
 import 'package:deps/design/design.dart';
 import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
@@ -11,17 +13,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:reactive_forms/reactive_forms.dart';
 
+import '../../cubits/register.cubit.dart';
+
 @RoutePage()
 class OTPVerificationPage extends StatefulWidget {
-  const OTPVerificationPage({required this.onResult, super.key});
+  OTPVerificationPage({required this.onResult, required this.idUser, super.key});
 
   final Function(bool didChange) onResult;
+  int idUser;
 
   @override
   State<OTPVerificationPage> createState() => _OTPVerificationPageState();
 }
 
 class _OTPVerificationPageState extends State<OTPVerificationPage> with TickerProviderStateMixin {
+  final registerCubit = $.get<RegisterCubit>();
+  
   late FormGroup form;
   late AnimationController _timerController;
   bool _isLoading = false;
@@ -35,6 +42,8 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> with TickerPr
   @override
   void initState() {
     super.initState();
+
+    log('Log result: ${widget.idUser}', name: 'OTP Verification');
     
     // Initialize form with simple validation
     form = FormGroup({
@@ -60,10 +69,10 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> with TickerPr
   }
 
   void _startTimer() {
-    _timerController.reset();
-    _timerController.forward();
+    _timerController..reset()
+    ..forward()
     
-    _timerController.addListener(() {
+    ..addListener(() {
       setState(() {
         _remainingSeconds = (59 * (1 - _timerController.value)).round();
       });
@@ -108,8 +117,6 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> with TickerPr
     _updateOTPFormControl();
   }
 
-
-
   // Update the form control with current OTP value
   void _updateOTPFormControl() {
     String otpValue = _otpControllers.map((controller) => controller.text).join();
@@ -151,8 +158,6 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> with TickerPr
     
     _updateOTPFormControl();
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -235,7 +240,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> with TickerPr
 
         // Welcome text section
         FabTextStyled(
-          'Verify Your Phone Number',
+          'Verify Your OTP',
           style: FabTypography.heading3SemiBold.copyWith(
             color: FabColors.greyscale700,
           ),
@@ -369,6 +374,8 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> with TickerPr
       height: 52,
       child: FabButton.primary(
         isLoading: _isLoading,
+        size: FabButtonSize.large,
+        onPressed: _handleOTPVerification,
         child: Text(
           'Continue',
           style: FabTypography.body.copyWith(
@@ -376,8 +383,6 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> with TickerPr
             fontWeight: FontWeight.w600,
           ),
         ),
-        size: FabButtonSize.large,
-        onPressed: _handleOTPVerification,
       ),
     );
   }
@@ -401,25 +406,23 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> with TickerPr
       });
 
       // Log the OTP data (in real app, this would be sent to API)
-      print('OTP Verification Data:');
-      print('OTP: $otp');
+      final verify = await registerCubit.verifyOtp(OTP: otp, id: widget.idUser.toString());
+
+      // print('OTP Verification Data:');
+      // print('OTP: $otp');
 
       // Simulate OTP verification process
-      await Future.delayed(const Duration(seconds: 2));
+      // await Future.delayed(const Duration(seconds: 2));
 
       setState(() {
         _isLoading = false;
       });
 
       // Call onResult with true to indicate successful OTP verification
-      // widget.onResult(true);
-      await $.navigator.replace(ProfileCareerRoute(
-        onResult: (result) {
-          if (result) {
-            widget.onResult(true);
-          }
-        },
-      ));
+      if (verify) {
+        widget.onResult(true);
+        await $.navigator.replace(RoleSelectionRoute(onResult: widget.onResult));
+      }
     } else {
       // Show error or highlight empty fields
       ScaffoldMessenger.of(context).showSnackBar(

@@ -9,6 +9,7 @@ import 'package:feature_cart/_core/router.dart';
 import 'package:feature_company_profile/_core/router.dart';
 import 'package:feature_company_profile/company_profile.dart';
 import 'package:feature_discover/_core/router.dart';
+import 'package:feature_event/_core/router.dart';
 import 'package:feature_job_applied/_core/router.dart';
 import 'package:feature_job_listing/_core/router.dart';
 import 'package:flutter/material.dart';
@@ -39,6 +40,7 @@ class CustomPageRoute<T> extends MaterialPageRoute<T> {
     CompanyProfileFeatureRouter,
     JobAppliedFeatureRouter,
     JobListingFeatureRouter,
+    EventFeatureRouter,
   ],
 )
 class FeaturesRouter extends $FeaturesRouter {
@@ -76,6 +78,11 @@ class FeaturesRouter extends $FeaturesRouter {
               guards: [AuthGuard()],
               initial: true,
               children: [
+                AutoRoute(
+                  title: (_, __) => 'Home',
+                  path: 'home',
+                  page: HomeRoute.page,
+                ),
                 AutoRoute(
                   page: DiscoverRouter.page,
                   children: [
@@ -133,6 +140,11 @@ class FeaturesRouter extends $FeaturesRouter {
                 ),
               ],
             ),
+            // AutoRoute(
+            //   title: (_, __) => 'Home',
+            //   path: 'home',
+            //   page: HomeRoute.page,
+            // ),
             AutoRoute(
               title: (_, __) => 'Splash',
               path: 'splash',
@@ -352,6 +364,56 @@ class FeaturesRouter extends $FeaturesRouter {
               title: (_, __) => 'Location Vendor',
               path: 'location-vendor',
               page: VendorLocationRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Add Event 1',
+              path: 'add-event-1',
+              page: AddEvent1Route.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Add Event 2',
+              path: 'add-event-2',
+              page: AddEvent2Route.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Add Event 3',
+              path: 'add-event-3',
+              page: AddEvent3Route.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Add Event 4',
+              path: 'add-event-4',
+              page: AddEvent4Route.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Add Event 5',
+              path: 'add-event-5',
+              page: AddEvent5Route.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Add Event 6',
+              path: 'add-event-6',
+              page: AddEvent6Route.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Add Event 7',
+              path: 'add-event-7',
+              page: AddEvent7Route.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Event Approval',
+              path: 'event-approval',
+              page: EventApprovalRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Budget Planning',
+              path: 'budget-planning',
+              page: BudgetPlanningRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Finance Summary',
+              path: 'finance-summary',
+              page: FinancialManagementRoute.page,
             ),
             CustomRoute(
               page: MaterialDialogWrapperRoute.page,

@@ -55,7 +55,7 @@ class _DiscoverPageState extends State<DiscoverPage>
                   child: FabImage(
                     width: 40,
                     height: 40,
-                    uri: $.get<UserCubit>().state.avatar,
+                    uri: $.get<UserCubit>().state.avatar ?? '',
                     onPressed: $.get<UserCubit>().logout,
                   ),
                 ),

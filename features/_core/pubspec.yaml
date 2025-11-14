@@ -25,6 +25,8 @@ dependencies:
     path: ../settings
   feature_user:
     path: ../user
+  feature_event:
+    path: ../event
   flutter:
     sdk: flutter
   flutter_localizations:

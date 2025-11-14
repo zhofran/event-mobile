@@ -37,14 +37,14 @@ class DioRequestLog extends TalkerLog {
       ..writeln('• TYPE\t  ─►  ${requestOptions.method} Request')
       ..writeln('• URL\t   ─►  $uri');
 
-    if (settings.printRequestHeaders && headers.isNotEmpty) {
+    if (headers.isNotEmpty) {
       final prettyHeaders = encoder.convert(headers);
       final Map<String, dynamic> parsedJson = jsonDecode(prettyHeaders);
       final formattedEntries = parsedJson.entries.map((entry) => '"${entry.key}": "${entry.value}"').join(',\n');
       sb.writeln('• HEADERS   ─►  $formattedEntries');
     }
 
-    if (settings.printRequestData && data != null) {
+    if (data != null) {
       final prettyData = encoder.convert(data);
       final Map<String, dynamic> parsedJson = jsonDecode(prettyData);
       final formattedEntries = parsedJson.entries.map((entry) => '"${entry.key}": "${entry.value}"').join(',\n');
@@ -88,18 +88,18 @@ class DioResponseLog extends TalkerLog {
       ..writeln('• URL\t   ─►  $uri')
       ..writeln('• STATUS\t─►  ${response.statusCode}');
 
-    if (settings.printResponseMessage && responseMessage != null) {
+    if (responseMessage != null) {
       sb.writeln('• MESSAGE   ─►  $responseMessage');
     }
 
-    if (settings.printResponseHeaders && headers.isNotEmpty) {
+    if (headers.isNotEmpty) {
       final prettyHeaders = encoder.convert(headers);
       final Map<String, dynamic> parsedJson = jsonDecode(prettyHeaders);
       final formattedEntries = parsedJson.entries.map((entry) => '"${entry.key}": "${entry.value}"').join(',\n');
       sb.writeln('• HEADERS   ─►  $formattedEntries');
     }
 
-    if (settings.printResponseData && data != null) {
+    if (data != null) {
       final prettyData = encoder.convert(data);
       if (data is Map) {
         final Map<String, dynamic> parsedJson = jsonDecode(prettyData);

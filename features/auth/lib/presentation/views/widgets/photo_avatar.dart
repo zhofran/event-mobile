@@ -83,6 +83,11 @@ class _PhotoAvatarState extends State<PhotoAvatar> {
         height: widget.size,
         decoration: BoxDecoration(
           shape: widget.shape,
+          borderRadius: widget.shape == BoxShape.rectangle ? BorderRadius.circular(12) : null,
+          border: widget.shape == BoxShape.rectangle ? Border.all(
+            color: FabColors.greyscale200,
+            width: 1
+          ) : null,
           color: widget.backgroundColor,
         ),
         child: _pickedImage != null
@@ -90,8 +95,13 @@ class _PhotoAvatarState extends State<PhotoAvatar> {
           width: widget.size,
           height: widget.size,
           clipBehavior: Clip.antiAlias,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
+          decoration: BoxDecoration(
+            shape: widget.shape,
+            borderRadius: widget.shape == BoxShape.rectangle ? BorderRadius.circular(12) : null,
+            border: widget.shape == BoxShape.rectangle ? Border.all(
+              color: FabColors.greyscale200,
+              width: 1
+            ) : null,
             color: FabColors.textPrimary
           ),
           child: Image.file(

@@ -14,6 +14,19 @@ class UserCubit extends HydratedCubit<UserModel> {
 
   final INetworkClient _client;
 
+  Future getUser() async {
+    final response = await _client.invoke<dynamic, UserModel>(
+      '/auth/profile',
+      RequestType.get,
+      fromJson: (json) => UserModel.fromJson(json['data'] ?? json),
+    );
+
+    return response.fold(
+      (failure) => emit(UserModel.empty()),
+      (user) => emit(user),
+    );
+  }
+
   void loggedIn(UserModel user) {
     emit(user);
   }

@@ -35,6 +35,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (isSucceeded) {
       widget.onResult(true);
+      $.navigator.replace(const HomeRoute());
     }
   }
 
@@ -55,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
         listener: (_, state) {
           state.whenOrNull(
             loading: () => $.overlay.showLoadingOverlay(
-              child: Center(
+              child: const Center(
                 child: CupertinoActivityIndicator(
                   radius: 30,
                   color: FabColors.primary,
@@ -82,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
               Expanded(
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -121,19 +122,19 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildAppBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Row(
         children: [
-          FabButton.secondary(
-            onPressed: () => {},
-            isIconOnly: true,
-            iconWidget: Assets.images.icons.arrowLeftSLine.svg(
-              width: 20,
-              height: 20,
-              package: 'design',
-            ),
-            child: const SizedBox.shrink(),
-          ),
+          // FabButton.secondary(
+          //   onPressed: () => {},
+          //   isIconOnly: true,
+          //   iconWidget: Assets.images.icons.arrowLeftSLine.svg(
+          //     width: 20,
+          //     height: 20,
+          //     package: 'design',
+          //   ),
+          //   child: const SizedBox.shrink(),
+          // ),
           const Expanded(
             child: FabTextStyled(
               'Login',
@@ -312,7 +313,7 @@ class _LoginPageState extends State<LoginPage> {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () {
-                  // $.navigator.push(AddEventRoute());
+                  $.navigator.push(const ForgotPasswordRoute());
                 },
                 child: Text(
                   'Forget Password?',
@@ -330,22 +331,23 @@ class _LoginPageState extends State<LoginPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: FabButton.primary(
                     onPressed: () 
-                    {
-                      $.navigator.replace(JobListingRoute());
-                    },
-                    // => data.submit(
-                    //   onValid: (model) => login(
-                    //     email: model.email,
-                    //     password: model.password,
-                    //   ),
-                    //   onNotValid: () {
-                    //     // Form is invalid, errors will be shown automatically
-                    //     // because markAllAsTouched() is called in submit()
-                    //     setState(() {
-                    //       data.form.markAllAsTouched();
-                    //     });
-                    //   },
-                    // ),
+                    // {
+                    //   $.navigator.replace(const HomeRoute());
+                    //   $.navigator.push(DiscoverRoute());
+                    // },
+                    => data.submit(
+                      onValid: (model) => login(
+                        email: model.email,
+                        password: model.password,
+                      ),
+                      onNotValid: () {
+                        // Form is invalid, errors will be shown automatically
+                        // because markAllAsTouched() is called in submit()
+                        setState(() {
+                          data.form.markAllAsTouched();
+                        });
+                      },
+                    ),
                     size: FabButtonSize.large,
                     width: double.infinity,
                     child: Text(
@@ -393,4 +395,6 @@ class _LoginPageState extends State<LoginPage> {
       ],
     );
   }
+
+
 }

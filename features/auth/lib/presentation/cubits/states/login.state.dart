@@ -13,4 +13,8 @@ sealed class LoginState with _$LoginState {
   const factory LoginState.loading() = LoginStateLoading;
 
   const factory LoginState.succeeded(UserModel user) = LoginStateSucceeded;
+
+  // const factory LoginState.OtpVerified({
+
+  // }) = OtpVerified;
 }

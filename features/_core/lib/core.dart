@@ -6,6 +6,7 @@ export 'package:feature_job_applied/job_applied.dart';
 export 'package:feature_job_listing/job_listing.dart';
 export 'package:feature_settings/settings.dart';
 export 'package:feature_user/user.dart';
+export 'package:feature_event/event.dart';
 
 export '_core/_di/_di.dart';
 export '_core/extensions/extensions.dart';

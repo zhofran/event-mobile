@@ -3,12 +3,17 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+import 'dart:developer';
+
 import 'package:deps/design/design.dart';
 import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:reactive_forms/reactive_forms.dart';
+
+import '../../../domain/forms/register.form.dart';
+import '../../cubits/register.cubit.dart';
 
 @RoutePage()
 class RegisterPage extends StatefulWidget {
@@ -21,8 +26,25 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final registerCubit = $.get<RegisterCubit>();
+
   late FormGroup form;
   bool _isLoading = false;
+
+  Future<void> register({
+    required String email,
+    required String password,
+    required String confirmPassword,
+  }) async {
+    final isSucceeded = await registerCubit.register(email: email, password: password);
+
+    log('Log from register cubit: $isSucceeded', name: 'Register Page');
+
+    if (isSucceeded['login']) {
+      widget.onResult(true);
+      $.navigator.replace(OTPVerificationRoute(onResult: widget.onResult, idUser: isSucceeded['user']));
+    }
+  }
 
   @override
   void initState() {
@@ -41,6 +63,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
   
   bool _obscureText = true;
+  bool _obscureText1 = true;
 
   void toggleObscureText() {
     setState(() {
@@ -48,23 +71,29 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
-  Future<void> _handleRegister() async {
+  void toggleObscureText1() {
     setState(() {
-        _isLoading = true;
-      });
-
-      // Simulate registration process
-      await Future.delayed(const Duration(seconds: 2));
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      // For now, just call onResult with true
-      await $.navigator.replace(VerifyEmailRoute(onResult: (bool didVerify) {
-        widget.onResult(didVerify);
-      }, title: 'Register', move: RoleSelectionRoute(onResult: widget.onResult)));
+      _obscureText1 = !_obscureText1;
+    });
   }
+
+  // Future<void> _handleRegister() async {
+  //   setState(() {
+  //       _isLoading = true;
+  //     });
+
+  //     // Simulate registration process
+  //     await Future.delayed(const Duration(seconds: 2));
+
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+
+  //     // For now, just call onResult with true
+  //     await $.navigator.replace(VerifyEmailRoute(onResult: (bool didVerify) {
+  //       widget.onResult(didVerify);
+  //     }, title: 'Register', move: RoleSelectionRoute(onResult: widget.onResult)));
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -91,10 +120,14 @@ class _RegisterPageState extends State<RegisterPage> {
                         // Welcome text section
                         _buildWelcomeSection(),
                         
-                        PaddingGap.xxl(),
+                        PaddingGap.md(),
                         
                         // Register Form
                         _buildRegisterForm(),
+                        
+                        PaddingGap.md(),
+
+                        _buildFooter(),
                         
                         PaddingGap.lg(),
                         
@@ -256,112 +289,150 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget _buildRegisterForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        
-        // Email Field
-        FabTextfield(
-          formControl: form.control('email') as FormControl<String>,
-          keyboardType: TextInputType.emailAddress,
-          // labelText: 'Email',
-          hintText: 'Email',
-          textInputAction: TextInputAction.next,
-          prefixIcon: const Icon(CupertinoIcons.mail, color: FabColors.primary300),
-          size: FabTextfieldSize.large,
-        ),
-        
-        PaddingGap.md(),
-        
-        // Password Field
-        FabTextfield(
-          formControl: form.control('password') as FormControl<String>,
-          keyboardType: TextInputType.text,
-          // labelText: 'Password',
-          hintText: 'Password',
-          textInputAction: TextInputAction.next,
-          obscureText: _obscureText,
-          size: FabTextfieldSize.large,
-          prefixIcon: const Icon(CupertinoIcons.lock, color: FabColors.primary300),
-          suffixIcon: Icon(
-            _obscureText ? CupertinoIcons.eye_slash : CupertinoIcons.eye, 
-            color: FabColors.primary300
-          ),
-        ),
-        
-        PaddingGap.md(),
-        
-        // Confirm Password Field
-        FabTextfield(
-          formControl: form.control('confirmPassword') as FormControl<String>,
-          keyboardType: TextInputType.text,
-          // labelText: 'Konfirmasi Password',
-          hintText: 'Confirm Password',
-          textInputAction: TextInputAction.done,
-          obscureText: true,
-          size: FabTextfieldSize.large,
-          prefixIcon: const Icon(CupertinoIcons.lock, color: FabColors.primary300),
-          suffixIcon: Icon(
-            _obscureText ? CupertinoIcons.eye_slash : CupertinoIcons.eye, 
-            color: FabColors.primary300
-          ),
-        ),
-        
-        PaddingGap.xxl(),
-
-        FabTextStyled(
-          "By continuing, you agree to our Terms & Privacy Policy.",
-          style: FabTypography.displayRegular14Alt.copyWith(
-            color: FabColors.greyscale400,
-          ),
-          textAlign: TextAlign.center,
-        ),
-
-        PaddingGap.xs(),
-        
-        // Register Button
-        Container(
-          width: double.infinity,
-          height: 52,
-          child: FabButton.primary(
-            isLoading: _isLoading,
-            size: FabButtonSize.large,
-            onPressed: _isLoading ? null : _handleRegister,
-            child: Text(
-              'Continue',
-              style: FabTypography.body.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ),
-        
-        PaddingGap.sm(),
-
-        // Login redirect
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return RegisterFormFormBuilder(
+      model: RegisterForm.empty(),
+      builder: (_, data, __) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Already have an account? ',
-              style: FabTypography.displayRegular14.copyWith(
-                color: FabColors.greyscale400,
+            // Email Field
+            FabTextfield(
+              formControl: data.emailControl,
+              keyboardType: TextInputType.emailAddress,
+              // labelText: 'Email',
+              hintText: 'Email',
+              onSubmitted: () => data.passwordControl.focus(),
+              textInputAction: TextInputAction.next,
+              prefixIcon: const Icon(CupertinoIcons.mail, color: FabColors.primary300),
+              size: FabTextfieldSize.large,
+            ),
+            
+            PaddingGap.md(),
+            
+            // Password Field
+            FabTextfield(
+              formControl: data.passwordControl,
+              keyboardType: TextInputType.text,
+              // labelText: 'Password',
+              hintText: 'Password',
+              textInputAction: TextInputAction.next,
+              obscureText: _obscureText,
+              onSubmitted: () => data.confirmPasswordControl.focus(),
+              size: FabTextfieldSize.large,
+              prefixIcon: const Icon(CupertinoIcons.lock, color: FabColors.primary300),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureText ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
+                  color: FabColors.primary300,
+                ),
+                onPressed: toggleObscureText,
               ),
             ),
-            GestureDetector(
-              onTap: () {
-                $.navigator.replace(LoginRoute(onResult: widget.onResult));
-              },
-              child: Text(
-                'Login',
-                style: FabTypography.displayRegular14.copyWith(
-                  color: FabColors.primary200,
+            
+            PaddingGap.md(),
+            
+            // Confirm Password Field
+            FabTextfield(
+              formControl: data.confirmPasswordControl,
+              keyboardType: TextInputType.text,
+              // labelText: 'Konfirmasi Password',
+              hintText: 'Confirm Password',
+              textInputAction: TextInputAction.done,
+              obscureText: _obscureText1,
+              size: FabTextfieldSize.large,
+              prefixIcon: const Icon(CupertinoIcons.lock, color: FabColors.primary300),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureText1 ? CupertinoIcons.eye_slash : CupertinoIcons.eye,
+                  color: FabColors.primary300,
+                ),
+                onPressed: toggleObscureText1,
+              ),
+              onSubmitted: () => data.submit(
+                onValid: (model) => register(
+                  email: model.email,
+                  password: model.password,
+                  confirmPassword: model.confirmPassword
                 ),
               ),
             ),
+            
+            PaddingGap.md(),
+
+            FabTextStyled(
+              "By continuing, you agree to our Terms & Privacy Policy.",
+              style: FabTypography.displayRegular14Alt.copyWith(
+                color: FabColors.greyscale400,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            PaddingGap.xs(),
+            
+            // Register Button
+            ReactiveRegisterFormFormConsumer(
+              builder: (_, __, ___) {
+                return Container(
+                  width: double.infinity,
+                  height: 52,
+                  child: FabButton.primary(
+                    isLoading: _isLoading,
+                    size: FabButtonSize.large,
+                    onPressed: () => 
+                    // $.navigator.replace(VerifyEmailRoute(onResult: (bool didVerify) {
+                    //   widget.onResult(didVerify);
+                    // }, title: 'Register', move: RoleSelectionRoute(onResult: widget.onResult))),
+                    data.submit(
+                      onValid: (model) => register(
+                        email: model.email,
+                        password: model.password,
+                        confirmPassword: model.confirmPassword
+                      ),
+                      onNotValid: () {
+                        setState(() {
+                          data.form.markAllAsTouched();
+                        });
+                      },
+                    ), 
+                    // _isLoading ? null : _handleRegister,
+                    child: Text(
+                      'Continue',
+                      style: FabTypography.body.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                );
+              }
+            ),
           ],
-        )
+        );  
+      }
+    );
+  }
+
+  Widget _buildFooter() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Already have an account? ',
+          style: FabTypography.displayRegular14.copyWith(
+            color: FabColors.greyscale400,
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            $.navigator.replace(LoginRoute(onResult: widget.onResult));
+          },
+          child: Text(
+            'Login',
+            style: FabTypography.displayRegular14.copyWith(
+              color: FabColors.primary200,
+            ),
+          ),
+        ),
       ],
     );
   }

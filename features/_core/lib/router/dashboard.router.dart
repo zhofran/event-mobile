@@ -24,9 +24,10 @@ class DashboardRouter extends StatelessWidget {
       ],
       child: AutoTabsScaffold(
         routes: const [
+          HomeRoute(),
           DiscoverRouter(),      // Keep this as is since it seems to work
           JobAppliedRouter(),    // Keep this as is
-          JobListingRouter(),    // Keep this as is  
+          // JobListingRouter(),    // Keep this as is  
           SettingsRoute(),       // Keep this as is
         ],
         navigatorObservers: () => [HeroController()],
