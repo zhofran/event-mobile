@@ -1,67 +1,71 @@
-import 'dart:developer';
-
 import 'package:deps/design/design.dart';
 import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
-import 'package:deps/packages/reactive_forms.dart';
-import 'package:deps/packages/uicons.dart';
+import 'package:deps/packages/flutter_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:syncfusion_flutter_datepicker/datepicker.dart';
+import 'package:flutter/services.dart';
+
+import '../../../domain/forms/add_event_2_offline.form.dart';
+import '../../../domain/forms/add_event_2_online.form.dart';
+import '../../cubits/budget_planner.cubit.dart';
+import '../../cubits/event_page1.cubit.dart';
+import '../../cubits/event_page2.cubit.dart';
 
 @RoutePage()
 class AddEvent2Page extends StatefulWidget {
-  const AddEvent2Page({required this.format, required this.budget, super.key});
-
-  final String format;
-  final Map<String, dynamic> budget;
+  const AddEvent2Page({super.key});
 
   @override
   State<AddEvent2Page> createState() => _AddEvent2PageState();
 }
 
 class _AddEvent2PageState extends State<AddEvent2Page> {
-  late FormGroup form;
+  late EventPage1Cubit eventPage1Cubit;
+  late EventPage2Cubit eventPage2Cubit;
+  late BudgetPlannerCubit budgetPlannerCubit;
 
-  int currentStep = 3;
-  int totalSteps = 8;
-
-  DateTime? selectedDate;
-  TimeOfDay? selectedTime;
-  String? _selectedEventPlatform;
-  
-  final List<String> _eventPlatform = [
-    'Zoom',
-    'Microsoft Teams',
-    'Google Meet',
-    'Others',
-    // Add more cities as needed
-  ];
-
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: selectedTime ?? TimeOfDay.now(),
-    );
-    if (picked != null && picked != selectedTime) {
-      setState(() {
-        selectedTime = picked;
-      });
-    }
-  }
-  
   @override
   void initState() {
     super.initState();
-    form = FormGroup({
-      'venue': FormControl<String>(validators: [Validators.required],),
-      'address': FormControl<String>(),
-      'location': FormControl<String>(),
-      'link': FormControl<String>(),
-      'price': FormControl<String>(validators: [Validators.required],),
-      'capacity': FormControl<String>(validators: [Validators.required],),
-    });
+    eventPage1Cubit = $.get<EventPage1Cubit>();
+    eventPage2Cubit = $.get<EventPage2Cubit>();
+    budgetPlannerCubit = $.get<BudgetPlannerCubit>();
+    eventPage2Cubit.toggleValidityForm(value: null);
   }
-  
+
+  @override
+  Widget build(BuildContext context) {
+    final isOffline = eventPage1Cubit.state.eventFormat == 'offline';
+    return _EventFormScaffold(
+      eventPage2Cubit: eventPage2Cubit,
+      budgetPlannerCubit: budgetPlannerCubit,
+      isOffline: isOffline,
+    );
+  }
+}
+
+/// Unified scaffold for both online and offline event forms
+class _EventFormScaffold extends StatelessWidget {
+  const _EventFormScaffold({
+    required this.eventPage2Cubit,
+    required this.budgetPlannerCubit,
+    required this.isOffline,
+  });
+
+  final EventPage2Cubit eventPage2Cubit;
+  final BudgetPlannerCubit budgetPlannerCubit;
+  final bool isOffline;
+
+  static const int _currentStep = 3;
+  static const int _totalSteps = 8;
+
+  static const List<SelectOption<String>> _eventPlatformOptions = [
+    SelectOption(value: 'zoom', label: 'Zoom'),
+    SelectOption(value: 'microsoft teams', label: 'Microsoft Teams'),
+    SelectOption(value: 'google meet', label: 'Google Meet'),
+    SelectOption(value: 'others', label: 'Others'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,101 +73,376 @@ class _AddEvent2PageState extends State<AddEvent2Page> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildAppBar(),
-
+            const FabPageHeader(title: 'Create Event'),
             Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: AnimatedStepProgressIndicator(
-                      currentStep: currentStep, 
-                      totalSteps: totalSteps
-                    ),
-                  ),
-
-                  PaddingGap.xl(),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _buildWelcomeSection(),
-                  ),
-
-                  PaddingGap.md(),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: ReactiveForm(
-                      formGroup: form,
-                      child: _buildAddEventForm(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: FabButton.primary(
-                onPressed: _handleContinue,
-                size: FabButtonSize.large,
-                width: double.infinity,
-                child: Text(
-                  'Continue',
-                  style: FabTypography.displaySemiBold16.copyWith(
-                    color: FabColors.greyscale0,
-                  ),
-                ),
+              child: BlocBuilder<EventPage2Cubit, EventPage2State>(
+                bloc: eventPage2Cubit,
+                buildWhen: (previous, current) =>
+                    previous.isFormValid != current.isFormValid,
+                builder: (context, state) {
+                  return isOffline
+                      ? _buildOfflineForm(context)
+                      : _buildOnlineForm(context);
+                },
               ),
             ),
           ],
         ),
-      )
-    );
-  }
-  
-  Widget _buildAppBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-      child: Row(
-        children: [ 
-          FabButton.secondary(
-            onPressed: () {
-              $.navigator.pop();
-            },
-            isIconOnly: true,
-            iconWidget: Assets.images.icons.arrowLeftSLine.svg(
-              width: 20,
-              height: 20,
-              package: 'design',
-            ),
-            child: const SizedBox.shrink(),
-          ),
-          const Expanded(
-            child: FabTextStyled(
-              'Create Event',
-              style: FabTypography.displaySemiBold18,
-              textAlign: TextAlign.center,
-            ),
-          ),
-          FabButton.secondary(
-            onPressed: () => {},
-            isIconOnly: true,
-            iconWidget: Assets.images.icons.questionLine.svg(
-              width: 20,
-              height: 20,
-              package: 'design',
-            ),
-            child: const SizedBox.shrink(),
-          ),
-        ],
       ),
     );
   }
 
-  Widget _buildWelcomeSection() {
+  Widget _buildOfflineForm(BuildContext context) {
+    return AddEvent2OfflineFormFormBuilder(
+      builder: (_, data, __) => _buildFormContent(
+          context: context,
+          formFields: _buildOfflineFields(data),
+          onSubmit: byPass
+          // onSubmit: () => _handleOfflineSubmit(
+          //   context: context,
+          //   formData: data,
+          //   onValid: (model) => _handleContinue(
+          //     context,
+          //     offlineModel: model,
+          //   ),
+          // ),
+          ),
+    );
+  }
+
+  Widget _buildOnlineForm(BuildContext context) {
+    return AddEvent2OnlineFormFormBuilder(
+      builder: (_, data, __) => _buildFormContent(
+          context: context,
+          formFields: _buildOnlineFields(data),
+          onSubmit: byPass
+          // onSubmit: () => _handleOnlineSubmit(
+          //   context: context,
+          //   formData: data,
+          //   onValid: (model) => _handleContinue(
+          //     context,
+          //     onlineModel: model,
+          //   ),
+          // ),
+          ),
+    );
+  }
+
+  Widget _buildFormContent({
+    required BuildContext context,
+    required Widget formFields,
+    required VoidCallback onSubmit,
+  }) {
+    return Column(
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24),
+          child: AnimatedStepProgressIndicator(
+            currentStep: _currentStep,
+            totalSteps: _totalSteps,
+          ),
+        ),
+        PaddingGap.xl(),
+        Expanded(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: _WelcomeSection(
+                  venueBudget: budgetPlannerCubit.state.vendorBudget,
+                ),
+              ),
+              PaddingGap.md(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: BlocBuilder<EventPage2Cubit, EventPage2State>(
+                  bloc: eventPage2Cubit,
+                  buildWhen: (previous, current) =>
+                      previous.isFormValid != current.isFormValid,
+                  builder: (_, __) => formFields,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(24),
+          child: FabButton.primary(
+            onPressed: onSubmit,
+            size: FabButtonSize.large,
+            width: double.infinity,
+            child: Text(
+              'Continue',
+              style: FabTypography.displaySemiBold16.copyWith(
+                color: FabColors.greyscale0,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOfflineFields(AddEvent2OfflineFormForm data) {
+    final inputFormatters = [ThousandsSeparatorInputFormatter(separator: ',')];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildCommonTopFields(
+          dateControl: data.dateControl,
+          timeControl: data.timeControl,
+        ),
+        PaddingGap.md(),
+        FabTextfield(
+          formControl: data.venueControl,
+          keyboardType: TextInputType.name,
+          labelText: 'Venue',
+          hintText: 'e.g., Jakarta Convention Center',
+          textInputAction: TextInputAction.next,
+        ),
+        PaddingGap.md(),
+        FabTextfield(
+          formControl: data.addressControl,
+          keyboardType: TextInputType.name,
+          labelText: 'Address',
+          hintText: 'e.g., Jl. Jend. Gatot Subroto',
+          textInputAction: TextInputAction.next,
+        ),
+        PaddingGap.md(),
+        FabTextfield(
+          formControl: data.locationControl,
+          keyboardType: TextInputType.text,
+          labelText: 'Location',
+          hintText: 'e.g., https://share.google.com/jcc',
+          textInputAction: TextInputAction.next,
+        ),
+        PaddingGap.md(),
+        _buildCommonBottomFields(
+          priceControl: data.priceControl,
+          capacityControl: data.capacityControl,
+          inputFormatters: inputFormatters,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOnlineFields(AddEvent2OnlineFormForm data) {
+    final inputFormatters = [ThousandsSeparatorInputFormatter(separator: ',')];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildCommonTopFields(
+          dateControl: data.dateControl,
+          timeControl: data.timeControl,
+        ),
+        PaddingGap.md(),
+        FabDropdown<String>(
+          formControl: data.platformControl,
+          options: _eventPlatformOptions,
+          labelText: 'Platform',
+          hintText: 'Select Platform',
+        ),
+        PaddingGap.md(),
+        FabTextfield(
+          formControl: data.linkControl,
+          keyboardType: TextInputType.name,
+          labelText: 'Link',
+          hintText: 'e.g., meet.zoom.com/abc-123',
+          textInputAction: TextInputAction.next,
+        ),
+        PaddingGap.md(),
+        _buildCommonBottomFields(
+          priceControl: data.priceControl,
+          capacityControl: data.capacityControl,
+          inputFormatters: inputFormatters,
+        ),
+      ],
+    );
+  }
+
+  /// Common fields shared between online and offline forms
+  Widget _buildCommonTopFields({
+    required dynamic dateControl,
+    required dynamic timeControl,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FabDatepicker(
+          formControl: dateControl,
+          labelText: 'Date',
+        ),
+        PaddingGap.md(),
+        FabTimepicker(
+          formControl: timeControl,
+          labelText: 'Time',
+        ),
+      ],
+    );
+  }
+
+  /// Common fields shared between online and offline forms
+  Widget _buildCommonBottomFields({
+    required dynamic priceControl,
+    required dynamic capacityControl,
+    required List<TextInputFormatter> inputFormatters,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FabTextfield(
+          formControl: priceControl,
+          keyboardType: TextInputType.number,
+          labelText: 'Price',
+          hintText: 'e.g., 100.000.000',
+          textInputAction: TextInputAction.next,
+          inputFormatters: inputFormatters,
+        ),
+        PaddingGap.md(),
+        FabTextfield(
+          formControl: capacityControl,
+          keyboardType: TextInputType.number,
+          labelText: 'Capacity',
+          hintText: 'e.g., 500',
+          textInputAction: TextInputAction.next,
+          inputFormatters: inputFormatters,
+        ),
+        PaddingGap.md(),
+      ],
+    );
+  }
+
+  void _handleOnlineSubmit({
+    required BuildContext context,
+    required AddEvent2OnlineFormForm formData,
+    required void Function(AddEvent2OnlineForm) onValid,
+  }) {
+    formData.submit(
+      onValid: onValid,
+      onNotValid: () {
+        eventPage2Cubit.toggleValidityForm(value: false);
+        _showErrorSnackBar(context);
+      },
+    );
+  }
+
+  void _handleOfflineSubmit({
+    required BuildContext context,
+    required AddEvent2OfflineFormForm formData,
+    required void Function(AddEvent2OfflineForm) onValid,
+  }) {
+    formData.submit(
+      onValid: onValid,
+      onNotValid: () {
+        eventPage2Cubit.toggleValidityForm(value: false);
+        _showErrorSnackBar(context);
+      },
+    );
+  }
+
+  Future<void> byPass() async {
+    eventPage2Cubit.createScheduleVenueOffline(
+      date: DateTime.now(),
+      time: '10:00',
+      venue: 'Jakarta Convention Center',
+      address: 'Jl. Jend. Gatot Subroto',
+      location: 'https://share.google.com/jcc',
+      price: 50000000,
+      capacity: 5000,
+    );
+
+    await $.navigator.push(const AddEvent3Route());
+  }
+
+  void _handleContinue(
+    BuildContext context, {
+    AddEvent2OnlineForm? onlineModel,
+    AddEvent2OfflineForm? offlineModel,
+  }) {
+    final parsedPriceNum =
+        ThousandsSeparatorInputFormatter.parseFormattedNumber(
+              onlineModel?.price ?? offlineModel?.price ?? '',
+            ) ??
+            0;
+
+    final parsedCapacityNum =
+        ThousandsSeparatorInputFormatter.parseFormattedNumber(
+              onlineModel?.capacity ?? offlineModel?.capacity ?? '',
+            ) ??
+            0;
+    final venuePrice = parsedPriceNum.toDouble();
+    final venueBudget = budgetPlannerCubit.state.venueBudget;
+
+    if (venuePrice > venueBudget) {
+      _showBudgetExceededDialog(context, venuePrice - venueBudget);
+    } else {
+      if (onlineModel != null) {
+        eventPage2Cubit.createScheduleVenueOnline(
+          date: onlineModel.date,
+          time: onlineModel.time,
+          platform: onlineModel.platform,
+          link: onlineModel.link,
+          price: parsedPriceNum,
+          capacity: parsedCapacityNum,
+        );
+      }
+      if (offlineModel != null) {
+        eventPage2Cubit.createScheduleVenueOffline(
+          date: offlineModel.date,
+          time: offlineModel.time,
+          venue: offlineModel.venue,
+          address: offlineModel.address,
+          location: offlineModel.location,
+          price: parsedPriceNum,
+          capacity: parsedCapacityNum,
+        );
+      }
+      _showSuccessSnackBar(context);
+      // Navigate to next page
+      $.navigator.push(const AddEvent3Route());
+    }
+  }
+
+  void _showBudgetExceededDialog(BuildContext context, double exceeded) {
+    BudgetExceededDialog.show(
+      context: context,
+      title: 'Schedule & Venue Exceeded',
+      exceededAmount: FabFunction.formatRupiah(currency: exceeded),
+      onAdjustBudget: () {},
+      onContinueAnyway: () {
+        // Navigate anyway
+        $.navigator.push(const AddEvent3Route());
+      },
+    );
+  }
+
+  void _showSuccessSnackBar(BuildContext context) {
+    FabSnackbar.success(
+      context: context,
+      content: 'Schedule & Venue saved successfully!',
+    );
+  }
+
+  void _showErrorSnackBar(BuildContext context) {
+    FabSnackbar.error(
+      context: context,
+      content: 'Please fill all required fields',
+    );
+  }
+}
+
+class _WelcomeSection extends StatelessWidget {
+  const _WelcomeSection({
+    required this.venueBudget,
+  });
+
+  final double venueBudget;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -171,373 +450,15 @@ class _AddEvent2PageState extends State<AddEvent2Page> {
           'Schedule & Venue',
           style: FabTypography.displayBold22,
         ),
-
         PaddingGap.xs(),
-
         FabTextStyled(
-          'You’ve set a maximum budget of ${FabFunction.formatRupiah(currency: double.parse(widget.budget['venueBudget'].toString()))} Make sure your input stays within this limit.',
+          "You've set a maximum budget of ${FabFunction.formatRupiah(
+            currency: venueBudget,
+          )}. Make sure your input stays within this limit.",
           style: FabTypography.displayRegular14
               .copyWith(color: FabColors.greyscale400),
-          // textAlign: TextAlign.center,
-        ),
-      ]
-    );
-  }
-  
-  Widget _buildAddEventForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildDatepicker(),
-
-        PaddingGap.md(),
-
-        _buildTimePicker(),
-
-        PaddingGap.md(),
-        
-        widget.format == 'Offline'
-        ? _buildOfflinePlatform()
-        : _buildOnlinePlatform(),
-      ],
-    );
-  }
-  
-  Widget _buildEventPlatform() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Event Platform',
-          style: FabTypography.bodySmallMedium,
-        ),
-        const SizedBox(height: 8,),
-        DropdownButtonFormField<String>(
-          hint: Text(
-            'Select Event Platform',
-            style: FabTypography.bodySmallMedium.copyWith(
-              color: FabColors.greyscale400
-            ),
-          ),
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: FabColors.greyscale200),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: FabColors.primary300),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: FabColors.greyscale200),
-            ),
-          ),
-          initialValue: _selectedEventPlatform,
-          items: _eventPlatform.map((event) {
-            return DropdownMenuItem<String>(
-              value: event,
-              child: Text(event),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedEventPlatform = value;
-            });
-          },
-          icon: Icon(
-            UIcons.boldRounded.angle_small_down,
-            size: 20,
-          ),
         ),
       ],
     );
   }
-
-  Widget _buildOfflinePlatform() {
-    return Column(
-      children: [
-        // Venue Field
-        FabTextfield(
-          formControl: form.control('venue') as FormControl<String>,
-          keyboardType: TextInputType.name,
-          labelText: 'Venue',
-          hintText: 'e.g., Jakarta Convention Center',
-          textInputAction: TextInputAction.next,
-          size: FabTextfieldSize.large,
-        ), 
-        
-        PaddingGap.md(),
-
-        // First Name Field
-        FabTextfield(
-          formControl: form.control('address') as FormControl<String>,
-          keyboardType: TextInputType.name,
-          labelText: 'Address',
-          hintText: 'e.g., Jl. Jend. Gatot Subroto',
-          textInputAction: TextInputAction.next,
-          size: FabTextfieldSize.large,
-        ),
-        
-        PaddingGap.md(),
-        
-        // Last Name Field
-        FabTextfield(
-          formControl: form.control('location') as FormControl<String>,
-          keyboardType: TextInputType.text,
-          labelText: 'Location',
-          hintText: 'e.g., https://share.google.com/jcc',
-          textInputAction: TextInputAction.next,
-          size: FabTextfieldSize.large,
-        ),
-
-        PaddingGap.md(),
-        
-        // Last Name Field
-        FabTextfield(
-          formControl: form.control('price') as FormControl<String>,
-          keyboardType: TextInputType.number,
-          labelText: 'Price',
-          hintText: 'e.g., 100.000.000',
-          textInputAction: TextInputAction.next,
-          size: FabTextfieldSize.large,
-          inputFormatters: [
-            ThousandsSeparatorInputFormatter()
-          ],
-        ),
-
-        PaddingGap.md(),
-        
-        // Last Name Field
-        FabTextfield(
-          formControl: form.control('capacity') as FormControl<String>,
-          keyboardType: TextInputType.number,
-          labelText: 'Capacity',
-          hintText: 'e.g., 500',
-          textInputAction: TextInputAction.next,
-          size: FabTextfieldSize.large,
-          inputFormatters: [
-            ThousandsSeparatorInputFormatter()
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildOnlinePlatform() {
-    return Column(
-      children: [
-        _buildEventPlatform(),
-
-        PaddingGap.md(),
-
-        // Venue Field
-        FabTextfield(
-          formControl: form.control('link') as FormControl<String>,
-          keyboardType: TextInputType.name,
-          labelText: 'Link',
-          hintText: 'e.g., meet.zoom.com/abc-123',
-          textInputAction: TextInputAction.next,
-          size: FabTextfieldSize.large,
-        ),
-
-        PaddingGap.md(),
-        
-        // Last Name Field
-        FabTextfield(
-          formControl: form.control('price') as FormControl<String>,
-          keyboardType: TextInputType.number,
-          labelText: 'Price',
-          hintText: 'e.g., 100.000.000',
-          textInputAction: TextInputAction.next,
-          size: FabTextfieldSize.large,
-          inputFormatters: [
-            ThousandsSeparatorInputFormatter()
-          ],
-        ),
-
-        PaddingGap.md(),
-
-        // Last Name Field
-        FabTextfield(
-          formControl: form.control('capacity') as FormControl<String>,
-          keyboardType: TextInputType.number,
-          labelText: 'Capacity',
-          hintText: 'e.g., 500',
-          textInputAction: TextInputAction.next,
-          size: FabTextfieldSize.large,
-          inputFormatters: [
-            ThousandsSeparatorInputFormatter()
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDatepicker() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Date',
-          style: FabTypography.bodySmallMedium,
-        ),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return Dialog(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SfDateRangePicker(
-                          selectionMode: DateRangePickerSelectionMode.single,
-                          onSelectionChanged: (DateRangePickerSelectionChangedArgs args) {
-                            setState(() {
-                              selectedDate = args.value as DateTime?;
-                            });
-                          },
-                          initialSelectedDate: selectedDate,
-                        ),
-                        const SizedBox(height: 16),
-                        FabButton.primary(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Confirm'),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            );
-          },
-          child: InputDecorator(
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-                borderSide: BorderSide(color: FabColors.greyscale200),
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    selectedDate == null
-                        ? 'Select Date'
-                        : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
-                    style: FabTypography.bodySmallRegular,
-                  ),
-                ),
-                Icon(
-                  UIcons.boldRounded.angle_small_down,
-                  size: 20,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTimePicker() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Time',
-          style: FabTypography.bodySmallMedium,
-        ),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: () => _selectTime(context),
-          child: InputDecorator(
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-                borderSide: BorderSide(color: FabColors.greyscale200),
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                  selectedTime == null
-                  ? 'Select Time'
-                  : selectedTime!.format(context),
-                  style: FabTypography.bodySmallRegular.copyWith(
-                    color: selectedTime == null ? FabColors.greyscale400 : FabColors.textPrimary,
-                  ),
-                  ),
-                ),
-                Icon(
-                  UIcons.boldRounded.angle_small_down,
-                  size: 20,
-                ),
-              ],
-            ),
-          ), 
-        ),
-      ],
-    );
-  }
-  
-  void _handleContinue() {
-  // 1) Pastikan semua field ditandai touched supaya validasi tampil
-  form.markAllAsTouched();
-
-  // 2) Jika form tidak valid, hentikan dan biarkan user melihat error
-  // if (!form.valid) return;
-
-  // 3) Ambil string value dari control 'price'
-  final priceRaw = (form.control('price').value ?? '').toString();
-
-  // 4) Parse menggunakan helper formatter (menghapus titik ribuan, dll)
-  //    Jika parseFormattedNumber mengembalikan int, konversi ke double
-  final parsedPriceNum = ThousandsSeparatorInputFormatter.parseFormattedNumber(priceRaw) ?? 0;
-  final venuePrice = parsedPriceNum.toDouble();
-
-  // 5) Ambil netBudget dari widget.budget dengan aman
-  final venueBudget = double.parse(widget.budget['venueBudget']?.toString() ?? '');
-
-  log('Testing result $venueBudget', name: 'Log handle continue');
-
-  // 6) Bandingkan dan navigasi
-  if (venuePrice > venueBudget) {
-    log('Testing result $venueBudget', name: 'Log handle continue');
-    final exceeded = venuePrice - venueBudget;
-    BudgetExceededDialog.show(
-      context: context,
-      title: 'Schedule & Venue Exceeded',
-      exceededAmount: FabFunction.formatRupiah(currency: exceeded),
-      onAdjustBudget: () {
-      },
-      onContinueAnyway: () {
-        // Jika kamu menggunakan AutoRoute dan context.router, ganti sesuai itu
-        $.navigator.push(AddEvent3Route(budget: widget.budget, capacity: ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('capacity').value ?? '0') ?? 0));
-      },
-    );
-  } else {
-    log('Testing result $venueBudget', name: 'Log handle continue');
-    $.navigator.push(AddEvent3Route(budget: widget.budget, capacity: ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('capacity').value ?? '0') ?? 0));
-  }
-
-}
-
-
 }

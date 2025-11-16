@@ -1,12 +1,12 @@
 // ignore_for_file: max_lines_for_file, prefer_underscore_for_unused_callback_parameters
 
-import 'package:deps/features/features.dart';
 import 'package:deps/packages/reactive_forms.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'fab_textfield_types.dart';
+import '../_core/fab_validation_messages.dart';
 import 'fab_textfield_theme.dart';
+import 'fab_textfield_types.dart';
 
 class FabTextfield extends StatefulWidget {
   const FabTextfield({
@@ -108,40 +108,6 @@ class _FabTextfieldState extends State<FabTextfield> {
     return FabTextfieldState.defaultState;
   }
 
-  Map<String, String Function(Object messages)> get _validationMessages => {
-        ValidationMessage.minLength: (error) => $.tr.design.widgets.reactives.fabReactiveTextfield.minLength(
-              field: widget.labelText?.capitalize() ?? 'Field',
-              count: (error as Map)['requiredLength'].toString(),
-            ),
-        ValidationMessage.maxLength: (error) => $.tr.design.widgets.reactives.fabReactiveTextfield.maxLength(
-              field: widget.labelText?.capitalize() ?? 'Field',
-              count: (error as Map)['requiredLength'].toString(),
-            ),
-        ValidationMessage.required: (_) => $.tr.design.widgets.reactives.fabReactiveTextfield.required(
-              field: widget.labelText?.capitalize() ?? 'Field',
-            ),
-        ValidationMessage.email: (_) => $.tr.design.widgets.reactives.fabReactiveTextfield.email(
-              field: widget.labelText?.capitalize() ?? 'Field',
-            ),
-        if (widget.validationMessages != null) ...widget.validationMessages!,
-      };
-
-  String? _getErrorMessage() {
-    if (!widget.formControl.hasErrors) return null;
-    
-    final errors = widget.formControl.errors;
-    final errorKey = errors.keys.first;
-    final errorValue = errors[errorKey] ?? {};
-    
-    // Check if we have a custom validation message for this error
-    if (_validationMessages.containsKey(errorKey)) {
-      return _validationMessages[errorKey]!(errorValue);
-    }
-    
-    // Fallback to a generic error message
-    return 'Invalid ${widget.labelText?.toLowerCase() ?? 'field'}';
-  }
-
   @override
   Widget build(BuildContext context) {
     final currentState = _getCurrentState();
@@ -155,7 +121,13 @@ class _FabTextfieldState extends State<FabTextfield> {
     return ReactiveFormConsumer(
       builder: (context, _, __) {
         final hasError = widget.formControl.hasErrors && widget.showErrors && widget.formControl.touched;
-        final errorMessage = hasError ? _getErrorMessage() : null;
+        final errorMessage = hasError
+            ? FabValidationMessages.getErrorMessage(
+                formControl: widget.formControl,
+                fieldLabel: widget.labelText,
+                customMessages: widget.validationMessages,
+              )
+            : null;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,7 +143,14 @@ class _FabTextfieldState extends State<FabTextfield> {
 
             // Textfield Container
             Container(
-              height: config.height,
+              constraints: widget.maxLines > 1
+                  ? BoxConstraints(
+                      minHeight: config.height,
+                    )
+                  : BoxConstraints(
+                      minHeight: config.height,
+                      maxHeight: config.height,
+                    ),
               decoration: BoxDecoration(
                 color: config.backgroundColor,
                 border: Border.all(
@@ -182,11 +161,12 @@ class _FabTextfieldState extends State<FabTextfield> {
                 boxShadow: _buildBoxShadows(config),
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Prefix Icon
                   if (widget.prefixIcon != null) ...[
                     Padding(
-                      padding: const EdgeInsets.only(left: 12, right: 8),
+                      padding: const EdgeInsets.only(left: 12, right: 8, top: 12),
                       child: IconTheme(
                         data: IconThemeData(
                           color: config.iconColor,
@@ -213,9 +193,9 @@ class _FabTextfieldState extends State<FabTextfield> {
                         focusedErrorBorder: InputBorder.none,
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: widget.prefixIcon == null ? 16 : 0,
-                          vertical: 0,
+                          vertical: 12,
                         ),
-                        isDense: true,
+                        isDense: widget.maxLines == 1,
                       ),
                       readOnly: widget.readOnly,
                       obscureText: widget.obscureText,
@@ -232,7 +212,10 @@ class _FabTextfieldState extends State<FabTextfield> {
                       onSubmitted: widget.onSubmitted != null 
                           ? (_) => widget.onSubmitted!() 
                           : null,
-                      validationMessages: _validationMessages,
+                      validationMessages: FabValidationMessages.getValidationMessages(
+                        fieldLabel: widget.labelText,
+                        customMessages: widget.validationMessages,
+                      ),
                       showErrors: (_) => false, // We handle errors manually
                     ),
                   ),
@@ -240,7 +223,11 @@ class _FabTextfieldState extends State<FabTextfield> {
                   // Suffix Icon
                   if (widget.suffixIcon != null) ...[
                     Padding(
-                      padding: const EdgeInsets.only(left: 8, right: 12),
+                      padding: EdgeInsets.only(
+                        left: 8,
+                        right: 12,
+                        top: widget.maxLines > 1 ? 12 : 0,
+                      ),
                       child: IconTheme(
                         data: IconThemeData(
                           color: config.iconColor,
@@ -297,7 +284,6 @@ class _FabTextfieldState extends State<FabTextfield> {
           color: config.outlineColor!,
           blurRadius: 0.5, // Blur radius besar untuk efek soft
           spreadRadius: 3.0, // Spread untuk membuat outline lebih lebar
-          offset: const Offset(0, 0), // Centered shadow
         ),
       );
     }
@@ -309,7 +295,6 @@ class _FabTextfieldState extends State<FabTextfield> {
           color: config.shadowColor!,
           blurRadius: 2.0, // Blur radius kecil untuk efek bold
           spreadRadius: 0.5, // Spread kecil untuk border effect
-          offset: const Offset(0, 0), // Centered shadow
         ),
       );
     }

@@ -1,138 +1,113 @@
 import 'dart:developer';
-
 import 'package:deps/design/design.dart';
 import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
 import 'package:deps/packages/reactive_forms.dart';
-import 'package:deps/packages/uicons.dart';
 import 'package:flutter/material.dart';
 
 @RoutePage()
 class AddEvent6Page extends StatefulWidget {
-  const AddEvent6Page({super.key});
+  const AddEvent6Page({required this.budget, super.key});
+
+  final Map<String, dynamic> budget;
 
   @override
   State<AddEvent6Page> createState() => _AddEvent6PageState();
 }
 
 class _AddEvent6PageState extends State<AddEvent6Page> {
-  int currentStep = 7;
+  int currentStep = 6;
   int totalSteps = 8;
 
-  // Sponsorship income goal (dari gambar: Rp60.000.000)
-  final double sponsorshipGoal = 60000000;
+  // Maximum budget untuk vendor (dari gambar: Rp90.000.000)
+  double get maximumBudget => double.parse(widget.budget['vendorBudget'].toString());
 
-  final List<SponsorshipData> sponsorship = [];
+  final List<VendorRFQData> vendorRFQ = [];
 
-  final List<String> _sponsorshipType = [
-    'Monetary',
-    'Product',
-    'Media',
-    'Venue',
-    'Co-Branding',
-    'Services',
+  final List<SelectOption<String>> _categoriesOptions = [
+    const SelectOption(value: 'Catering', label: 'Catering'),
+    const SelectOption(value: 'Booth/Stage Setup', label: 'Booth/Stage Setup'),
+    const SelectOption(value: 'Decoration', label: 'Decoration'),
+    const SelectOption(value: 'Sound System', label: 'Sound System'),
+  ];
+
+  final List<SelectOption<String>> _vendorOptions = [
+    const SelectOption(value: 'Catering by Carmela', label: 'Catering by Carmela'),
+    const SelectOption(value: 'Iwan Panggung', label: 'Iwan Panggung'),
+    const SelectOption(value: 'Agatha Dekorasi', label: 'Agatha Dekorasi'),
+    const SelectOption(value: 'Wawan Sound System', label: 'Wawan Sound System'),
   ];
 
   /// =======================================================
   /// ============== Helper Methods =========================
   /// =======================================================
   
-  // Menghitung total sponsorship income
-  double get totalSponsorshipIncome {
+  // Menghitung total vendor fee
+  double get totalVendorFee {
     double total = 0;
-    for (var sponsor in sponsorship) {
-      if (!sponsor.isEditing) {
-        final form = sponsor.form;
-        final type = form.control('type').value ?? '';
-        
-        if (type == 'Monetary') {
-          // Untuk Monetary, ambil dari 'request' field
-          final amountStr = form.control('request').value?.toString() ?? '0';
-          final amount = double.tryParse(amountStr.replaceAll('.', '').replaceAll(',', '').replaceAll('Rp', '').trim()) ?? 0;
-          total += amount;
-        } else {
-          // Untuk Product/lainnya, ambil dari 'productAmount' field
-          final amountStr = form.control('productAmount').value?.toString() ?? '0';
-          final amount = double.tryParse(amountStr.replaceAll('.', '').replaceAll(',', '').replaceAll('Rp', '').trim()) ?? 0;
-          total += amount;
-        }
+    for (var vendor in vendorRFQ) {
+      if (!vendor.isEditing && vendor.form.control('budget').value != null) {
+        final budgetStr = vendor.form.control('budget').value.toString();
+        final budget = double.tryParse(budgetStr.replaceAll('.', '').replaceAll(',', '')) ?? 0;
+        total += budget;
       }
     }
     return total;
   }
 
-  // Menghitung jumlah sponsor slots yang sudah disimpan
-  int get sponsorSlots {
-    return sponsorship.where((s) => !s.isEditing).length;
+  // Menghitung jumlah vendor yang sudah disimpan (tidak sedang diedit)
+  int get vendorSelectedCount {
+    return vendorRFQ.where((v) => !v.isEditing).length;
   }
 
   /// =======================================================
-  /// ============== CRUD Logic Sponsorship =================
+  /// ============== CRUD Logic Vendor RFQ ==================
   /// =======================================================
-  void addSponsorship() {
+  void addVendor() {
     final newForm = FormGroup({
-      'title': FormControl<String>(validators: [Validators.required]),
-      'type': FormControl<String>(validators: [Validators.required]),
-      'request': FormControl<String>(), // For Monetary
-      'requestedProduct': FormControl<String>(), // For Product
-      'productAmount': FormControl<String>(), // For Product
+      'categories': FormControl<String>(),
+      'vendor': FormControl<String>(),
+      'budget': FormControl<String>(validators: [Validators.required]),
       'description': FormControl<String>(),
     });
 
     setState(() {
-      sponsorship.add(SponsorshipData(form: newForm, isEditing: true));
+      vendorRFQ.add(VendorRFQData(form: newForm, isEditing: true));
     });
   }
 
-  void removeSponsorship(int index) {
+  void removeVendor(int index) {
     setState(() {
-      sponsorship.removeAt(index);
+      vendorRFQ.removeAt(index);
     });
   }
 
-  void saveSponsorship(int index) {
-    final form = sponsorship[index].form;
-    final type = form.control('type').value ?? '';
-    
-    // Validasi berdasarkan type
-    if (type == 'Monetary') {
-      form.control('request');
-      form.control('requestedProduct').clearValidators();
-      form.control('productAmount').clearValidators();
-    } else {
-      form.control('request').clearValidators();
-      form.control('requestedProduct');
-      form.control('productAmount');
-    }
-    
-    form.control('request').updateValueAndValidity();
-    form.control('requestedProduct').updateValueAndValidity();
-    form.control('productAmount').updateValueAndValidity();
-    
+  void saveVendor(int index) {
+    final form = vendorRFQ[index].form;
     if (form.valid) {
       setState(() {
-        sponsorship[index].isEditing = false;
+        vendorRFQ[index].isEditing = false;
       });
-      log('Sponsorship saved: ${form.value}', name: 'add_event_6');
+      log('Vendor saved: ${form.value}', name: 'add_event_5');
     } else {
       form.markAllAsTouched();
     }
   }
 
-  void editSponsorship(int index) {
+  void editVendor(int index) {
     setState(() {
-      sponsorship[index].isEditing = true;
+      vendorRFQ[index].isEditing = true;
     });
   }
 
-  // Validasi income dan navigasi ke halaman berikutnya
+  // Validasi budget dan navigasi ke halaman berikutnya
   void handleContinue() {
-    final total = totalSponsorshipIncome;
-    final shortfall = sponsorshipGoal - total;
+    final total = totalVendorFee;
+    final exceeded = total - maximumBudget;
 
-    if (shortfall > 0) {
-      // Tampilkan dialog jika income belum mencapai target
-      _showIncomeBelowTargetDialog(shortfall);
+    if (exceeded > 0) {
+      // Tampilkan dialog jika budget terlampaui
+      _showBudgetExceededDialog(exceeded);
     } else {
       // Lanjut ke halaman berikutnya
       _navigateToNextPage();
@@ -140,11 +115,11 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
   }
 
   void _navigateToNextPage() {
-    $.navigator.push(AddEvent7Route());
+    $.navigator.push(const AddEvent7Route());
   }
 
-  // Dialog untuk income below target
-  void _showIncomeBelowTargetDialog(double shortfall) {
+  // Dialog untuk budget exceeded
+  void _showBudgetExceededDialog(double exceededAmount) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -158,13 +133,13 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'Sponsors Income Below Target',
+                  'Vendor Cost Exceeded',
                   style: FabTypography.displaySemiBold18,
                   textAlign: TextAlign.center,
                 ),
                 PaddingGap.md(),
                 Text(
-                  'Sponsorship income hasn\'t met your target by ${FabFunction.formatRupiah(currency: shortfall)}. Reach out to more partners or update your offer packages to boost revenue.',
+                  'Vendor spending is ${FabFunction.formatRupiah(currency: exceededAmount)} above the planned budget. Review your vendor quotes or consolidate services to cut costs.',
                   style: FabTypography.displayRegular14.copyWith(
                     color: FabColors.greyscale500,
                   ),
@@ -174,12 +149,12 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
                 FabButton.primary(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    // User bisa menambah sponsorship atau edit
+                    // User bisa edit budget vendor
                   },
                   size: FabButtonSize.large,
                   width: double.infinity,
                   child: Text(
-                    'Adjust Slots',
+                    'Adjust Cost',
                     style: FabTypography.displaySemiBold16.copyWith(
                       color: FabColors.greyscale0,
                     ),
@@ -211,7 +186,6 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
   /// =======================================================
   /// ================== UI Builder =========================
   /// =======================================================
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -250,15 +224,15 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
 
                   PaddingGap.md(),
 
-                  // Render semua sponsorship card
-                  for (int i = 0; i < sponsorship.length; i++)
-                    sponsorship[i].isEditing
-                        ? _buildSponsorForm(i)
-                        : _buildSponsorshipSummary(i),
+                  // Render semua vendor card
+                  for (int i = 0; i < vendorRFQ.length; i++)
+                    vendorRFQ[i].isEditing
+                        ? _buildVendorForm(i)
+                        : _buildVendorSummary(i),
 
                   PaddingGap.sm(),
 
-                  _buildAddSponsorshipButton(),
+                  _buildAddVendorButton(),
 
                   PaddingGap.xl(),
                 ],
@@ -329,12 +303,12 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const FabTextStyled(
-          'Sponsorship',
+          'Vendor RFQ',
           style: FabTypography.displayBold22,
         ),
         PaddingGap.xs(),
         FabTextStyled(
-          'Your sponsorship income goal for this event is ${FabFunction.formatRupiah(currency: sponsorshipGoal)}. Adjust slots to reach this target.',
+          'Maximum vendor spending is ${FabFunction.formatRupiah(currency: maximumBudget)}. Keep all vendor quotes within this limit.',
           style: FabTypography.displayRegular14
               .copyWith(color: FabColors.greyscale400),
         ),
@@ -349,11 +323,11 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
         Row(
           children: [
             const Text(
-              'Sponsor Slots: ',
+              'Vendor Selected: ',
               style: FabTypography.displayRegular14,
             ),
             Text(
-              '$sponsorSlots Slots',
+              '$vendorSelectedCount Vendor',
               style: FabTypography.displaySemiBold14,
             ),
           ],
@@ -362,11 +336,11 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
         Row(
           children: [
             const Text(
-              'Total Sponsorship Income: ',
+              'Vendor Total Fee: ',
               style: FabTypography.displayRegular14,
             ),
             Text(
-              FabFunction.formatRupiah(currency: totalSponsorshipIncome),
+              FabFunction.formatRupiah(currency: totalVendorFee),
               style: FabTypography.displaySemiBold14,
             ),
           ],
@@ -375,158 +349,11 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
     );
   }
 
-  Widget _buildSponsorForm(int index) {
-    final form = sponsorship[index].form;
-
-    return ReactiveForm(
-      formGroup: form,
-      child: FabCardForm(
-        form: form,
-        buildFields: (form) => [
-          FabTextfield(
-            formControl: form.control('title') as FormControl<String>,
-            labelText: 'Sponsorship Title *',
-            hintText: 'e.g. Main Stage Partner',
-            keyboardType: TextInputType.text,
-            size: FabTextfieldSize.large,
-          ),
-          
-          PaddingGap.md(),
-  
-          _buildSponsorshipTypeDropdown(form),
-          
-          PaddingGap.md(),
-  
-          // Conditional fields based on type
-          ReactiveValueListenableBuilder<String?>(
-            formControl: form.control('type') as FormControl<String>,
-            builder: (context, control, child) {
-              final selectedType = control.value;
-              
-              if (selectedType == 'Monetary') {
-                // Show only Requested Amount for Monetary
-                return FabTextfield(
-                  formControl: form.control('request') as FormControl<String>,
-                  labelText: 'Requested Amount *',
-                  hintText: 'e.g. Rp 120.000',
-                  keyboardType: TextInputType.number,
-                  size: FabTextfieldSize.large,
-                  inputFormatters: [
-                    ThousandsSeparatorInputFormatter()
-                  ],
-                );
-              } else if (selectedType != null && selectedType.isNotEmpty) {
-                // Show Requested Product and Product Amount for other types
-                return Column(
-                  children: [
-                    FabTextfield(
-                      formControl: form.control('requestedProduct') as FormControl<String>,
-                      labelText: 'Requested Product *',
-                      hintText: 'e.g. 20pcs Backpack, 300pcs Tumblr',
-                      keyboardType: TextInputType.text,
-                      size: FabTextfieldSize.large,
-                      maxLines: 2,
-                    ),
-                    PaddingGap.md(),
-                    FabTextfield(
-                      formControl: form.control('productAmount') as FormControl<String>,
-                      labelText: 'Product Amount *',
-                      hintText: 'e.g. Rp45.000.000',
-                      keyboardType: TextInputType.text,
-                      size: FabTextfieldSize.large,
-                      inputFormatters: [
-                        ThousandsSeparatorInputFormatter()
-                      ],
-                    ),
-                  ],
-                );
-              }
-              
-              return const SizedBox.shrink();
-            },
-          ),
-          
-          PaddingGap.md(),
-          
-          FabTextfield(
-            formControl: form.control('description') as FormControl<String>,
-            labelText: 'Description *',
-            hintText: 'Outline the benefits for the sponsor',
-            maxLines: 3,
-            size: FabTextfieldSize.large,
-          ),
-        ],
-        buildSummary: (form) => _buildSponsorshipSummary(index),
-        onSaved: (form) => saveSponsorship(index),
-        onEdit: () => editSponsorship(index),
-        onDelete: () => removeSponsorship(index),
-      ),
-    );
-  }
-
-  Widget _buildSponsorshipTypeDropdown(FormGroup form) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Sponsorship Type *',
-          style: FabTypography.bodySmallMedium.copyWith(
-            color: FabColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        ReactiveDropdownField<String>(
-          formControlName: 'type',
-          hint: Text(
-            'Select Sponsorship Type',
-            style: FabTypography.bodySmallMedium.copyWith(
-              color: FabColors.greyscale400,
-            ),
-          ),
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: FabColors.greyscale200),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: FabColors.primary300),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: FabColors.greyscale200),
-            ),
-          ),
-          items: _sponsorshipType
-              .map(
-                (type) => DropdownMenuItem<String>(
-                  value: type,
-                  child: Text(
-                    type,
-                    style: FabTypography.bodySmallMedium.copyWith(
-                      color: FabColors.textPrimary,
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-          icon: Icon(
-            UIcons.boldRounded.angle_small_down,
-            size: 20,
-          ),
-          validationMessages: {
-            ValidationMessage.required: (_) => 'Sponsorship Type is required',
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAddSponsorshipButton() {
+  Widget _buildAddVendorButton() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: OutlinedButton(
-        onPressed: addSponsorship,
+        onPressed: addVendor,
         style: OutlinedButton.styleFrom(
           side: BorderSide(color: Colors.grey.shade300),
           shape: RoundedRectangleBorder(
@@ -544,7 +371,7 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
             ),
             PaddingGap.xxs(),
             Text(
-              'Sponsor Slots',
+              'Add Vendor',
               style: FabTypography.displaySemiBold16.copyWith(
                 color: FabColors.textPrimary,
               ),
@@ -555,41 +382,83 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
     );
   }
 
-  Widget _buildSponsorshipSummary(int index) {
-    final form = sponsorship[index].form;
+  /// =======================================================
+  /// ============== VENDOR FORM (FabCardForm) ==============
+  /// =======================================================
+  Widget _buildVendorForm(int index) {
+    final form = vendorRFQ[index].form;
 
-    final title = form.control('title').value ?? '';
-    final type = form.control('type').value ?? '';
+    return FabCardForm(
+      form: form,
+      buildFields: (form) => [
+        FabSelectBottomSheet<String>(
+          formControl: form.control('categories') as FormControl<String>,
+          labelText: 'Vendor Categories *',
+          hintText: 'Select Category',
+          searchHintText: 'Search Category',
+          options: _categoriesOptions,
+          onChanged: (selectedOption) {
+            if (selectedOption != null) {
+              form.control('categories').value = selectedOption.value;
+            }
+          },
+        ),
+        PaddingGap.md(),
+        FabSelectBottomSheet<String>(
+          formControl: form.control('vendor') as FormControl<String>,
+          labelText: 'Select Vendor *',
+          hintText: 'Select Vendor',
+          searchHintText: 'Search Vendor',
+          options: _vendorOptions,
+          onChanged: (selectedOption) {
+            if (selectedOption != null) {
+              form.control('vendor').value = selectedOption.value;
+            }
+          },
+        ),
+
+        PaddingGap.md(),
+        
+        FabTextfield(
+          formControl: form.control('budget') as FormControl<String>,
+          labelText: 'Budget *',
+          hintText: 'Enter budget',
+          keyboardType: TextInputType.number,
+          size: FabTextfieldSize.large,
+          inputFormatters: [
+            ThousandsSeparatorInputFormatter()
+          ],
+        ),
+        
+        PaddingGap.md(),
+        
+        FabTextfield(
+          formControl: form.control('description') as FormControl<String>,
+          labelText: 'Description *',
+          hintText: 'Write description...',
+          maxLines: 3,
+          size: FabTextfieldSize.large,
+        ),
+      ],
+      buildSummary: (form) => _buildVendorSummary(index),
+      onSaved: (form) => saveVendor(index),
+      onEdit: () => editVendor(index),
+      onDelete: () => removeVendor(index),
+    );
+  }
+
+  /// =======================================================
+  /// ================= VENDOR SUMMARY ======================
+  /// =======================================================
+  Widget _buildVendorSummary(int index) {
+    final form = vendorRFQ[index].form;
+    final categories = form.control('categories').value ?? '';
+    final vendor = form.control('vendor').value ?? '';
+    final budget = form.control('budget').value ?? '';
     final desc = form.control('description').value ?? '';
-    
-    String amountDisplay = '';
-    String productInfo = '';
-    
-    if (type == 'Monetary') {
-      amountDisplay = form.control('request').value ?? '';
-    } else {
-      productInfo = form.control('requestedProduct').value ?? '';
-      amountDisplay = form.control('productAmount').value ?? '';
-    }
-
-    // Tentukan warna badge berdasarkan type
-    Color badgeColor;
-    switch (type) {
-      case 'Monetary':
-        badgeColor = const Color(0xFFD1F4E0); // Light green
-        break;
-      case 'Product':
-        badgeColor = const Color(0xFFD1F0FF); // Light blue
-        break;
-      case 'Media':
-        badgeColor = const Color(0xFFFFF4D1); // Light yellow
-        break;
-      default:
-        badgeColor = FabColors.primary50;
-    }
 
     return GestureDetector(
-      onTap: () => editSponsorship(index),
+      onTap: () => editVendor(index),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
         child: FabCard(
@@ -599,103 +468,122 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
           border: Border.all(color: FabColors.greyscale200),
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: FabTypography.displaySemiBold16.copyWith(
-                          color: FabColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                    PaddingGap.sm(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: badgeColor,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        type,
-                        style: FabTypography.bodySmallMedium.copyWith(
-                          color: FabColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
+                // Vendor Avatar
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: FabColors.greyscale200,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: const Icon(
+                    Icons.store,
+                    color: FabColors.greyscale500,
+                    size: 24,
+                  ),
                 ),
-
-                PaddingGap.xxs(),
-
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.payments_outlined,
-                      size: 16,
-                      color: FabColors.greyscale500,
-                    ),
-                    PaddingGap.xxs(),
-                    Text(
-                      amountDisplay,
-                      style: FabTypography.bodySmallMedium.copyWith(
-                        color: FabColors.greyscale500,
-                      ),
-                    ),
-                  ],
-                ),
-
-                // Show product info if not Monetary
-                if (type != 'Monetary' && productInfo.isNotEmpty) ...[
-                  PaddingGap.xxs(),
-                  Row(
+                PaddingGap.sm(),
+                // Vendor Info
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
-                        Icons.inventory_2_outlined,
-                        size: 16,
-                        color: FabColors.greyscale500,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              vendor,
+                              style: FabTypography.displaySemiBold16.copyWith(
+                                color: FabColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          PaddingGap.sm(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: FabColors.primary50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'View Profile',
+                              style: FabTypography.bodySmallMedium.copyWith(
+                                color: FabColors.primary,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       PaddingGap.xxs(),
-                      Expanded(
-                        child: Text(
-                          productInfo,
-                          style: FabTypography.bodySmallMedium.copyWith(
-                            color: FabColors.greyscale500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-
-                PaddingGap.xxs(),
-
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(
-                      Icons.description_outlined,
-                      size: 16,
-                      color: FabColors.greyscale500,
-                    ),
-                    PaddingGap.xxs(),
-                    Expanded(
-                      child: Text(
-                        desc,
-                        style: FabTypography.bodySmallMedium.copyWith(
+                      Text(
+                        categories,
+                        style: FabTypography.bodySmallRegular.copyWith(
                           color: FabColors.greyscale500,
                         ),
                       ),
-                    ),
-                  ],
+                      PaddingGap.xxs(),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.star,
+                            size: 14,
+                            color: Colors.amber,
+                          ),
+                          PaddingGap.xxs(),
+                          Text(
+                            '4.9 • 50+ Client',
+                            style: FabTypography.bodySmallMedium.copyWith(
+                              color: FabColors.greyscale500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      PaddingGap.xs(),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.payments_outlined,
+                            size: 16,
+                            color: FabColors.greyscale500,
+                          ),
+                          PaddingGap.xxs(),
+                          Text(
+                            'Rp$budget',
+                            style: FabTypography.bodySmallMedium.copyWith(
+                              color: FabColors.greyscale500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      PaddingGap.xxs(),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.description_outlined,
+                            size: 16,
+                            color: FabColors.greyscale500,
+                          ),
+                          PaddingGap.xxs(),
+                          Expanded(
+                            child: Text(
+                              desc,
+                              style: FabTypography.bodySmallMedium.copyWith(
+                                color: FabColors.greyscale500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -706,11 +594,14 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
   }
 }
 
-class SponsorshipData {
+/// =======================================================
+/// =============== DATA MODEL CLASS ======================
+/// =======================================================
+class VendorRFQData {
   FormGroup form;
   bool isEditing;
 
-  SponsorshipData({
+  VendorRFQData({
     required this.form,
     this.isEditing = true,
   });
