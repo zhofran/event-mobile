@@ -1,9 +1,11 @@
 import 'package:deps/design/design.dart';
 import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
-import 'package:deps/packages/reactive_forms.dart';
+import 'package:deps/packages/flutter_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
+import '../../../domain/forms/budget_planner.form.dart';
+import '../../cubits/budget_planner.cubit.dart';
 
 @RoutePage()
 class BudgetPlanningPage extends StatefulWidget {
@@ -14,36 +16,22 @@ class BudgetPlanningPage extends StatefulWidget {
 }
 
 class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
-  late FormGroup form;
-  
+  late BudgetPlannerCubit budgetPlannerCubit;
+
   int currentStep = 1;
   int totalSteps = 8;
 
   @override
   void initState() {
     super.initState();
-    form = FormGroup({
-      'venueBudget': FormControl<String>(
-        // validators: [Validators.required],
-      ),
-      'speakerFees': FormControl<String>(
-        // validators: [Validators.required],
-      ),
-      'vendorBudget': FormControl<String>(
-        // validators: [Validators.required],
-      ),
-      'ticketSales': FormControl<String>(
-        // validators: [Validators.required],
-      ),
-      'sponsorshipIncome': FormControl<String>(
-        // validators: [Validators.required],
-      ),
-    });
+
+    // Initialize cubit from DI
+    budgetPlannerCubit = $.get<BudgetPlannerCubit>();
+    budgetPlannerCubit.toggleValidityForm(value: null);
   }
 
   @override
   void dispose() {
-    form.dispose();
     super.dispose();
   }
 
@@ -54,83 +42,143 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildAppBar(),
-
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: AnimatedStepProgressIndicator(
-                      currentStep: currentStep,
-                      totalSteps: totalSteps,
-                    ),
-                  ),
-
-                  PaddingGap.xl(),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _buildWelcomeSection(),
-                  ),
-
-                  PaddingGap.md(),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: ReactiveForm(
-                      formGroup: form,
-                      child: _buildBudgetForm(),
-                    ),
-                  ),
-                ],
+            const FabPageHeader(title: 'Create Event'),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: AnimatedStepProgressIndicator(
+                currentStep: currentStep,
+                totalSteps: totalSteps,
               ),
             ),
-
-            _buildBottomButtons(),
+            PaddingGap.xl(),
+            Expanded(
+              child: BudgetPlannerFormFormBuilder(
+                builder: (_, data, __) {
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: ListView(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          children: [
+                            _buildWelcomeSection(),
+                            PaddingGap.md(),
+                            BlocBuilder<BudgetPlannerCubit, BudgetPlannerState>(
+                              bloc: budgetPlannerCubit,
+                              buildWhen: (previous, current) =>
+                                  previous.isFormValid != current.isFormValid,
+                              builder: (context, state) {
+                                return _buildBudgetPlannerForm(data);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      _buildBottomButtons(data),
+                    ],
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAppBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-      child: Row(
-        children: [
-          FabButton.secondary(
-            onPressed: () {
-              $.navigator.pop();
-            },
-            isIconOnly: true,
-            iconWidget: Assets.images.icons.arrowLeftSLine.svg(
-              width: 20,
-              height: 20,
-              package: 'design',
-            ),
-            child: const SizedBox.shrink(),
+  Widget _buildBudgetPlannerForm(BudgetPlannerFormForm data) {
+    final inputFormatters = [ThousandsSeparatorInputFormatter(separator: ',')];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Event Expenses Section
+        const FabTextStyled(
+          'Event Expenses',
+          style: FabTypography.displaySemiBold18,
+        ),
+        PaddingGap.xs(),
+        FabTextStyled(
+          'Add all costs needed to run your event.',
+          style: FabTypography.bodySmallRegular.copyWith(
+            color: FabColors.greyscale600,
           ),
-          const Expanded(
-            child: FabTextStyled(
-              'Create Event',
-              style: FabTypography.displaySemiBold18,
-              textAlign: TextAlign.center,
-            ),
+        ),
+        PaddingGap.md(),
+
+        // Venue Budget Field
+        FabTextfield(
+          formControl: data.venueBudgetControl,
+          keyboardType: TextInputType.number,
+          labelText: 'Venue Budget',
+          hintText: 'Enter venue cost (e.g. 10,000,000)',
+          textInputAction: TextInputAction.next,
+          inputFormatters: inputFormatters,
+        ),
+
+        PaddingGap.md(),
+
+        // Speaker Fees Field
+        FabTextfield(
+          formControl: data.speakerFeesControl,
+          keyboardType: TextInputType.number,
+          labelText: 'Speaker Fees',
+          hintText: 'Enter Speaker Fees (e.g. 10,000,000)',
+          textInputAction: TextInputAction.next,
+          inputFormatters: inputFormatters,
+        ),
+
+        PaddingGap.md(),
+
+        // Vendor Budget Field
+        FabTextfield(
+          formControl: data.vendorBudgetControl,
+          keyboardType: TextInputType.number,
+          labelText: 'Vendor Budget',
+          hintText: 'Enter Vendor Budget (e.g. 10,000,000)',
+          textInputAction: TextInputAction.next,
+          inputFormatters: inputFormatters,
+        ),
+
+        PaddingGap.lg(),
+
+        // Event Income Section
+        const FabTextStyled(
+          'Event Income',
+          style: FabTypography.displaySemiBold18,
+        ),
+        PaddingGap.xs(),
+        FabTextStyled(
+          'Estimate how much your event will earn from different sources.',
+          style: FabTypography.bodySmallRegular.copyWith(
+            color: FabColors.greyscale600,
           ),
-          FabButton.secondary(
-            onPressed: () => {},
-            isIconOnly: true,
-            iconWidget: Assets.images.icons.questionLine.svg(
-              width: 20,
-              height: 20,
-              package: 'design',
-            ),
-            child: const SizedBox.shrink(),
-          ),
-        ],
-      ),
+        ),
+        PaddingGap.md(),
+
+        // Ticket Sales Field
+        FabTextfield(
+          formControl: data.ticketSalesControl,
+          keyboardType: TextInputType.number,
+          labelText: 'Ticket Sales',
+          hintText: 'Enter estimated ticket sales (e.g. 10,000,000)',
+          textInputAction: TextInputAction.next,
+          inputFormatters: inputFormatters,
+        ),
+
+        PaddingGap.md(),
+
+        // Sponsorship Income Field
+        FabTextfield(
+          formControl: data.sponsorshipIncomeControl,
+          keyboardType: TextInputType.number,
+          labelText: 'Sponsorship Income',
+          hintText: 'Enter estimated sponsorship (e.g. 10,000,000)',
+          textInputAction: TextInputAction.done,
+          inputFormatters: inputFormatters,
+        ),
+
+        PaddingGap.md(),
+      ],
     );
   }
 
@@ -153,123 +201,12 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
     );
   }
 
-  Widget _buildBudgetForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Event Expenses Section
-        const FabTextStyled(
-          'Event Expenses',
-          style: FabTypography.displaySemiBold18,
-        ),
-        PaddingGap.xs(),
-        FabTextStyled(
-          'Add all costs needed to run your event.',
-          style: FabTypography.bodySmallRegular.copyWith(
-            color: FabColors.greyscale600,
-          ),
-        ),
-        PaddingGap.md(),
-
-        // Venue Budget Field
-        FabTextfield(
-          formControl: form.control('venueBudget') as FormControl<String>,
-          keyboardType: TextInputType.number,
-          labelText: 'Venue Budget',
-          hintText: 'Enter venue cost (e.g. 10,000,000)',
-          textInputAction: TextInputAction.next,
-          size: FabTextfieldSize.large,
-          inputFormatters: [
-            ThousandsSeparatorInputFormatter()
-          ],
-        ),
-
-        PaddingGap.md(),
-
-        // Speaker Fees Field
-        FabTextfield(
-          formControl: form.control('speakerFees') as FormControl<String>,
-          keyboardType: TextInputType.number,
-          labelText: 'Speaker Fees',
-          hintText: 'Enter Speaker Fees (e.g. 10,000,000)',
-          textInputAction: TextInputAction.next,
-          size: FabTextfieldSize.large,
-          inputFormatters: [
-            ThousandsSeparatorInputFormatter()
-          ],
-        ),
-
-        PaddingGap.md(),
-
-        // Vendor Budget Field
-        FabTextfield(
-          formControl: form.control('vendorBudget') as FormControl<String>,
-          keyboardType: TextInputType.number,
-          labelText: 'Vendor Budget',
-          hintText: 'Enter Vendor Budget (e.g. 10,000,000)',
-          textInputAction: TextInputAction.next,
-          size: FabTextfieldSize.large,
-          inputFormatters: [
-            ThousandsSeparatorInputFormatter()
-          ],
-        ),
-
-        PaddingGap.lg(),
-
-        // Event Income Section
-        const FabTextStyled(
-          'Event Income',
-          style: FabTypography.displaySemiBold18,
-        ),
-        PaddingGap.xs(),
-        FabTextStyled(
-          'Estimate how much your event will earn from different sources.',
-          style: FabTypography.bodySmallRegular.copyWith(
-            color: FabColors.greyscale600,
-          ),
-        ),
-        PaddingGap.md(),
-
-        // Ticket Sales Field
-        FabTextfield(
-          formControl: form.control('ticketSales') as FormControl<String>,
-          keyboardType: TextInputType.number,
-          labelText: 'Ticket Sales',
-          hintText: 'Enter estimated ticket sales (e.g. 10,000,000)',
-          textInputAction: TextInputAction.next,
-          size: FabTextfieldSize.large,
-          inputFormatters: [
-            ThousandsSeparatorInputFormatter()
-          ],
-        ),
-
-        PaddingGap.md(),
-
-        // Sponsorship Income Field
-        FabTextfield(
-          formControl: form.control('sponsorshipIncome') as FormControl<String>,
-          keyboardType: TextInputType.number,
-          labelText: 'Sponsorship Income',
-          hintText: 'Enter estimated sponsorship (e.g. 10,000,000)',
-          textInputAction: TextInputAction.done,
-          size: FabTextfieldSize.large,
-          inputFormatters: [
-            ThousandsSeparatorInputFormatter()
-          ],
-        ),
-
-        PaddingGap.md(),
-      ],
-    );
-  }
-
-  Widget _buildBottomButtons() {
+  Widget _buildBottomButtons(BudgetPlannerFormForm data) {
     return Column(
       children: [
         PaddingGap.xs(),
-
         TextButton(
-          onPressed: _handleSkip,
+          onPressed: () => _handleSkip(data),
           child: FabTextStyled(
             'Skip',
             style: FabTypography.displayMedium16.copyWith(
@@ -277,11 +214,23 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
             ),
           ),
         ),
-
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: FabButton.primary(
-            onPressed: _handleContinue,
+            onPressed: byPass,
+            //  () {
+            //   data.submit(
+            //     onValid: addBudgetPlanner,
+            //     onNotValid: () {
+            //       // Form is invalid, errors will be shown automatically
+            //       budgetPlannerCubit.toggleValidityForm(value: false);
+            //       FabSnackbar.error(
+            //         context: context,
+            //         content: 'Please fill all required fields',
+            //       );
+            //     },
+            //   );
+            // },
             size: FabButtonSize.large,
             width: double.infinity,
             child: Text(
@@ -292,94 +241,76 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
             ),
           ),
         ),
-        
         PaddingGap.sm(),
       ],
     );
   }
 
-  void _handleContinue() {
-    // Mark form as touched to show validation errors
-    form.markAllAsTouched();
+  Future<void> byPass() async {
+    budgetPlannerCubit
+      ..calculateBudget(
+        venueBudget: 50000000,
+        speakerFees: 20000000,
+        vendorBudget: 30000000,
+        ticketSales: 20000000,
+        sponsorshipIncome: 250000000,
+      )
+      ..toggleValidityForm(value: true);
 
-    // Check if form is valid
-    if (!form.valid) {
-      // Show error snackbar
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: FabTextStyled(
-            'Please fill all required fields',
-            style: FabTypography.bodySmallMedium.copyWith(
-              color: FabColors.greyscale0,
-            ),
-          ),
-          backgroundColor: FabColors.error,
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-      );
-      return;
-    }
-
-    // Collect form data
-    final budgetData = {
-      'venueBudget': ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('venueBudget').value ?? '0') ?? 0,
-      'speakerFees': ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('speakerFees').value ?? '0') ?? 0,
-      'vendorBudget': ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('vendorBudget').value ?? '0') ?? 0,
-      'ticketSales': ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('ticketSales').value ?? '0') ?? 0,
-      'sponsorshipIncome': ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('sponsorshipIncome').value ?? '0') ?? 0,
-    };
-
-    // Calculate totals
-    final totalExpenses = budgetData['venueBudget']! + 
-                          budgetData['speakerFees']! + 
-                          budgetData['vendorBudget']!;
-    final totalIncome = budgetData['ticketSales']! + 
-                        budgetData['sponsorshipIncome']!;
-    final netBudget = totalIncome - totalExpenses;
-
-    final allBudget = {
-      'venueBudget': ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('venueBudget').value ?? '0') ?? 0,
-      'speakerFees': ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('speakerFees').value ?? '0') ?? 0,
-      'vendorBudget': ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('vendorBudget').value ?? '0') ?? 0,
-      'ticketSales': ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('ticketSales').value ?? '0') ?? 0,
-      'sponsorshipIncome': ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('sponsorshipIncome').value ?? '0') ?? 0,
-      'netBudget': ThousandsSeparatorInputFormatter.parseFormattedNumber(netBudget.toString()) ?? 0,
-    };
-
-    debugPrint('Budget Data: $budgetData');
-    debugPrint('Total Expenses: $totalExpenses');
-    debugPrint('Total Income: $totalIncome');
-    debugPrint('Net Budget: $netBudget');
-
-    // Navigate to next step
-    $.navigator.push(
-      AddEvent1Route(budget: allBudget)
+    FabSnackbar.success(
+      context: context,
+      content: 'Budget planning saved successfully!',
     );
 
-    // Show success message (temporary)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: FabTextStyled(
-          'Budget planning saved successfully!',
-          style: FabTypography.bodySmallMedium.copyWith(
-            color: FabColors.greyscale0,
-          ),
-        ),
-        backgroundColor: FabColors.success,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-    );
+    await $.navigator.push(const AddEvent1Route());
   }
 
-  void _handleSkip() {
+  Future<void> addBudgetPlanner(BudgetPlannerForm model) async {
+    final venueBudget = ThousandsSeparatorInputFormatter.parseFormattedNumber(
+          model.venueBudget,
+        ) ??
+        0;
+
+    final speakerFees = ThousandsSeparatorInputFormatter.parseFormattedNumber(
+          model.speakerFees,
+        ) ??
+        0;
+
+    final vendorBudget = ThousandsSeparatorInputFormatter.parseFormattedNumber(
+          model.vendorBudget,
+        ) ??
+        0;
+
+    final ticketSales = ThousandsSeparatorInputFormatter.parseFormattedNumber(
+          model.ticketSales,
+        ) ??
+        0;
+
+    final sponsorshipIncome =
+        ThousandsSeparatorInputFormatter.parseFormattedNumber(
+              model.sponsorshipIncome,
+            ) ??
+            0;
+
+    budgetPlannerCubit
+      ..calculateBudget(
+        venueBudget: venueBudget,
+        speakerFees: speakerFees,
+        vendorBudget: vendorBudget,
+        ticketSales: ticketSales,
+        sponsorshipIncome: sponsorshipIncome,
+      )
+      ..toggleValidityForm(value: true);
+
+    FabSnackbar.success(
+      context: context,
+      content: 'Budget planning saved successfully!',
+    );
+
+    await $.navigator.push(const AddEvent1Route());
+  }
+
+  void _handleSkip(BudgetPlannerFormForm data) {
     // Show skip confirmation dialog
     showDialog(
       context: context,
@@ -389,7 +320,7 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
           style: FabTypography.displaySemiBold18,
         ),
         content: FabTextStyled(
-          'If you skip the system wouldn\'t give you alert later, still skip the Budget Planning?',
+          "If you skip the system wouldn't give you alert later, still skip the Budget Planning?",
           style: FabTypography.bodySmallMedium.copyWith(
             color: FabColors.greyscale600,
           ),
@@ -410,19 +341,18 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
           FabButton.primary(
             onPressed: () {
               Navigator.pop(context);
-              final allBudget = {
-                'venueBudget': ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('venueBudget').value ?? '0') ?? 0,
-                'speakerFees': ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('speakerFees').value ?? '0') ?? 0,
-                'vendorBudget': ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('vendorBudget').value ?? '0') ?? 0,
-                'ticketSales': ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('ticketSales').value ?? '0') ?? 0,
-                'sponsorshipIncome': ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('sponsorshipIncome').value ?? '0') ?? 0,
-                'netBudget': ThousandsSeparatorInputFormatter.parseFormattedNumber('0') ?? 0,
-              };
+              budgetPlannerCubit.calculateBudget(
+                venueBudget: 0,
+                speakerFees: 0,
+                vendorBudget: 0,
+                ticketSales: 0,
+                sponsorshipIncome: 0,
+              );
+
               // Navigate to next step
-              $.navigator.push(AddEvent1Route(budget: allBudget));
+              $.navigator.push(AddEvent1Route());
               debugPrint('Skipping budget planning...');
             },
-            size: FabButtonSize.medium,
             child: Text(
               'Skip',
               style: FabTypography.bodySmallMedium.copyWith(

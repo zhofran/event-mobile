@@ -1,8 +1,9 @@
 import 'dart:io';
+
 import 'package:deps/design/design.dart';
+import 'package:deps/packages/image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 class PhotoAvatar extends StatefulWidget {
   final double size;
@@ -58,7 +59,8 @@ class _PhotoAvatarState extends State<PhotoAvatar> {
   Future<void> _selectImage(ImageSource source) async {
     try {
       final picker = ImagePicker();
-      final XFile? image = await picker.pickImage(source: source, maxWidth: 500, maxHeight: 500);
+      final XFile? image =
+          await picker.pickImage(source: source, maxWidth: 500, maxHeight: 500);
       if (image != null) {
         setState(() {
           _pickedImage = image;
@@ -83,48 +85,49 @@ class _PhotoAvatarState extends State<PhotoAvatar> {
         height: widget.size,
         decoration: BoxDecoration(
           shape: widget.shape,
-          borderRadius: widget.shape == BoxShape.rectangle ? BorderRadius.circular(12) : null,
-          border: widget.shape == BoxShape.rectangle ? Border.all(
-            color: FabColors.greyscale200,
-            width: 1
-          ) : null,
+          borderRadius: widget.shape == BoxShape.rectangle
+              ? BorderRadius.circular(12)
+              : null,
+          border: widget.shape == BoxShape.rectangle
+              ? Border.all(color: FabColors.greyscale200, width: 1)
+              : null,
           color: widget.backgroundColor,
         ),
         child: _pickedImage != null
-        ? Container(
-          width: widget.size,
-          height: widget.size,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            shape: widget.shape,
-            borderRadius: widget.shape == BoxShape.rectangle ? BorderRadius.circular(12) : null,
-            border: widget.shape == BoxShape.rectangle ? Border.all(
-              color: FabColors.greyscale200,
-              width: 1
-            ) : null,
-            color: FabColors.textPrimary
-          ),
-          child: Image.file(
-            File(_pickedImage!.path),
-            width: widget.size,
-            height: widget.size,
-            fit: BoxFit.contain,
-          ),
-        )
-        // CircleAvatar(
-        //   radius: widget.size,
-        //   backgroundImage: FileImage(
-        //     File(_pickedImage!.path),
-        //     scale: 0.5
-        //   ),
-        // )
-        : Center(
-          child: Icon(
-            CupertinoIcons.camera_fill,
-            size: widget.size * 0.33,
-            color: widget.iconColor,
-          ),
-        ),
+            ? Container(
+                width: widget.size,
+                height: widget.size,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                    shape: widget.shape,
+                    borderRadius: widget.shape == BoxShape.rectangle
+                        ? BorderRadius.circular(12)
+                        : null,
+                    border: widget.shape == BoxShape.rectangle
+                        ? Border.all(color: FabColors.greyscale200, width: 1)
+                        : null,
+                    color: FabColors.textPrimary),
+                child: Image.file(
+                  File(_pickedImage!.path),
+                  width: widget.size,
+                  height: widget.size,
+                  fit: BoxFit.contain,
+                ),
+              )
+            // CircleAvatar(
+            //   radius: widget.size,
+            //   backgroundImage: FileImage(
+            //     File(_pickedImage!.path),
+            //     scale: 0.5
+            //   ),
+            // )
+            : Center(
+                child: Icon(
+                  CupertinoIcons.camera_fill,
+                  size: widget.size * 0.33,
+                  color: widget.iconColor,
+                ),
+              ),
       ),
     );
   }
