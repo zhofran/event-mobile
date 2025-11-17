@@ -36,7 +36,7 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
   /// =======================================================
   /// ============== Helper Methods =========================
   /// =======================================================
-  
+
   // Menghitung total sponsorship income
   double get totalSponsorshipIncome {
     double total = 0;
@@ -44,16 +44,27 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
       if (!sponsor.isEditing) {
         final form = sponsor.form;
         final type = form.control('type').value ?? '';
-        
+
         if (type == 'Monetary') {
           // Untuk Monetary, ambil dari 'request' field
           final amountStr = form.control('request').value?.toString() ?? '0';
-          final amount = double.tryParse(amountStr.replaceAll('.', '').replaceAll(',', '').replaceAll('Rp', '').trim()) ?? 0;
+          final amount = double.tryParse(amountStr
+                  .replaceAll('.', '')
+                  .replaceAll(',', '')
+                  .replaceAll('Rp', '')
+                  .trim()) ??
+              0;
           total += amount;
         } else {
           // Untuk Product/lainnya, ambil dari 'productAmount' field
-          final amountStr = form.control('productAmount').value?.toString() ?? '0';
-          final amount = double.tryParse(amountStr.replaceAll('.', '').replaceAll(',', '').replaceAll('Rp', '').trim()) ?? 0;
+          final amountStr =
+              form.control('productAmount').value?.toString() ?? '0';
+          final amount = double.tryParse(amountStr
+                  .replaceAll('.', '')
+                  .replaceAll(',', '')
+                  .replaceAll('Rp', '')
+                  .trim()) ??
+              0;
           total += amount;
         }
       }
@@ -93,7 +104,7 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
   void saveSponsorship(int index) {
     final form = sponsorship[index].form;
     final type = form.control('type').value ?? '';
-    
+
     // Validasi berdasarkan type
     if (type == 'Monetary') {
       form.control('request');
@@ -104,11 +115,11 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
       form.control('requestedProduct');
       form.control('productAmount');
     }
-    
+
     form.control('request').updateValueAndValidity();
     form.control('requestedProduct').updateValueAndValidity();
     form.control('productAmount').updateValueAndValidity();
-    
+
     if (form.valid) {
       setState(() {
         sponsorship[index].isEditing = false;
@@ -164,7 +175,7 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
                 ),
                 PaddingGap.md(),
                 Text(
-                  'Sponsorship income hasn\'t met your target by ${FabFunction.formatRupiah(currency: shortfall)}. Reach out to more partners or update your offer packages to boost revenue.',
+                  "Sponsorship income hasn't met your target by ${FabFunction.formatRupiah(currency: shortfall)}. Reach out to more partners or update your offer packages to boost revenue.",
                   style: FabTypography.displayRegular14.copyWith(
                     color: FabColors.greyscale500,
                   ),
@@ -211,7 +222,7 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
   /// =======================================================
   /// ================== UI Builder =========================
   /// =======================================================
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -219,8 +230,7 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildAppBar(),
-
+            const FabPageHeader(title: 'Create Event'),
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
@@ -264,7 +274,6 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
                 ],
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: FabButton.primary(
@@ -281,45 +290,6 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-      child: Row(
-        children: [
-          FabButton.secondary(
-            onPressed: () {
-              $.navigator.pop();
-            },
-            isIconOnly: true,
-            iconWidget: Assets.images.icons.arrowLeftSLine.svg(
-              width: 20,
-              height: 20,
-              package: 'design',
-            ),
-            child: const SizedBox.shrink(),
-          ),
-          const Expanded(
-            child: FabTextStyled(
-              'Create Event',
-              style: FabTypography.displaySemiBold18,
-              textAlign: TextAlign.center,
-            ),
-          ),
-          FabButton.secondary(
-            onPressed: () => {},
-            isIconOnly: true,
-            iconWidget: Assets.images.icons.questionLine.svg(
-              width: 20,
-              height: 20,
-              package: 'design',
-            ),
-            child: const SizedBox.shrink(),
-          ),
-        ],
       ),
     );
   }
@@ -390,19 +360,19 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
             keyboardType: TextInputType.text,
             size: FabTextfieldSize.large,
           ),
-          
+
           PaddingGap.md(),
-  
+
           _buildSponsorshipTypeDropdown(form),
-          
+
           PaddingGap.md(),
-  
+
           // Conditional fields based on type
           ReactiveValueListenableBuilder<String?>(
             formControl: form.control('type') as FormControl<String>,
             builder: (context, control, child) {
               final selectedType = control.value;
-              
+
               if (selectedType == 'Monetary') {
                 // Show only Requested Amount for Monetary
                 return FabTextfield(
@@ -411,16 +381,15 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
                   hintText: 'e.g. Rp 120.000',
                   keyboardType: TextInputType.number,
                   size: FabTextfieldSize.large,
-                  inputFormatters: [
-                    ThousandsSeparatorInputFormatter()
-                  ],
+                  inputFormatters: [ThousandsSeparatorInputFormatter()],
                 );
               } else if (selectedType != null && selectedType.isNotEmpty) {
                 // Show Requested Product and Product Amount for other types
                 return Column(
                   children: [
                     FabTextfield(
-                      formControl: form.control('requestedProduct') as FormControl<String>,
+                      formControl: form.control('requestedProduct')
+                          as FormControl<String>,
                       labelText: 'Requested Product *',
                       hintText: 'e.g. 20pcs Backpack, 300pcs Tumblr',
                       keyboardType: TextInputType.text,
@@ -429,25 +398,24 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
                     ),
                     PaddingGap.md(),
                     FabTextfield(
-                      formControl: form.control('productAmount') as FormControl<String>,
+                      formControl:
+                          form.control('productAmount') as FormControl<String>,
                       labelText: 'Product Amount *',
                       hintText: 'e.g. Rp45.000.000',
                       keyboardType: TextInputType.text,
                       size: FabTextfieldSize.large,
-                      inputFormatters: [
-                        ThousandsSeparatorInputFormatter()
-                      ],
+                      inputFormatters: [ThousandsSeparatorInputFormatter()],
                     ),
                   ],
                 );
               }
-              
+
               return const SizedBox.shrink();
             },
           ),
-          
+
           PaddingGap.md(),
-          
+
           FabTextfield(
             formControl: form.control('description') as FormControl<String>,
             labelText: 'Description *',
@@ -561,10 +529,10 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
     final title = form.control('title').value ?? '';
     final type = form.control('type').value ?? '';
     final desc = form.control('description').value ?? '';
-    
+
     String amountDisplay = '';
     String productInfo = '';
-    
+
     if (type == 'Monetary') {
       amountDisplay = form.control('request').value ?? '';
     } else {

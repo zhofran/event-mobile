@@ -4,28 +4,17 @@ import '../../design.dart';
 
 /// Model untuk data tab
 class FabTab {
-  final String title;
-  final List<dynamic> items;
-
   FabTab({
     required this.title,
     required this.items,
   });
+
+  String title;
+  List<dynamic> items;
 }
 
 /// Model untuk data card (bisa kamu sesuaikan)
 class FabCardData {
-  final String title;
-  final String? subtitle;
-  final String? location;
-  final String? date;
-  final String? time;
-  final String? status;
-  final String? imageUrl;
-  final int? attendees;
-  final int? sponsors;
-  final int? speakers;
-
   FabCardData({
     required this.title,
     this.subtitle,
@@ -38,18 +27,20 @@ class FabCardData {
     this.sponsors,
     this.speakers,
   });
+  final String title;
+  final String? subtitle;
+  final String? location;
+  final String? date;
+  final String? time;
+  final String? status;
+  final String? imageUrl;
+  final int? attendees;
+  final int? sponsors;
+  final int? speakers;
 }
 
 /// Widget global utama
 class FabTabSelection extends StatefulWidget {
-  final String? title;
-  final List<FabTab> tabs;
-  final VoidCallback? onCreatePressed;
-  final String emptyTitle;
-  final String emptyDescription;
-  final Widget? emptyIllustration;
-  final Widget Function(dynamic) cardBuilder;
-
   const FabTabSelection({
     super.key,
     this.title,
@@ -57,9 +48,16 @@ class FabTabSelection extends StatefulWidget {
     required this.cardBuilder,
     this.onCreatePressed,
     this.emptyTitle = 'No Data Yet',
-    this.emptyDescription = 'There\'s nothing here yet. Try adding new items.',
+    this.emptyDescription = "There's nothing here yet. Try adding new items.",
     this.emptyIllustration,
   });
+  final String? title;
+  final List<FabTab> tabs;
+  final VoidCallback? onCreatePressed;
+  final String emptyTitle;
+  final String emptyDescription;
+  final Widget? emptyIllustration;
+  final Widget Function(dynamic) cardBuilder;
 
   @override
   State<FabTabSelection> createState() => _FabTabSelectionState();
@@ -86,7 +84,7 @@ class _FabTabSelectionState extends State<FabTabSelection>
     // Hitung tinggi yang tersedia
     final screenHeight = MediaQuery.of(context).size.height;
     final availableHeight = screenHeight * 0.6; // 60% dari tinggi layar
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -158,39 +156,26 @@ class _FabTabSelectionState extends State<FabTabSelection>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             widget.emptyIllustration ??
-            Icon(
-              Icons.event_note_outlined,
-              size: 80, 
-              color: Colors.orange.shade300
-            ),
-
+                Icon(Icons.event_note_outlined,
+                    size: 80, color: Colors.orange.shade300),
             const SizedBox(height: 16),
-            
-            Text(
-              widget.emptyTitle,
-              style: Theme.of(context).textTheme.titleMedium
-            ),
-            
+            Text(widget.emptyTitle,
+                style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
-            
-            Text(
-              widget.emptyDescription,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey,
-              )
-            ),
-
+            Text(widget.emptyDescription,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey,
+                    )),
             const SizedBox(height: 20),
-            
             ElevatedButton(
               onPressed: widget.onCreatePressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)
-                ),
+                    borderRadius: BorderRadius.circular(8)),
               ),
               child: const Text('Create Event'),
             ),

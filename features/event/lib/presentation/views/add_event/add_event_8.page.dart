@@ -15,7 +15,6 @@ class _AddEvent8PageState extends State<AddEvent8Page> {
   int currentStep = 8;
   int totalSteps = 8;
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +22,7 @@ class _AddEvent8PageState extends State<AddEvent8Page> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildAppBar(),
+            const FabPageHeader(title: 'Create Event'),
 
             Expanded(
               child: SingleChildScrollView(
@@ -87,36 +86,6 @@ class _AddEvent8PageState extends State<AddEvent8Page> {
             _buildSubmitButton(),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-      child: Row(
-        children: [
-          FabButton.secondary(
-            onPressed: () {
-              $.navigator.pop();
-            },
-            isIconOnly: true,
-            iconWidget: Assets.images.icons.arrowLeftSLine.svg(
-              width: 20,
-              height: 20,
-              package: 'design',
-            ),
-            child: const SizedBox.shrink(),
-          ),
-          const Expanded(
-            child: FabTextStyled(
-              'Create Event',
-              style: FabTypography.displaySemiBold18,
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(width: 40), // Balance for back button
-        ],
       ),
     );
   }
@@ -313,8 +282,7 @@ class _AddEvent8PageState extends State<AddEvent8Page> {
             color: FabColors.info,
             seats: '150 seats (30%)',
             price: 'Rp300.000',
-            benefits:
-                'Kursi prioritas + e-certificate eksklusif + snack box.',
+            benefits: 'Kursi prioritas + e-certificate eksklusif + snack box.',
           ),
           const SizedBox(height: 12),
           _buildTicketCard(
@@ -376,7 +344,8 @@ class _AddEvent8PageState extends State<AddEvent8Page> {
             type: 'Monetary',
             color: FabColors.success50,
             benefits: 'Rp 14.000.000',
-            description: '2 VIP Passes, Social Media Shout-Out, Logo on Event Banner',
+            description:
+                '2 VIP Passes, Social Media Shout-Out, Logo on Event Banner',
           ),
 
           const SizedBox(height: 16),
@@ -506,7 +475,8 @@ class _AddEvent8PageState extends State<AddEvent8Page> {
                 style: FabTypography.displayBold14,
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   color: color,
                   borderRadius: BorderRadius.circular(6),
@@ -523,7 +493,8 @@ class _AddEvent8PageState extends State<AddEvent8Page> {
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.event_seat_outlined, size: 14, color: FabColors.greyscale600),
+              const Icon(Icons.event_seat_outlined,
+                  size: 14, color: FabColors.greyscale600),
               const SizedBox(width: 4),
               Text(
                 seats,
@@ -536,7 +507,8 @@ class _AddEvent8PageState extends State<AddEvent8Page> {
           const SizedBox(height: 4),
           Row(
             children: [
-              const Icon(Icons.local_offer_outlined, size: 14, color: FabColors.greyscale600),
+              const Icon(Icons.local_offer_outlined,
+                  size: 14, color: FabColors.greyscale600),
               const SizedBox(width: 4),
               Text(
                 price,
@@ -550,7 +522,8 @@ class _AddEvent8PageState extends State<AddEvent8Page> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.card_giftcard_outlined, size: 14, color: FabColors.greyscale600),
+              const Icon(Icons.card_giftcard_outlined,
+                  size: 14, color: FabColors.greyscale600),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
@@ -584,7 +557,7 @@ class _AddEvent8PageState extends State<AddEvent8Page> {
           Container(
             width: 48,
             height: 48,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               color: FabColors.greyscale200,
             ),
@@ -644,7 +617,8 @@ class _AddEvent8PageState extends State<AddEvent8Page> {
                 style: FabTypography.displayBold14,
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   color: color,
                   borderRadius: BorderRadius.circular(6),
@@ -662,7 +636,8 @@ class _AddEvent8PageState extends State<AddEvent8Page> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.card_giftcard_outlined, size: 14, color: FabColors.greyscale600),
+              const Icon(Icons.card_giftcard_outlined,
+                  size: 14, color: FabColors.greyscale600),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
@@ -677,7 +652,8 @@ class _AddEvent8PageState extends State<AddEvent8Page> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.article_outlined, size: 14, color: FabColors.greyscale600),
+              const Icon(Icons.article_outlined,
+                  size: 14, color: FabColors.greyscale600),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
@@ -711,7 +687,7 @@ class _AddEvent8PageState extends State<AddEvent8Page> {
           Container(
             width: 48,
             height: 48,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               color: FabColors.greyscale200,
             ),
@@ -754,7 +730,7 @@ class _AddEvent8PageState extends State<AddEvent8Page> {
         onPressed: () {
           // Submit action
           // _showConfirmationModal(context);
-          $.navigator.push(FinancialManagementRoute());
+          $.navigator.push(const FinancialManagementRoute());
         },
         size: FabButtonSize.large,
         width: double.infinity,

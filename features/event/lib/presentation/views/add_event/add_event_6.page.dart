@@ -2,27 +2,32 @@ import 'dart:developer';
 import 'package:deps/design/design.dart';
 import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
-import 'package:deps/packages/reactive_forms.dart';
 import 'package:flutter/material.dart';
+
+import '../../../domain/forms/add_event_6.form.dart';
+import '../../cubits/budget_planner.cubit.dart';
 
 @RoutePage()
 class AddEvent6Page extends StatefulWidget {
-  const AddEvent6Page({required this.budget, super.key});
-
-  final Map<String, dynamic> budget;
+  const AddEvent6Page({super.key});
 
   @override
   State<AddEvent6Page> createState() => _AddEvent6PageState();
 }
 
 class _AddEvent6PageState extends State<AddEvent6Page> {
-  int currentStep = 6;
+  late BudgetPlannerCubit budgetPlannerCubit;
+  int currentStep = 7;
   int totalSteps = 8;
 
   // Maximum budget untuk vendor (dari gambar: Rp90.000.000)
-  double get maximumBudget => double.parse(widget.budget['vendorBudget'].toString());
+  double get maximumBudget => budgetPlannerCubit.state.vendorBudget;
 
   final List<VendorRFQData> vendorRFQ = [];
+
+  // Local state for editing vendor forms - store model and ID for editing forms
+  final Map<String, AddEvent6Form> editingModels = {};
+  final Set<String> editingIds = {};
 
   final List<SelectOption<String>> _categoriesOptions = [
     const SelectOption(value: 'Catering', label: 'Catering'),
@@ -32,71 +37,184 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
   ];
 
   final List<SelectOption<String>> _vendorOptions = [
-    const SelectOption(value: 'Catering by Carmela', label: 'Catering by Carmela'),
-    const SelectOption(value: 'Iwan Panggung', label: 'Iwan Panggung'),
-    const SelectOption(value: 'Agatha Dekorasi', label: 'Agatha Dekorasi'),
-    const SelectOption(value: 'Wawan Sound System', label: 'Wawan Sound System'),
+    SelectOption(
+      value: 'gourmet_grub',
+      label: 'Gourmet Grub Catering',
+      subtitle: 'Exquisite Culinary Creations',
+      icon: const CircleAvatar(
+        radius: 24,
+        backgroundColor: FabColors.greyscale200,
+        child: Icon(
+          Icons.restaurant,
+          color: FabColors.greyscale500,
+          size: 24,
+        ),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.star, size: 14, color: Colors.amber),
+          const SizedBox(width: 2),
+          Text(
+            '4.8 • 60+ Events',
+            style: FabTypography.bodySmallMedium.copyWith(
+              color: FabColors.greyscale500,
+            ),
+          ),
+        ],
+      ),
+    ),
+    SelectOption(
+      value: 'spice_route',
+      label: 'Spice Route Catering',
+      subtitle: 'Authentic Flavors, Modern Presentation',
+      icon: const CircleAvatar(
+        radius: 24,
+        backgroundColor: FabColors.greyscale200,
+        child: Icon(
+          Icons.restaurant_menu,
+          color: FabColors.greyscale500,
+          size: 24,
+        ),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.star, size: 14, color: Colors.amber),
+          const SizedBox(width: 2),
+          Text(
+            '4.7 • 45+ Clients',
+            style: FabTypography.bodySmallMedium.copyWith(
+              color: FabColors.greyscale500,
+            ),
+          ),
+        ],
+      ),
+    ),
+    SelectOption(
+      value: 'urban_palate',
+      label: 'Urban Palate Catering',
+      subtitle: 'Sophisticated Catering Solutions',
+      icon: const CircleAvatar(
+        radius: 24,
+        backgroundColor: FabColors.greyscale200,
+        child: Icon(
+          Icons.dinner_dining,
+          color: FabColors.greyscale500,
+          size: 24,
+        ),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.star, size: 14, color: Colors.amber),
+          const SizedBox(width: 2),
+          Text(
+            '4.9 • 70+ Clients',
+            style: FabTypography.bodySmallMedium.copyWith(
+              color: FabColors.greyscale500,
+            ),
+          ),
+        ],
+      ),
+    ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    budgetPlannerCubit = $.get<BudgetPlannerCubit>();
+  }
 
   /// =======================================================
   /// ============== Helper Methods =========================
   /// =======================================================
-  
+
   // Menghitung total vendor fee
   double get totalVendorFee {
     double total = 0;
     for (var vendor in vendorRFQ) {
-      if (!vendor.isEditing && vendor.form.control('budget').value != null) {
-        final budgetStr = vendor.form.control('budget').value.toString();
-        final budget = double.tryParse(budgetStr.replaceAll('.', '').replaceAll(',', '')) ?? 0;
-        total += budget;
-      }
+      // Skip if still editing
+      if (editingIds.contains(vendor.id)) continue;
+
+      final budget = ThousandsSeparatorInputFormatter.parseFormattedNumber(
+              vendor.budget) ??
+          0;
+      total += budget.toDouble();
     }
     return total;
   }
 
   // Menghitung jumlah vendor yang sudah disimpan (tidak sedang diedit)
   int get vendorSelectedCount {
-    return vendorRFQ.where((v) => !v.isEditing).length;
+    return vendorRFQ.where((v) => !editingIds.contains(v.id)).length;
   }
 
   /// =======================================================
   /// ============== CRUD Logic Vendor RFQ ==================
   /// =======================================================
   void addVendor() {
-    final newForm = FormGroup({
-      'categories': FormControl<String>(),
-      'vendor': FormControl<String>(),
-      'budget': FormControl<String>(validators: [Validators.required]),
-      'description': FormControl<String>(),
-    });
+    final tempId = DateTime.now().millisecondsSinceEpoch.toString();
 
     setState(() {
-      vendorRFQ.add(VendorRFQData(form: newForm, isEditing: true));
+      editingModels[tempId] = AddEvent6Form.empty();
+      editingIds.add(tempId);
     });
   }
 
-  void removeVendor(int index) {
+  void removeVendor(String id) {
     setState(() {
-      vendorRFQ.removeAt(index);
+      vendorRFQ.removeWhere((v) => v.id == id);
+      editingModels.remove(id);
+      editingIds.remove(id);
     });
   }
 
-  void saveVendor(int index) {
-    final form = vendorRFQ[index].form;
-    if (form.valid) {
-      setState(() {
-        vendorRFQ[index].isEditing = false;
-      });
-      log('Vendor saved: ${form.value}', name: 'add_event_5');
+  void saveVendor(String id, AddEvent6Form model) {
+    // Check if this is a new vendor or an update
+    final existingVendor = vendorRFQ.where((v) => v.id == id).firstOrNull;
+
+    if (existingVendor != null) {
+      // Update existing
+      final index = vendorRFQ.indexWhere((v) => v.id == id);
+      vendorRFQ[index] = VendorRFQData(
+        id: id,
+        categories: model.categories,
+        vendor: model.vendor,
+        budget: model.budget,
+        description: model.description,
+      );
     } else {
-      form.markAllAsTouched();
+      // Add new
+      vendorRFQ.add(VendorRFQData(
+        id: id,
+        categories: model.categories,
+        vendor: model.vendor,
+        budget: model.budget,
+        description: model.description,
+      ));
     }
+
+    setState(() {
+      editingModels.remove(id);
+      editingIds.remove(id);
+    });
+
+    log('Vendor saved: ${model.vendor}', name: 'add_event_6');
   }
 
-  void editVendor(int index) {
+  void editVendor(String id) {
+    final vendor = vendorRFQ.firstWhere((v) => v.id == id);
+
     setState(() {
-      vendorRFQ[index].isEditing = true;
+      editingModels[id] = AddEvent6Form(
+        categories: vendor.categories,
+        vendor: vendor.vendor,
+        budget: vendor.budget,
+        description: vendor.description,
+      );
+      editingIds.add(id);
     });
   }
 
@@ -193,8 +311,7 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildAppBar(),
-
+            const FabPageHeader(title: 'Create Event'),
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
@@ -224,11 +341,14 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
 
                   PaddingGap.md(),
 
-                  // Render semua vendor card
-                  for (int i = 0; i < vendorRFQ.length; i++)
-                    vendorRFQ[i].isEditing
-                        ? _buildVendorForm(i)
-                        : _buildVendorSummary(i),
+                  // Render semua vendor card - forms yang sedang diedit
+                  for (var entry in editingModels.entries)
+                    _buildVendorForm(entry.key),
+
+                  // Render vendor summaries yang sudah tersimpan
+                  for (var vendor in vendorRFQ)
+                    if (!editingIds.contains(vendor.id))
+                      _buildVendorSummary(vendor.id),
 
                   PaddingGap.sm(),
 
@@ -238,7 +358,6 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
                 ],
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: FabButton.primary(
@@ -255,45 +374,6 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-      child: Row(
-        children: [
-          FabButton.secondary(
-            onPressed: () {
-              $.navigator.pop();
-            },
-            isIconOnly: true,
-            iconWidget: Assets.images.icons.arrowLeftSLine.svg(
-              width: 20,
-              height: 20,
-              package: 'design',
-            ),
-            child: const SizedBox.shrink(),
-          ),
-          const Expanded(
-            child: FabTextStyled(
-              'Create Event',
-              style: FabTypography.displaySemiBold18,
-              textAlign: TextAlign.center,
-            ),
-          ),
-          FabButton.secondary(
-            onPressed: () => {},
-            isIconOnly: true,
-            iconWidget: Assets.images.icons.questionLine.svg(
-              width: 20,
-              height: 20,
-              package: 'design',
-            ),
-            child: const SizedBox.shrink(),
-          ),
-        ],
       ),
     );
   }
@@ -383,82 +463,115 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
   }
 
   /// =======================================================
-  /// ============== VENDOR FORM (FabCardForm) ==============
+  /// ============== VENDOR FORM ==============
   /// =======================================================
-  Widget _buildVendorForm(int index) {
-    final form = vendorRFQ[index].form;
+  Widget _buildVendorForm(String id) {
+    final model = editingModels[id];
+    if (model == null) {
+      return const SizedBox.shrink();
+    }
 
-    return FabCardForm(
-      form: form,
-      buildFields: (form) => [
-        FabSelectBottomSheet<String>(
-          formControl: form.control('categories') as FormControl<String>,
-          labelText: 'Vendor Categories *',
-          hintText: 'Select Category',
-          searchHintText: 'Search Category',
-          options: _categoriesOptions,
-          onChanged: (selectedOption) {
-            if (selectedOption != null) {
-              form.control('categories').value = selectedOption.value;
-            }
-          },
-        ),
-        PaddingGap.md(),
-        FabSelectBottomSheet<String>(
-          formControl: form.control('vendor') as FormControl<String>,
-          labelText: 'Select Vendor *',
-          hintText: 'Select Vendor',
-          searchHintText: 'Search Vendor',
-          options: _vendorOptions,
-          onChanged: (selectedOption) {
-            if (selectedOption != null) {
-              form.control('vendor').value = selectedOption.value;
-            }
-          },
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: AddEvent6FormFormBuilder(
+        model: model,
+        builder: (context, formModel, child) {
+          final inputFormatters = [
+            ThousandsSeparatorInputFormatter(separator: ','),
+          ];
 
-        PaddingGap.md(),
-        
-        FabTextfield(
-          formControl: form.control('budget') as FormControl<String>,
-          labelText: 'Budget *',
-          hintText: 'Enter budget',
-          keyboardType: TextInputType.number,
-          size: FabTextfieldSize.large,
-          inputFormatters: [
-            ThousandsSeparatorInputFormatter()
-          ],
-        ),
-        
-        PaddingGap.md(),
-        
-        FabTextfield(
-          formControl: form.control('description') as FormControl<String>,
-          labelText: 'Description *',
-          hintText: 'Write description...',
-          maxLines: 3,
-          size: FabTextfieldSize.large,
-        ),
-      ],
-      buildSummary: (form) => _buildVendorSummary(index),
-      onSaved: (form) => saveVendor(index),
-      onEdit: () => editVendor(index),
-      onDelete: () => removeVendor(index),
+          return FabCard(
+            radius: 12,
+            color: FabColors.greyscale0,
+            border: Border.all(color: FabColors.greyscale200),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  FabSelectBottomSheet<String>(
+                    formControl: formModel.categoriesControl,
+                    options: _categoriesOptions,
+                    labelText: 'Vendor Categories',
+                    hintText: 'Select Category',
+                    searchHintText: 'Search Vendor Category',
+                  ),
+                  PaddingGap.md(),
+                  FabSelectBottomSheet<String>(
+                    formControl: formModel.vendorControl,
+                    options: _vendorOptions,
+                    labelText: 'Select Vendor',
+                    hintText: 'Select Vendor',
+                    searchHintText: 'Search Vendor Name',
+                  ),
+                  PaddingGap.md(),
+                  FabTextfield(
+                    formControl: formModel.budgetControl,
+                    labelText: 'Budget',
+                    hintText: 'Enter budget',
+                    keyboardType: TextInputType.number,
+                    inputFormatters: inputFormatters,
+                  ),
+                  PaddingGap.md(),
+                  FabTextfield(
+                    formControl: formModel.descriptionControl,
+                    labelText: 'Description',
+                    hintText: 'Write description...',
+                    maxLines: 3,
+                  ),
+                  PaddingGap.md(),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FabButton.secondary(
+                          onPressed: () => removeVendor(id),
+                          size: FabButtonSize.large,
+                          child: Text(
+                            'Delete',
+                            style: FabTypography.displaySemiBold16.copyWith(
+                              color: FabColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                      PaddingGap.sm(),
+                      Expanded(
+                        child: FabButton.primary(
+                          onPressed: () {
+                            if (formModel.form.valid) {
+                              saveVendor(id, formModel.model);
+                            } else {
+                              formModel.form.markAllAsTouched();
+                            }
+                          },
+                          size: FabButtonSize.large,
+                          child: Text(
+                            'Save',
+                            style: FabTypography.displaySemiBold16.copyWith(
+                              color: FabColors.greyscale0,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
   /// =======================================================
   /// ================= VENDOR SUMMARY ======================
   /// =======================================================
-  Widget _buildVendorSummary(int index) {
-    final form = vendorRFQ[index].form;
-    final categories = form.control('categories').value ?? '';
-    final vendor = form.control('vendor').value ?? '';
-    final budget = form.control('budget').value ?? '';
-    final desc = form.control('description').value ?? '';
+  Widget _buildVendorSummary(String id) {
+    final vendor = vendorRFQ.firstWhere((v) => v.id == id);
 
     return GestureDetector(
-      onTap: () => editVendor(index),
+      onTap: () => editVendor(id),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
         child: FabCard(
@@ -496,7 +609,7 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
                         children: [
                           Expanded(
                             child: Text(
-                              vendor,
+                              vendor.vendor,
                               style: FabTypography.displaySemiBold16.copyWith(
                                 color: FabColors.textPrimary,
                               ),
@@ -523,7 +636,7 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
                       ),
                       PaddingGap.xxs(),
                       Text(
-                        categories,
+                        vendor.categories,
                         style: FabTypography.bodySmallRegular.copyWith(
                           color: FabColors.greyscale500,
                         ),
@@ -555,7 +668,7 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
                           ),
                           PaddingGap.xxs(),
                           Text(
-                            'Rp$budget',
+                            'Rp${vendor.budget}',
                             style: FabTypography.bodySmallMedium.copyWith(
                               color: FabColors.greyscale500,
                             ),
@@ -574,7 +687,7 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
                           PaddingGap.xxs(),
                           Expanded(
                             child: Text(
-                              desc,
+                              vendor.description,
                               style: FabTypography.bodySmallMedium.copyWith(
                                 color: FabColors.greyscale500,
                               ),
@@ -598,11 +711,17 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
 /// =============== DATA MODEL CLASS ======================
 /// =======================================================
 class VendorRFQData {
-  FormGroup form;
-  bool isEditing;
-
   VendorRFQData({
-    required this.form,
-    this.isEditing = true,
+    required this.id,
+    required this.categories,
+    required this.vendor,
+    required this.budget,
+    required this.description,
   });
+
+  final String id;
+  final String categories;
+  final String vendor;
+  final String budget;
+  final String description;
 }
