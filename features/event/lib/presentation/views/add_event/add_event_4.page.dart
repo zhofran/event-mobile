@@ -234,6 +234,6 @@ class _AddEvent4PageState extends State<AddEvent4Page> {
       );
     });
 
-    $.navigator.push(AddEvent5Route(budget: {}));
+    $.navigator.push(AddEvent5Route());
   }
 }

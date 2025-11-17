@@ -114,34 +114,37 @@ class _FabDropdownState<T> extends State<FabDropdown<T>> {
             if (widget.labelText != null) ...[
               Text(
                 widget.labelText!,
-                style: FabTypography.bodySmallMedium,
+                style: config.labelStyle,
               ),
               const SizedBox(height: 8),
             ],
 
             // Dropdown Container
-            Container(
-              height: config.height,
-              decoration: BoxDecoration(
-                color: config.backgroundColor,
-                border: Border.all(
-                  color: config.borderColor,
-                  width: config.borderWidth,
-                ),
-                borderRadius: config.borderRadius,
-              ),
-              child: PopupMenuButton<T>(
-                enabled: widget.enabled,
-                offset: const Offset(0, 60),
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(color: FabColors.greyscale200),
-                ),
-                constraints: BoxConstraints(
-                  maxHeight: 300,
-                  minWidth: MediaQuery.of(context).size.width - 48,
-                ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return Container(
+                  height: config.height,
+                  decoration: BoxDecoration(
+                    color: config.backgroundColor,
+                    border: Border.all(
+                      color: config.borderColor,
+                      width: config.borderWidth,
+                    ),
+                    borderRadius: config.borderRadius,
+                  ),
+                  child: PopupMenuButton<T>(
+                    enabled: widget.enabled,
+                    offset: Offset(0, config.height + 4),
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: FabColors.greyscale200),
+                    ),
+                    constraints: BoxConstraints(
+                      maxHeight: 300,
+                      minWidth: constraints.maxWidth,
+                      maxWidth: constraints.maxWidth,
+                    ),
                 itemBuilder: (context) {
                   return widget.options.map((option) {
                     final isSelected = _selectedOption?.value == option.value;
@@ -215,6 +218,8 @@ class _FabDropdownState<T> extends State<FabDropdown<T>> {
                   ),
                 ),
               ),
+              );
+            },
             ),
 
             // Error message

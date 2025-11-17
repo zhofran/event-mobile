@@ -7,6 +7,7 @@ sealed class EventPage1State with _$EventPage1State {
   const factory EventPage1State({
     required EventPage1StateStatus status,
     required Failure failure,
+    required List<SelectOption<String>> eventCategoryOptions,
     required bool? isFormValid,
     required String eventName,
     required String eventType,
@@ -19,6 +20,7 @@ sealed class EventPage1State with _$EventPage1State {
   factory EventPage1State.initial() => EventPage1State(
         status: EventPage1StateStatus.initial,
         failure: Failure.empty(),
+        eventCategoryOptions: const [],
         isFormValid: null,
         eventName: '',
         eventType: '',

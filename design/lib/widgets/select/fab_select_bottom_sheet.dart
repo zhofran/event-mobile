@@ -195,7 +195,7 @@ class _FabSelectBottomSheetState<T> extends State<FabSelectBottomSheet<T>> {
             if (widget.labelText != null) ...[
               Text(
                 widget.labelText!,
-                style: FabTypography.bodySmallMedium,
+                style: config.labelStyle,
               ),
               const SizedBox(height: 8),
             ],
@@ -454,20 +454,87 @@ class _MultiSelectBottomSheetContentState<T>
                       final isSelected =
                           _tempSelectedValues.contains(option.value);
 
+                      // Gunakan custom builder jika tersedia
+                      if (option.customBuilder != null) {
+                        return InkWell(
+                          onTap: option.enabled
+                              ? () => _toggleSelection(option.value)
+                              : null,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 16,
+                            ),
+                            child: Row(
+                              children: [
+                                Checkbox(
+                                  value: isSelected,
+                                  activeColor: FabColors.primary,
+                                  checkColor: Colors.white,
+                                  onChanged: option.enabled
+                                      ? (checked) {
+                                          if (checked != null) {
+                                            _toggleSelection(option.value);
+                                          }
+                                        }
+                                      : null,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: option.customBuilder!(context, isSelected),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      // Layout default dengan subtitle dan trailing support
                       return CheckboxListTile(
                         contentPadding: const EdgeInsets.symmetric(
                           vertical: 4,
+                          horizontal: 0,
                         ),
-                        secondary: option.icon,
+                        secondary: option.icon != null
+                            ? SizedBox(
+                                width: 48,
+                                height: 48,
+                                child: option.icon,
+                              )
+                            : null,
                         title: Text(
                           option.label,
-                          style: FabTypography.body.copyWith(
-                            color: FabColors.greyscale700,
+                          style: FabTypography.displaySemiBold16.copyWith(
+                            color: FabColors.greyscale900,
                             fontWeight: isSelected
                                 ? FontWeight.w600
                                 : FontWeight.normal,
                           ),
                         ),
+                        subtitle: option.subtitle != null
+                            ? Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        option.subtitle!,
+                                        style: FabTypography.bodySmallRegular
+                                            .copyWith(
+                                          color: FabColors.greyscale500,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (option.trailing != null) ...[
+                                      const SizedBox(width: 8),
+                                      option.trailing!,
+                                    ],
+                                  ],
+                                ),
+                              )
+                            : option.trailing,
                         value: isSelected,
                         activeColor: FabColors.primary,
                         checkColor: Colors.white,
@@ -627,29 +694,68 @@ class _BottomSheetContentState<T> extends State<_BottomSheetContent<T>> {
                       final option = _filteredOptions[index];
                       final isSelected = option == widget.selectedOption;
 
+                      // Gunakan custom builder jika tersedia
+                      if (option.customBuilder != null) {
+                        return InkWell(
+                          onTap: option.enabled
+                              ? () => Navigator.of(context).pop(option)
+                              : null,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: option.customBuilder!(context, isSelected),
+                          ),
+                        );
+                      }
+
+                      // Layout default dengan subtitle dan trailing support
                       return ListTile(
                         contentPadding: const EdgeInsets.symmetric(
                           vertical: 8,
+                          horizontal: 0,
                         ),
-                        leading: option.icon,
+                        leading: option.icon != null
+                            ? SizedBox(
+                                width: 48,
+                                height: 48,
+                                child: option.icon,
+                              )
+                            : null,
                         title: Text(
                           option.label,
-                          style: FabTypography.body.copyWith(
+                          style: FabTypography.displaySemiBold16.copyWith(
                             color: isSelected
                                 ? FabColors.primary
-                                : FabColors.greyscale700,
-                            fontWeight: isSelected
-                                ? FontWeight.w600
-                                : FontWeight.normal,
+                                : FabColors.greyscale900,
                           ),
                         ),
-                        trailing: isSelected
-                            ? const Icon(
+                        subtitle: option.subtitle != null
+                            ? Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  option.subtitle!,
+                                  style: FabTypography.bodySmallRegular.copyWith(
+                                    color: FabColors.greyscale500,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              )
+                            : null,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (option.trailing != null) ...[
+                              option.trailing!,
+                              const SizedBox(width: 8),
+                            ],
+                            if (isSelected)
+                              const Icon(
                                 CupertinoIcons.checkmark,
                                 color: FabColors.primary,
                                 size: 20,
-                              )
-                            : null,
+                              ),
+                          ],
+                        ),
                         enabled: option.enabled,
                         onTap: option.enabled
                             ? () => Navigator.of(context).pop(option)

@@ -401,6 +401,11 @@ class FeaturesRouter extends $FeaturesRouter {
               page: AddEvent7Route.page,
             ),
             AutoRoute(
+              title: (_, __) => 'Add Event 8',
+              path: 'add-event-8',
+              page: AddEvent8Route.page,
+            ),
+            AutoRoute(
               title: (_, __) => 'Event Approval',
               path: 'event-approval',
               page: EventApprovalRoute.page,

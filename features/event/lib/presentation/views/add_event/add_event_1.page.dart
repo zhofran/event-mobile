@@ -33,24 +33,16 @@ class _AddEvent1PageState extends State<AddEvent1Page> {
     const SelectOption(value: 'offline', label: 'Offline'),
   ];
 
-  final List<SelectOption<String>> _eventCategoryOptions = [
-    const SelectOption(value: 'education', label: 'Education'),
-    const SelectOption(value: 'finance', label: 'Finance'),
-    const SelectOption(value: 'healthcare', label: 'Healthcare'),
-    const SelectOption(value: 'hospitality', label: 'Hospitality'),
-    const SelectOption(value: 'manufacturing', label: 'Manufacturing'),
-    const SelectOption(value: 'retail', label: 'Retail'),
-    const SelectOption(value: 'technology', label: 'Technology'),
-    const SelectOption(value: 'transportation', label: 'Transportation'),
-    const SelectOption(value: 'utilities', label: 'Utilities'),
-  ];
-
   @override
   void initState() {
     super.initState();
 
+    // WidgetsBinding.instance.addPostFrameCallback((_) {});
+
     eventPage1Cubit = $.get<EventPage1Cubit>();
-    eventPage1Cubit.toggleValidityForm(value: null);
+    eventPage1Cubit
+      ..toggleValidityForm(value: null)
+      ..getEventCategories();
   }
 
   @override
@@ -75,29 +67,38 @@ class _AddEvent1PageState extends State<AddEvent1Page> {
                   return Column(
                     children: [
                       Expanded(
-                        child: ListView(
-                          padding: EdgeInsets.zero,
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              child: _buildWelcomeSection(),
-                            ),
-                            PaddingGap.md(),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              child:
-                                  BlocBuilder<EventPage1Cubit, EventPage1State>(
-                                bloc: eventPage1Cubit,
-                                buildWhen: (previous, current) =>
-                                    previous.isFormValid != current.isFormValid,
-                                builder: (context, state) {
-                                  return _buildAddEventForm(data);
-                                },
+                        child: RefreshIndicator(
+                          onRefresh: () => eventPage1Cubit.getEventCategories(
+                            refresh: true,
+                          ),
+                          child: ListView(
+                            padding: EdgeInsets.zero,
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 24),
+                                child: _buildWelcomeSection(),
                               ),
-                            ),
-                          ],
+                              PaddingGap.md(),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 24),
+                                child: BlocBuilder<EventPage1Cubit,
+                                    EventPage1State>(
+                                  bloc: eventPage1Cubit,
+                                  builder: (context, state) {
+                                    if (state.status ==
+                                        EventPage1StateStatus.succeeded) {
+                                      return _buildAddEventForm(data);
+                                    }
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       Padding(
@@ -160,7 +161,7 @@ class _AddEvent1PageState extends State<AddEvent1Page> {
     eventPage1Cubit.createEvent(
       eventName: 'Sample Event',
       eventType: 'conference',
-      eventCategory: ['technology', 'education'],
+      eventCategory: ['Technology', 'Leadership'],
       eventDescription: 'Sample Event Description',
       eventFormat: 'offline',
       eventBanner:
@@ -215,7 +216,7 @@ class _AddEvent1PageState extends State<AddEvent1Page> {
         PaddingGap.md(),
         FabSelectBottomSheet(
           formControl: data.eventCategoryControl,
-          options: _eventCategoryOptions,
+          options: eventPage1Cubit.state.eventCategoryOptions,
           labelText: 'Event Category',
           hintText: 'Select Event Category',
           isMultiSelect: true,
