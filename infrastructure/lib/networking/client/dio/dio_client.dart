@@ -97,6 +97,9 @@ class DioClient implements INetworkClient {
     );
 
     try {
+      // Detect if requestBody is FormData to handle multipart/form-data
+      final isFormData = requestBody is FormData;
+      
       // Handling different request types.
       switch (requestType) {
         case RequestType.get:
@@ -110,13 +113,19 @@ class DioClient implements INetworkClient {
             path,
             queryParameters: queryParameters,
             data: requestBody,
-            options: Options(responseType: ResponseType.json),
+            options: Options(
+              responseType: ResponseType.json,
+              contentType: isFormData ? 'multipart/form-data' : null,
+            ),
           );
         case RequestType.put:
           response = await _dio.put(
             path,
             data: requestBody,
-            options: Options(responseType: ResponseType.json),
+            options: Options(
+              responseType: ResponseType.json,
+              contentType: isFormData ? 'multipart/form-data' : null,
+            ),
           );
         case RequestType.delete:
           response = await _dio.delete(
@@ -130,7 +139,10 @@ class DioClient implements INetworkClient {
             path,
             queryParameters: queryParameters,
             data: requestBody,
-            options: Options(responseType: ResponseType.json),
+            options: Options(
+              responseType: ResponseType.json,
+              contentType: isFormData ? 'multipart/form-data' : null,
+            ),
           );
       }
 
