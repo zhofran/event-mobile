@@ -39,19 +39,19 @@ class DashboardRouter extends StatelessWidget {
                 onTap: tabsRouter.setActiveIndex,
                 items: [
                   CupertinoNavigationBarItem(
-                    label: $.tr.discover.title,
-                    icon: Icon(UIcons.regularRounded.bags_shopping),
-                    selectedIcon: Icon(UIcons.solidRounded.bags_shopping),
+                    label: 'Home',
+                    icon: Icon(UIcons.regularRounded.home),
+                    selectedIcon: Icon(UIcons.solidRounded.home),
                   ),
                   CupertinoNavigationBarItem(
-                    label: 'Applied',
-                    icon: Icon(UIcons.regularRounded.briefcase),
-                    selectedIcon: Icon(UIcons.solidRounded.briefcase),
+                    label: 'Browse',
+                    icon: Icon(UIcons.regularRounded.document),
+                    selectedIcon: Icon(UIcons.solidRounded.document),
                   ),
                   CupertinoNavigationBarItem(
-                    label: 'Jobs',
-                    icon: Icon(UIcons.regularRounded.search),
-                    selectedIcon: Icon(UIcons.solidRounded.search),
+                    label: 'Schedule',
+                    icon: Icon(UIcons.regularRounded.calendar),
+                    selectedIcon: Icon(UIcons.solidRounded.calendar),
                   ),
                   CupertinoNavigationBarItem(
                     label: $.tr.settings.title,

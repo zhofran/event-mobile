@@ -40,3 +40,4 @@ export 'widgets/progress_indicator/fab_progress_indicator.dart';
 export 'widgets/photo/fab_photo.dart';
 export 'widgets/menu/fab_quick_menu.dart';
 export 'widgets/search/fab_search.dart';
+export 'widgets/flags/fab_flags.dart';

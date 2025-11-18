@@ -14,6 +14,8 @@ import 'package:deps/packages/injectable.dart';
 
 import '../domain/failures/auth.failures.dart';
 import '../domain/models/company_type.model.dart';
+import '../domain/models/country.model.dart';
+import '../domain/models/location.model.dart';
 import '../domain/models/topic.model.dart';
 
 @lazySingleton
@@ -149,6 +151,69 @@ class AuthService {
     );
   }
 
+  AsyncEither<List<CountryModel>> countries() async {
+    final response = await _client.invoke(
+      '/locations/countries', 
+      RequestType.get
+    );
+
+    return response.fold(
+      (failure) {
+        if (failure is UnauthorizedNetworkFailure) {
+          return Left(WrongCredentialsAuthFailure());
+        }
+
+        log('Countries fetch failed: ${failure.message}', name: 'Auth Services Countries');
+        
+        return Left(failure);
+      }, 
+      (result) {
+        // Response is direct array: [{country: "...", code: "..."}, ...]
+        final List<dynamic> countriesData = result is List ? result : (result['data'] ?? []);
+        
+        final List<CountryModel> countries = countriesData.map((item) {
+          if (item is Map<String, dynamic>) {
+            return CountryModel.fromJson(item);
+          }
+          return CountryModel(country: item.toString(), code: '');
+        }).toList();
+        
+        log('Countries loaded: ${countries.length} items', name: 'Auth Services Countries');
+
+        return Right(countries);
+      }
+    );
+  }
+
+  AsyncEither<List<LocationModel>> cities(String countryCode) async {
+    final response = await _client.invoke(
+      '/locations/country/$countryCode', 
+      RequestType.get,
+    );
+
+    return response.fold(
+    (failure) {
+        if (failure is UnauthorizedNetworkFailure) {
+          return Left(WrongCredentialsAuthFailure());
+        }
+
+        log('Cities fetch failed: ${failure.message}', name: 'Auth Services Cities');
+        
+        return Left(failure);
+      }, 
+      (result) {
+        // Extract countries list from response
+        final cities = (result['data']['locations'] as List)
+            .map((item) => LocationModel.fromJson(item))
+            .toList();
+
+        log('Cities loaded: ${cities} items', name: 'Auth Services Countries');
+
+        return Right(cities);
+      }
+    );
+  }
+
   AsyncEither selectRole(int roleId) async {
     final response = await _client.invoke(
       '/auth/select-role', 
@@ -272,6 +337,63 @@ class AuthService {
       },
       (tokens) async {
         log('Result from API: $tokens', name: 'Log from auth service');
+        return _client.invoke<dynamic, UserModel>(
+          '/auth/profile',
+          RequestType.get,
+          fromJson: (json) => UserModel.fromJson(json['data'] ?? json),
+        );
+      },
+    );
+  }
+
+  // Tambahkan method ini di AuthService (auth.service.dart)
+
+  AsyncEither registerEventOrganizer({
+    required String companyName,
+    required int companyTypeId,
+    required String companyDescription,
+    required List<int> eventTypeIds,
+    required String averageEventSize,
+    required String websiteUrl,
+    required int cityId,
+    required List<String> venueTypes,
+    required String repName,
+    required String repPosition,
+    required String repEmail,
+    String? socialMediaUrl,
+  }) async {
+    final response = await _client.invoke<void, Map<String, dynamic>>(
+      '/profile/organizer/complete',
+      RequestType.post,
+      requestBody: {
+        'company_name': companyName,
+        'company_type_id': companyTypeId,
+        'company_description': companyDescription,
+        'event_type_ids': eventTypeIds,
+        'average_event_size': averageEventSize,
+        'website_url': websiteUrl,
+        if (socialMediaUrl != null && socialMediaUrl.isNotEmpty) 
+          'social_media_url': socialMediaUrl,
+        'city_id': cityId,
+        'venue_types': venueTypes,
+        'rep_name': repName,
+        'rep_position': repPosition,
+        'rep_email': repEmail,
+      },
+    );
+
+    return response.fold(
+      (failure) {
+        log('Register EO failed: ${failure.message}', name: 'Auth Service');
+        if (failure is UnauthorizedNetworkFailure) {
+          return Left(WrongCredentialsAuthFailure());
+        }
+        return Left(failure);
+      },
+      (result) async {
+        log('Register EO success: $result', name: 'Auth Service');
+        
+        // Fetch updated profile
         return _client.invoke<dynamic, UserModel>(
           '/auth/profile',
           RequestType.get,

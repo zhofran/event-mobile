@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// ignore_for_file: prefer_final_fields
+
 import 'dart:developer';
 
 import 'package:deps/features/features.dart';
@@ -12,6 +14,8 @@ import 'package:deps/packages/injectable.dart';
 
 import '../../../data/auth.service.dart';
 import '../../domain/models/company_type.model.dart';
+import '../../domain/models/country.model.dart';
+import '../../domain/models/location.model.dart';
 import '../../domain/models/topic.model.dart';
 
 part 'register.cubit.freezed.dart';
@@ -27,6 +31,13 @@ class RegisterCubit extends Cubit<RegisterState> {
   List<TopicModel> get topics => _topics;
 
   List<CompanyTypeModel> _companyTypes = [];
+  List<CompanyTypeModel> get companyTypes => _companyTypes;
+  
+  List<CountryModel> _countries = [];
+  List<CountryModel> get countries => _countries;
+  
+  List<LocationModel> _cities = [];
+  List<LocationModel> get cities => _cities;
 
   Future register({
     required String email,
@@ -130,12 +141,57 @@ class RegisterCubit extends Cubit<RegisterState> {
 
       return response.fold(
         (failure) => emit(RegisterStateFailed(failure)), 
-        (topics) {
+        (type) {
+          _companyTypes = type;
+          emit(RegisterStateBerhasil()); 
           // _topics = topics;
           // emit(RegisterStateTopic(topics));
 
-          // log('Log result: $topics', name: 'Log Register Cubit');
+          log('Log result: $_companyTypes', name: 'Log getAllCompanyType Register Cubit');
         },
+      );
+    } catch (e) {
+      
+    }
+  }
+
+  Future<void> getAllCountries() async {
+    try {
+      emit(const RegisterStateLoading());
+
+      final response = await _service.countries();
+
+      response.fold(
+        (failure) {
+          log('Failed to load countries: ${failure.message}', name: 'Register Cubit');
+          emit(RegisterStateFailed(failure));
+        },
+        (countriesList) {
+          _countries = countriesList;
+          log('Countries loaded successfully: ${_countries.length} countries', name: 'Register Cubit');
+          emit(const RegisterStateBerhasil());
+        },
+      );
+    } catch (e) {
+      log('Exception in getAllCountries: $e', name: 'Register Cubit');
+      // emit(RegisterStateFailed(
+      //   UnknownNetworkFailure(message: 'An unexpected error occurred')
+      // ));
+    }
+  }
+
+  Future getAllCities({String? countrCode}) async {
+    try {
+      emit(RegisterStateInitial());
+
+      final response = await _service.cities(countrCode ?? '');
+
+      return response.fold(
+        (failure) => emit(RegisterStateFailed(failure)),
+        (citiesList){
+          _cities = citiesList;
+          emit(const RegisterStateBerhasil());
+        }
       );
     } catch (e) {
       
@@ -170,4 +226,50 @@ class RegisterCubit extends Cubit<RegisterState> {
       }
     );
   }
+
+  Future<bool> registerEventOrganizer({
+    required String companyName,
+    required int companyTypeId,
+    required String companyDescription,
+    required List<int> eventTypeIds,
+    required String averageEventSize,
+    required String websiteUrl,
+    required int cityId,
+    required List<String> venueTypes,
+    required String repName,
+    required String repPosition,
+    required String repEmail,
+    String? socialMediaUrl,
+  }) async {
+    emit(const RegisterStateLoading());
+
+    final response = await _service.registerEventOrganizer(
+      companyName: companyName,
+      companyTypeId: companyTypeId,
+      companyDescription: companyDescription,
+      eventTypeIds: eventTypeIds,
+      averageEventSize: averageEventSize,
+      websiteUrl: websiteUrl,
+      socialMediaUrl: socialMediaUrl,
+      cityId: cityId,
+      venueTypes: venueTypes,
+      repName: repName,
+      repPosition: repPosition,
+      repEmail: repEmail,
+    );
+
+    return response.fold(
+      (failure) {
+        log('Failed to register EO: ${failure.message}', name: 'Register Cubit');
+        emit(RegisterStateFailed(failure));
+        return false;
+      },
+      (user) {
+        log('EO registered successfully: ${user.id}', name: 'Register Cubit');
+        emit(RegisterStateSucceeded(user));
+        return true;
+      },
+    );
+  }
+  
 }

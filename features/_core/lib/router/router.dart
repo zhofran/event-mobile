@@ -75,7 +75,7 @@ class FeaturesRouter extends $FeaturesRouter {
           children: [
             AutoRoute(
               page: DashboardRouter.page,
-              guards: [AuthGuard()],
+              // guards: [AuthGuard()],
               initial: true,
               children: [
                 AutoRoute(
@@ -414,6 +414,11 @@ class FeaturesRouter extends $FeaturesRouter {
               title: (_, __) => 'Finance Summary',
               path: 'finance-summary',
               page: FinancialManagementRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Discover Event Details',
+              path: 'event-detail',
+              page: DiscoverEventDetailRoute.page,
             ),
             CustomRoute(
               page: MaterialDialogWrapperRoute.page,

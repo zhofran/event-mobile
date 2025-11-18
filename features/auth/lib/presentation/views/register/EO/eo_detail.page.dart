@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:deps/design/design.dart';
 import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
@@ -7,7 +9,9 @@ import 'package:flutter/material.dart';
 
 @RoutePage()
 class EODetailPage extends StatefulWidget {
-  const EODetailPage({super.key});
+  const EODetailPage({required this.dataEO, super.key});
+
+  final Map<String, dynamic> dataEO;
 
   @override
   State<EODetailPage> createState() => _EODetailPageState();
@@ -20,15 +24,15 @@ class _EODetailPageState extends State<EODetailPage> {
   String? _selectedEventSize;
 
   final List<SelectOption<String>> _eventTypeOptions = [
-    const SelectOption(value: 'education', label: 'Education'),
-    const SelectOption(value: 'finance', label: 'Finance'),
-    const SelectOption(value: 'healthcare', label: 'Healthcare'),
-    const SelectOption(value: 'hospitality', label: 'Hospitality'),
-    const SelectOption(value: 'manufacturing', label: 'Manufacturing'),
-    const SelectOption(value: 'retail', label: 'Retail'),
-    const SelectOption(value: 'technology', label: 'Technology'),
-    const SelectOption(value: 'transportation', label: 'Transportation'),
-    const SelectOption(value: 'utilities', label: 'Utilities'),
+    const SelectOption(value: '1', label: 'Education'),
+    const SelectOption(value: '2', label: 'Finance'),
+    const SelectOption(value: '3', label: 'Healthcare'),
+    const SelectOption(value: '4', label: 'Hospitality'),
+    const SelectOption(value: '5', label: 'Manufacturing'),
+    const SelectOption(value: '6', label: 'Retail'),
+    const SelectOption(value: '7', label: 'Technology'),
+    const SelectOption(value: '8', label: 'Transportation'),
+    const SelectOption(value: '9', label: 'Utilities'),
   ];
 
   final List<String> _eventSize = [
@@ -36,16 +40,21 @@ class _EODetailPageState extends State<EODetailPage> {
     '100-500',
     '500-1000',
     '1000+',
-    // Add more cities as needed
   ];
 
   @override
   void initState() {
     super.initState();
     form = FormGroup({
-      'EO_url': FormControl<String>(validators: [Validators.required]),
-      'EO_socialMedia': FormControl<String>(validators: [Validators.required]),
+      'EO_url': FormControl<String>(),
+      'EO_socialMedia': FormControl<String>(),
     });
+  }
+
+  @override
+  void dispose() {
+    form.dispose();
+    super.dispose();
   }
 
   @override
@@ -56,46 +65,25 @@ class _EODetailPageState extends State<EODetailPage> {
         child: Column(
           children: [
             _buildAppBar(),
-
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
                   _buildWelcomeSection(),
-
                   PaddingGap.sm(),
-
                   Padding(
-                    padding: EdgeInsetsGeometry.symmetric(horizontal: 24),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: ReactiveForm(
-                      formGroup: form, 
-                      child: _buildRegisterForm()
+                      formGroup: form,
+                      child: _buildRegisterForm(),
                     ),
-                  )
-                ],
-              )
-            ),
-
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: FabButton.primary(
-                onPressed: () {
-                  $.navigator.push(
-                    EOLocationRoute(),
-                  );
-                },
-                size: FabButtonSize.large,
-                width: double.infinity,
-                child: Text(
-                  'Continue',
-                  style: FabTypography.displaySemiBold16.copyWith(
-                    color: FabColors.greyscale0,
                   ),
-                ),
+                ],
               ),
             ),
+            _buildContinueButton(),
           ],
-        )
+        ),
       ),
     );
   }
@@ -104,7 +92,7 @@ class _EODetailPageState extends State<EODetailPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
       child: Row(
-        children: [ 
+        children: [
           FabButton.secondary(
             onPressed: () {
               $.navigator.pop();
@@ -125,7 +113,7 @@ class _EODetailPageState extends State<EODetailPage> {
             ),
           ),
           FabButton.secondary(
-            onPressed: () => {},
+            onPressed: () {},
             isIconOnly: true,
             iconWidget: Assets.images.icons.questionLine.svg(
               width: 20,
@@ -149,9 +137,7 @@ class _EODetailPageState extends State<EODetailPage> {
             'Business Details',
             style: FabTypography.displaySemiBold22,
           ),
-      
           PaddingGap.sm(),
-      
           Text(
             'A verified profile builds trust with speakers, sponsors, and attendees',
             style: FabTypography.displayRegular14.copyWith(
@@ -172,13 +158,13 @@ class _EODetailPageState extends State<EODetailPage> {
           'Average Event Size',
           style: FabTypography.bodySmallMedium,
         ),
-        const SizedBox(height: 8,),
+        const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           hint: Text(
             'Select Event Size',
             style: FabTypography.bodySmallMedium.copyWith(
-              color: FabColors.greyscale400
-            )
+              color: FabColors.greyscale400,
+            ),
           ),
           decoration: const InputDecoration(
             border: OutlineInputBorder(
@@ -193,7 +179,7 @@ class _EODetailPageState extends State<EODetailPage> {
               borderSide: BorderSide(color: FabColors.primary300),
             ),
           ),
-          initialValue: _selectedEventSize,
+          value: _selectedEventSize,
           items: _eventSize.map((size) {
             return DropdownMenuItem<String>(
               value: size,
@@ -218,36 +204,25 @@ class _EODetailPageState extends State<EODetailPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        
-        // Event Type
         _buildEventType(),
-
         PaddingGap.md(),
-        
-        // Company Type
         _buildEventSize(),
-
         PaddingGap.md(),
-
-        // Company Name Field
         FabTextfield(
           formControl: form.control('EO_url') as FormControl<String>,
-          keyboardType: TextInputType.text,
+          keyboardType: TextInputType.url,
           labelText: 'Website URL',
           hintText: 'e.g., https://apple.com/',
           textInputAction: TextInputAction.next,
           size: FabTextfieldSize.large,
         ),
-        
         PaddingGap.md(),
-        
-        // Company Bio Field
         FabTextfield(
           formControl: form.control('EO_socialMedia') as FormControl<String>,
-          keyboardType: TextInputType.text,
+          keyboardType: TextInputType.url,
           labelText: 'Social Media URL (optional)',
-          hintText: 'e.g., https://apple.com/',
-          textInputAction: TextInputAction.next,
+          hintText: 'e.g., https://instagram.com/username',
+          textInputAction: TextInputAction.done,
           size: FabTextfieldSize.large,
         ),
       ],
@@ -258,24 +233,24 @@ class _EODetailPageState extends State<EODetailPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Event Type',
           style: FabTypography.bodySmallMedium,
         ),
-        const SizedBox(height: 8,),
+        const SizedBox(height: 8),
         GestureDetector(
           onTap: () {
             FabMultiSelectBottomSheet.show<String>(
               context: context,
               title: 'Event Type',
               primaryColor: FabColors.primary,
-              options: _eventTypeOptions, 
-              initialSelected: _selectedEventType, 
+              options: _eventTypeOptions,
+              initialSelected: _selectedEventType,
               onConfirm: (selected) {
                 setState(() {
                   _selectedEventType = selected;
                 });
-              }
+              },
             );
           },
           child: InputDecorator(
@@ -305,28 +280,94 @@ class _EODetailPageState extends State<EODetailPage> {
 
   Widget _buildSelectedEventType() {
     if (_selectedEventType.isEmpty) {
-      return const Text('Select Event Type', style: TextStyle(color: Colors.black54));
+      return Text(
+        'Select Event Type',
+        style: FabTypography.bodySmallMedium.copyWith(
+          color: FabColors.greyscale400,
+        ),
+      );
     }
+
+    final selectedLabels = _selectedEventType.map((value) {
+      return _eventTypeOptions
+          .firstWhere((option) => option.value == value)
+          .label;
+    }).toList();
 
     return Wrap(
       spacing: 6,
       runSpacing: 6,
-      children: _selectedEventType.map((c) {
+      children: selectedLabels.map((label) {
         return Chip(
-          label: Text(c),
+          label: Text(label),
           deleteIcon: const Icon(Icons.close, size: 18),
           onDeleted: () {
-            setState(() => _selectedEventType.remove(c));
+            setState(() {
+              final valueToRemove = _eventTypeOptions
+                  .firstWhere((option) => option.label == label)
+                  .value;
+              _selectedEventType.remove(valueToRemove);
+            });
           },
           backgroundColor: FabColors.primary50,
-          side: BorderSide(
-            color: FabColors.primary
-          ),
+          side: const BorderSide(color: FabColors.primary),
           deleteIconColor: Colors.grey,
         );
       }).toList(),
     );
   }
 
+  Widget _buildContinueButton() {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: FabButton.primary(
+        onPressed: _handleContinue,
+        size: FabButtonSize.large,
+        width: double.infinity,
+        child: Text(
+          'Continue',
+          style: FabTypography.displaySemiBold16.copyWith(
+            color: FabColors.greyscale0,
+          ),
+        ),
+      ),
+    );
+  }
 
+  void _handleContinue() {
+    if (_selectedEventType.isEmpty) {
+      _showSnackBar('Please select at least one event type');
+      return;
+    }
+
+    if (_selectedEventSize == null) {
+      _showSnackBar('Please select event size');
+      return;
+    }
+
+    if (!form.valid) {
+      form.markAllAsTouched();
+      _showSnackBar('Please fill in all required fields');
+      return;
+    }
+
+    widget.dataEO['event_type'] = _selectedEventType.toList();
+    widget.dataEO['event_size'] = _selectedEventSize;
+    widget.dataEO['website_url'] = form.control('EO_url').value;
+    widget.dataEO['social_media'] = form.control('EO_socialMedia').value;
+
+    log('Result Data EO: ${widget.dataEO}', name: 'Log from EO Detail Page');
+
+    // Uncomment when ready to navigate
+    $.navigator.push(EOLocationRoute(dataEO: widget.dataEO));
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 }
