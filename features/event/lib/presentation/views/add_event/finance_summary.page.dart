@@ -8,7 +8,8 @@ class FinancialManagementPage extends StatefulWidget {
   const FinancialManagementPage({super.key});
 
   @override
-  State<FinancialManagementPage> createState() => _FinancialManagementPageState();
+  State<FinancialManagementPage> createState() =>
+      _FinancialManagementPageState();
 }
 
 class _FinancialManagementPageState extends State<FinancialManagementPage> {
@@ -39,17 +40,14 @@ class _FinancialManagementPageState extends State<FinancialManagementPage> {
   String get incomeStatus => isAboveTarget ? 'Above Target' : 'Below Target';
   String get summaryStatus => isSurplus ? 'Surplus' : 'Deficit';
 
-  Color get expensesStatusColor => isOnBudget 
-      ? const Color(0xFFD1F4E0) 
-      : const Color(0xFFFFD1D1);
-  
-  Color get incomeStatusColor => isAboveTarget 
-      ? const Color(0xFFD1F4E0) 
-      : const Color(0xFFFFD1D1);
-  
-  Color get summaryStatusColor => isSurplus 
-      ? const Color(0xFFD1F4E0) 
-      : const Color(0xFFFFD1D1);
+  Color get expensesStatusColor =>
+      isOnBudget ? const Color(0xFFD1F4E0) : const Color(0xFFFFD1D1);
+
+  Color get incomeStatusColor =>
+      isAboveTarget ? const Color(0xFFD1F4E0) : const Color(0xFFFFD1D1);
+
+  Color get summaryStatusColor =>
+      isSurplus ? const Color(0xFFD1F4E0) : const Color(0xFFFFD1D1);
 
   // Format currency
   String formatCurrency(double amount) {
@@ -149,8 +147,7 @@ class _FinancialManagementPageState extends State<FinancialManagementPage> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildAppBar(),
-
+            const FabPageHeader(title: 'Create Event'),
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
@@ -198,7 +195,6 @@ class _FinancialManagementPageState extends State<FinancialManagementPage> {
                 ],
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: FabButton.primary(
@@ -219,36 +215,6 @@ class _FinancialManagementPageState extends State<FinancialManagementPage> {
     );
   }
 
-  Widget _buildAppBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-      child: Row(
-        children: [
-          FabButton.secondary(
-            onPressed: () {
-              $.navigator.pop();
-            },
-            isIconOnly: true,
-            iconWidget: Assets.images.icons.arrowLeftSLine.svg(
-              width: 20,
-              height: 20,
-              package: 'design',
-            ),
-            child: const SizedBox.shrink(),
-          ),
-          const Expanded(
-            child: FabTextStyled(
-              'Create Event',
-              style: FabTypography.displaySemiBold18,
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(width: 40), // Balance the layout
-        ],
-      ),
-    );
-  }
-
   Widget _buildHeaderSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,7 +225,7 @@ class _FinancialManagementPageState extends State<FinancialManagementPage> {
         ),
         PaddingGap.xs(),
         FabTextStyled(
-          'Track your event\'s financial performance, view expenses, income, and overall profit in one place.',
+          "Track your event's financial performance, view expenses, income, and overall profit in one place.",
           style: FabTypography.displayRegular14.copyWith(
             color: FabColors.greyscale400,
           ),
@@ -468,7 +434,8 @@ class _FinancialManagementPageState extends State<FinancialManagementPage> {
     );
   }
 
-  Widget _buildSummaryItem(String label, double amount, {bool isNegative = false}) {
+  Widget _buildSummaryItem(String label, double amount,
+      {bool isNegative = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -491,7 +458,8 @@ class _FinancialManagementPageState extends State<FinancialManagementPage> {
     );
   }
 
-  Widget _buildTotalRow(String label, double amount, {bool isNegative = false}) {
+  Widget _buildTotalRow(String label, double amount,
+      {bool isNegative = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: const BoxDecoration(

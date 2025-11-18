@@ -3,92 +3,63 @@ import 'dart:developer';
 import 'package:deps/design/design.dart';
 import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
+import 'package:deps/packages/flutter_bloc.dart';
 import 'package:deps/packages/reactive_forms.dart';
-import 'package:deps/packages/uicons.dart';
 import 'package:flutter/material.dart';
+
+import '../../../domain/forms/add_event_3.form.dart';
+import '../../cubits/budget_planner.cubit.dart';
+import '../../cubits/event_page2.cubit.dart';
+import '../../cubits/event_page3.cubit.dart';
 
 @RoutePage()
 class AddEvent3Page extends StatefulWidget {
-  AddEvent3Page({required this.budget, required this.capacity, super.key});
-
-  final Map<String, dynamic> budget;
-  final int capacity;
+  const AddEvent3Page({super.key});
 
   @override
   State<AddEvent3Page> createState() => _AddEvent3PageState();
 }
 
 class _AddEvent3PageState extends State<AddEvent3Page> {
+  late BudgetPlannerCubit budgetPlannerCubit;
+  late EventPage2Cubit eventPage2Cubit;
+  late EventPage3Cubit eventPage3Cubit;
+
   int currentStep = 4;
   int totalSteps = 8;
 
-  final List<SeatPlanData> seatPlans = [];
+  // Local state for editing seat plans - store model and ID for editing forms
+  final Map<String, AddEvent3Form> editingModels = {};
+  final Set<String> editingIds = {};
 
-  final List<String> _ticketType = [
-    'Regular',
-    'Premium',
-    'VIP',
-    'VVIP',
+  final List<SelectOption<String>> _ticketTypeOptions = [
+    const SelectOption(value: 'Regular', label: 'Regular'),
+    const SelectOption(value: 'Premium', label: 'Premium'),
+    const SelectOption(value: 'VIP', label: 'VIP'),
+    const SelectOption(value: 'VVIP', label: 'VVIP'),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    budgetPlannerCubit = $.get<BudgetPlannerCubit>();
+    eventPage2Cubit = $.get<EventPage2Cubit>();
+    eventPage3Cubit = $.get<EventPage3Cubit>();
+
+    // Initialize cubit with capacity and ticket sales target
+    eventPage3Cubit.initialize(
+      capacity: eventPage2Cubit.state.capacity,
+      ticketSalesTarget: budgetPlannerCubit.state.ticketSales,
+    );
+  }
 
   /// =======================================================
   /// ============== Helper Methods =========================
   /// =======================================================
 
-  // Menghitung total seats yang sudah terpakai
-  int get totalUsedSeats {
-    int total = 0;
-    for (var plan in seatPlans) {
-      if (!plan.isEditing) {
-        final quota = ThousandsSeparatorInputFormatter.parseFormattedNumber(
-                plan.form.control('quota').value) ??
-            0;
-        total += quota;
-      }
-    }
-    return total;
-  }
-
-  // Menghitung remaining seats
-  int get remainingSeats => widget.capacity - totalUsedSeats;
-
-  // Menghitung total ticket income
-  double get totalTicketIncome {
-    double total = 0;
-    for (var plan in seatPlans) {
-      if (!plan.isEditing) {
-        final price = ThousandsSeparatorInputFormatter.parseFormattedNumber(
-                plan.form.control('price').value) ??
-            0;
-        final quota = ThousandsSeparatorInputFormatter.parseFormattedNumber(
-                plan.form.control('quota').value) ??
-            0;
-        total += (price * quota);
-      }
-    }
-    return total;
-  }
-
-  // Get badge color based on ticket type
-  Color getBadgeColor(String type) {
-    switch (type) {
-      case 'Regular':
-        return const Color(0xFFD1F4E0); // Light green
-      case 'Premium':
-        return const Color(0xFFD1F0FF); // Light blue
-      case 'VIP':
-        return const Color(0xFFFFF4D1); // Light yellow
-      case 'VVIP':
-        return const Color(0xFFFFE0F0); // Light pink
-      default:
-        return FabColors.primary50;
-    }
-  }
-
   // Calculate percentage of seats
   double getSeatsPercentage(int quota) {
-    if (widget.capacity == 0) return 0;
-    return (quota / widget.capacity) * 100;
+    return eventPage3Cubit.getSeatsPercentage(quota);
   }
 
   /// =======================================================
@@ -96,54 +67,82 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
   /// =======================================================
 
   void addSeatPlan() {
-    final newForm = FormGroup({
-      'ticketName': FormControl<String>(),
-      'ticketType': FormControl<String>(),
-      'price': FormControl<String>(validators: [Validators.required]),
-      'quota': FormControl<String>(validators: [Validators.required]),
-      'description': FormControl<String>(),
-    });
+    final tempId = DateTime.now().millisecondsSinceEpoch.toString();
 
     setState(() {
-      seatPlans.add(SeatPlanData(form: newForm, isEditing: true));
+      editingModels[tempId] = AddEvent3Form.empty();
+      editingIds.add(tempId);
     });
   }
 
-  void removeSeatPlan(int index) {
+  void removeSeatPlan(String id) {
+    eventPage3Cubit.removeSeatPlan(id);
     setState(() {
-      seatPlans.removeAt(index);
+      editingModels.remove(id);
+      editingIds.remove(id);
     });
   }
 
-  void saveSeatPlan(int index) {
-    final plan = seatPlans[index];
-    
-    // Validasi form
-    if (!plan.form.valid) {
-      plan.form.markAllAsTouched();
-      return;
+  void saveSeatPlan(String id, AddEvent3Form model) {
+    final price =
+        ThousandsSeparatorInputFormatter.parseFormattedNumber(model.price)
+                ?.toDouble() ??
+            0.0;
+    final quota =
+        ThousandsSeparatorInputFormatter.parseFormattedNumber(model.quota) ?? 0;
+
+    // Check if this is a new seat plan or an update
+    final existingPlan =
+        eventPage3Cubit.state.seatPlans.where((p) => p.id == id).firstOrNull;
+
+    if (existingPlan != null) {
+      // Update existing
+      eventPage3Cubit.updateSeatPlan(
+        id: id,
+        ticketName: model.ticketName,
+        ticketType: model.ticketType,
+        price: price,
+        quota: quota,
+        description: model.description,
+      );
+    } else {
+      // Add new
+      eventPage3Cubit.addSeatPlan(
+        ticketName: model.ticketName,
+        ticketType: model.ticketType,
+        price: price,
+        quota: quota,
+        description: model.description,
+      );
     }
 
-    // Validasi quota tidak melebihi remaining seats
-    final quota = ThousandsSeparatorInputFormatter.parseFormattedNumber(
-            plan.form.control('quota').value) ??
-        0;
-    
-    if (quota > remainingSeats) {
+    // Check if there was an error
+    if (eventPage3Cubit.state.status == EventPage3StateStatus.failed) {
       _showMaximumSeatDialog();
       return;
     }
 
     setState(() {
-      plan.isEditing = false;
+      editingModels.remove(id);
+      editingIds.remove(id);
     });
 
-    log('Seat plan saved: ${plan.form.value}', name: 'add_event_3');
+    log('Seat plan saved: ${model.ticketName}', name: 'add_event_3');
   }
 
-  void editSeatPlan(int index) {
+  void editSeatPlan(String id) {
+    final plan = eventPage3Cubit.state.seatPlans.firstWhere((p) => p.id == id);
+
     setState(() {
-      seatPlans[index].isEditing = true;
+      editingModels[id] = AddEvent3Form(
+        ticketName: plan.ticketName,
+        ticketType: plan.ticketType,
+        price:
+            ThousandsSeparatorInputFormatter.formatNumber(plan.price.toInt()),
+        quota: ThousandsSeparatorInputFormatter.formatNumber(plan.quota),
+        description: plan.description,
+      );
+      editingIds.add(id);
     });
   }
 
@@ -153,116 +152,84 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FabColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildAppBar(),
-
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: AnimatedStepProgressIndicator(
-                      currentStep: currentStep,
-                      totalSteps: totalSteps,
-                    ),
-                  ),
-
-                  PaddingGap.xl(),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _buildWelcomeSection(),
-                  ),
-
-                  PaddingGap.md(),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _buildInfoSection(),
-                  ),
-
-                  PaddingGap.md(),
-
-                  // Render semua seat plan card
-                  for (int i = 0; i < seatPlans.length; i++)
-                    seatPlans[i].isEditing
-                        ? _buildSeatPlanForm(i)
-                        : _buildSeatPlanSummary(i),
-
-                  PaddingGap.sm(),
-
-                  _buildAddSeatPlanButton(),
-
-                  PaddingGap.md(),
-
-                  // _buildAutoAllocateButton(),
-
-                  // PaddingGap.xl(),
-                ],
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: FabButton.primary(
-                onPressed: _handleContinue,
-                size: FabButtonSize.large,
-                width: double.infinity,
-                child: Text(
-                  'Continue',
-                  style: FabTypography.displaySemiBold16.copyWith(
-                    color: FabColors.greyscale0,
+    return BlocBuilder<EventPage3Cubit, EventPage3State>(
+      bloc: eventPage3Cubit,
+      buildWhen: (previous, current) => previous != current,
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: FabColors.background,
+          body: SafeArea(
+            child: Column(
+              children: [
+                const FabPageHeader(title: 'Create Event'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: AnimatedStepProgressIndicator(
+                    currentStep: currentStep,
+                    totalSteps: totalSteps,
                   ),
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+                PaddingGap.xl(),
+                Expanded(
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: _buildWelcomeSection(),
+                      ),
 
-  Widget _buildAppBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-      child: Row(
-        children: [
-          FabButton.secondary(
-            onPressed: () {
-              $.navigator.pop();
-            },
-            isIconOnly: true,
-            iconWidget: Assets.images.icons.arrowLeftSLine.svg(
-              width: 20,
-              height: 20,
-              package: 'design',
+                      PaddingGap.md(),
+
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: _buildInfoSection(state),
+                      ),
+
+                      PaddingGap.md(),
+
+                      // Render all seat plans
+                      for (final plan in state.seatPlans)
+                        editingIds.contains(plan.id)
+                            ? _buildSeatPlanForm(plan.id)
+                            : _buildSeatPlanSummary(plan),
+
+                      // Render editing forms that are not yet saved
+                      for (final entry in editingModels.entries)
+                        if (!state.seatPlans.any((p) => p.id == entry.key))
+                          _buildSeatPlanForm(entry.key),
+
+                      PaddingGap.sm(),
+
+                      _buildAddSeatPlanButton(state),
+
+                      PaddingGap.md(),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: FabButton.primary(
+                    onPressed: () {
+                      eventPage3Cubit.byPass();
+                      _navigateToNextPage();
+                    },
+                    // onPressed: () => _handleContinue(state),
+                    size: FabButtonSize.large,
+                    width: double.infinity,
+                    child: Text(
+                      'Continue',
+                      style: FabTypography.displaySemiBold16.copyWith(
+                        color: FabColors.greyscale0,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            child: const SizedBox.shrink(),
           ),
-          const Expanded(
-            child: FabTextStyled(
-              'Create Event',
-              style: FabTypography.displaySemiBold18,
-              textAlign: TextAlign.center,
-            ),
-          ),
-          FabButton.secondary(
-            onPressed: () => {},
-            isIconOnly: true,
-            iconWidget: Assets.images.icons.questionLine.svg(
-              width: 20,
-              height: 20,
-              package: 'design',
-            ),
-            child: const SizedBox.shrink(),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -276,7 +243,7 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
         ),
         PaddingGap.xs(),
         FabTextStyled(
-          'Your ticket income goal is ${FabFunction.formatRupiah(currency: double.parse(widget.budget['ticketSales']?.toString() ?? '0'))}. Adjust pricing or seat quota to reach this target.',
+          'Your ticket income goal is ${FabFunction.formatRupiah(currency: budgetPlannerCubit.state.ticketSales)}. Adjust pricing or seat quota to reach this target.',
           style: FabTypography.displayRegular14.copyWith(
             color: FabColors.greyscale400,
           ),
@@ -285,7 +252,7 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
     );
   }
 
-  Widget _buildInfoSection() {
+  Widget _buildInfoSection(EventPage3State state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -298,7 +265,7 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
               ),
             ),
             Text(
-              '$remainingSeats seats available',
+              '${state.remainingSeats} seats available',
               style: FabTypography.bodySmallBold,
             ),
           ],
@@ -313,7 +280,7 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
               ),
             ),
             Text(
-              FabFunction.formatRupiah(currency: totalTicketIncome),
+              FabFunction.formatRupiah(currency: state.totalTicketIncome),
               style: FabTypography.bodySmallBold,
             ),
           ],
@@ -322,12 +289,12 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
     );
   }
 
-  Widget _buildAddSeatPlanButton() {
+  Widget _buildAddSeatPlanButton(EventPage3State state) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: OutlinedButton(
         onPressed: () {
-          if (remainingSeats == 0) {
+          if (state.remainingSeats == 0) {
             _showMaximumSeatDialog();
             return;
           } else {
@@ -379,125 +346,124 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
   //   );
   // }
 
-  Widget _buildSeatPlanForm(int index) {
-    final form = seatPlans[index].form;
+  Widget _buildSeatPlanForm(String id) {
+    final model = editingModels[id];
+    if (model == null) {
+      return const SizedBox.shrink();
+    }
 
-    return FabCardForm(
-      form: form,
-      buildFields: (form) => [
-        FabTextfield(
-          formControl: form.control('ticketName') as FormControl<String>,
-          labelText: 'Ticket Name',
-          hintText: 'e.g. Adhiya Pass',
-          keyboardType: TextInputType.text,
-          size: FabTextfieldSize.large,
-        ),
-        PaddingGap.md(),
-        _buildTicketTypeDropdown(form),
-        PaddingGap.md(),
-        FabTextfield(
-          formControl: form.control('price') as FormControl<String>,
-          labelText: 'Price *',
-          hintText: 'Enter price',
-          keyboardType: TextInputType.number,
-          size: FabTextfieldSize.large,
-          inputFormatters: [
-            ThousandsSeparatorInputFormatter()
-          ],
-        ),
-        PaddingGap.md(),
-        FabTextfield(
-          formControl: form.control('quota') as FormControl<String>,
-          labelText: 'Quota *',
-          hintText: 'Enter quota',
-          keyboardType: TextInputType.number,
-          size: FabTextfieldSize.large,
-          inputFormatters: [
-            ThousandsSeparatorInputFormatter()
-          ],
-        ),
-        PaddingGap.md(),
-        FabTextfield(
-          formControl: form.control('description') as FormControl<String>,
-          labelText: 'Description *',
-          hintText: 'Write description...',
-          maxLines: 3,
-          size: FabTextfieldSize.large,
-        ),
-        PaddingGap.sm(),
-        _buildTicketIncomeInfo(form),
-      ],
-      buildSummary: (form) => _buildSeatPlanSummary(index),
-      onSaved: (form) => saveSeatPlan(index),
-      onEdit: () => editSeatPlan(index),
-      onDelete: () => removeSeatPlan(index),
-    );
-  }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: AddEvent3FormFormBuilder(
+        model: model,
+        builder: (context, formModel, child) {
+          final inputFormatters = [
+            ThousandsSeparatorInputFormatter(separator: ','),
+          ];
 
-  Widget _buildTicketTypeDropdown(FormGroup form) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Ticket Type *',
-          style: FabTypography.bodySmallMedium.copyWith(
-            color: FabColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        ReactiveDropdownField<String>(
-          formControlName: 'ticketType',
-          hint: Text(
-            'Select Ticket Type',
-            style: FabTypography.bodySmallMedium.copyWith(
-              color: FabColors.greyscale400,
-            ),
-          ),
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: FabColors.greyscale200),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: FabColors.primary300),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: FabColors.greyscale200),
-            ),
-          ),
-          items: _ticketType
-              .map(
-                (type) => DropdownMenuItem<String>(
-                  value: type,
-                  child: Text(
-                    type,
-                    style: FabTypography.bodySmallMedium.copyWith(
-                      color: FabColors.textPrimary,
-                    ),
+          return FabCard(
+            radius: 12,
+            color: FabColors.greyscale0,
+            border: Border.all(color: FabColors.greyscale200),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  FabTextfield(
+                    formControl: formModel.ticketNameControl,
+                    labelText: 'Ticket Name',
+                    hintText: 'e.g. Adhiya Pass',
+                    keyboardType: TextInputType.text,
                   ),
-                ),
-              )
-              .toList(),
-          icon: Icon(
-            UIcons.boldRounded.angle_small_down,
-            size: 20,
-          ),
-          validationMessages: {
-            ValidationMessage.required: (_) => 'Ticket Type is required',
-          },
-        ),
-      ],
+                  PaddingGap.md(),
+                  FabDropdown<String>(
+                    formControl: formModel.ticketTypeControl,
+                    options: _ticketTypeOptions,
+                    labelText: 'Ticket Type',
+                    hintText: 'Select Ticket Type',
+                  ),
+                  PaddingGap.md(),
+                  FabTextfield(
+                    formControl: formModel.priceControl,
+                    labelText: 'Price',
+                    hintText: 'Enter price',
+                    keyboardType: TextInputType.number,
+                    inputFormatters: inputFormatters,
+                  ),
+                  PaddingGap.md(),
+                  FabTextfield(
+                    formControl: formModel.quotaControl,
+                    labelText: 'Quota',
+                    hintText: 'Enter quota',
+                    keyboardType: TextInputType.number,
+                    inputFormatters: inputFormatters,
+                  ),
+                  PaddingGap.md(),
+                  FabTextfield(
+                    formControl: formModel.descriptionControl,
+                    labelText: 'Description',
+                    hintText: 'Write description...',
+                    maxLines: 3,
+                  ),
+                  PaddingGap.sm(),
+                  _buildTicketIncomeInfo(formModel),
+                  PaddingGap.md(),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FabButton.secondary(
+                          onPressed: () => removeSeatPlan(id),
+                          child: Text(
+                            'Delete',
+                            style: FabTypography.displaySemiBold14.copyWith(
+                              color: FabColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                      PaddingGap.sm(),
+                      Expanded(
+                        child: FabButton.primary(
+                          onPressed: () {
+                            formModel.submit(
+                              onValid: (model) => saveSeatPlan(id, model),
+                              onNotValid: () {
+                                setState(() {
+                                  formModel.form.markAllAsTouched();
+                                  FabSnackbar.error(
+                                    context: context,
+                                    content: 'Please fill all required fields',
+                                  );
+                                });
+                              },
+                            );
+                          },
+                          child: Text(
+                            'Save',
+                            style: FabTypography.displaySemiBold14.copyWith(
+                              color: FabColors.greyscale0,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildTicketIncomeInfo(FormGroup form) {
+  Widget _buildTicketIncomeInfo(AddEvent3FormForm formModel) {
     return ReactiveValueListenableBuilder(
-      formControl: form.control('price'),
+      formControl: formModel.priceControl,
       builder: (context, priceControl, child) {
         return ReactiveValueListenableBuilder(
-          formControl: form.control('quota'),
+          formControl: formModel.quotaControl,
           builder: (context, quotaControl, child) {
             final price = ThousandsSeparatorInputFormatter.parseFormattedNumber(
                     priceControl.value?.toString() ?? '0') ??
@@ -523,21 +489,12 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
     );
   }
 
-  Widget _buildSeatPlanSummary(int index) {
-    final form = seatPlans[index].form;
-    final name = form.control('ticketName').value ?? '';
-    final type = form.control('ticketType').value ?? '';
-    final price = ThousandsSeparatorInputFormatter.parseFormattedNumber(form.control('price').value ?? '') ?? 0;
-    final quota = ThousandsSeparatorInputFormatter.parseFormattedNumber(
-            form.control('quota').value ?? '') ??
-        0;
-    final desc = form.control('description').value ?? '';
-
-    final percentage = getSeatsPercentage(quota);
-    final income = price * quota;
+  Widget _buildSeatPlanSummary(SeatPlan plan) {
+    final percentage = getSeatsPercentage(plan.quota);
+    final income = plan.price * plan.quota;
 
     return GestureDetector(
-      onTap: () => editSeatPlan(index),
+      onTap: () => editSeatPlan(plan.id),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
         child: FabCard(
@@ -555,7 +512,7 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
                   children: [
                     Expanded(
                       child: Text(
-                        name,
+                        plan.ticketName,
                         style: FabTypography.displaySemiBold16.copyWith(
                           color: FabColors.textPrimary,
                         ),
@@ -568,11 +525,11 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: getBadgeColor(type),
+                        color: plan.ticketType.badgeTicketColor,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        type,
+                        plan.ticketType,
                         style: FabTypography.bodySmallMedium.copyWith(
                           color: FabColors.textPrimary,
                         ),
@@ -580,9 +537,7 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
                     ),
                   ],
                 ),
-
                 PaddingGap.xs(),
-
                 Row(
                   children: [
                     const Icon(
@@ -592,16 +547,14 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
                     ),
                     PaddingGap.xxs(),
                     Text(
-                      '$quota seats (${percentage.toStringAsFixed(0)}%)',
+                      '${plan.quota} seats (${percentage.toStringAsFixed(0)}%)',
                       style: FabTypography.bodySmallMedium.copyWith(
                         color: FabColors.greyscale500,
                       ),
                     ),
                   ],
                 ),
-
                 PaddingGap.xxs(),
-
                 Row(
                   children: [
                     const Icon(
@@ -611,16 +564,14 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
                     ),
                     PaddingGap.xxs(),
                     Text(
-                      FabFunction.formatRupiah(currency: price.toDouble()),
+                      FabFunction.formatRupiah(currency: plan.price),
                       style: FabTypography.bodySmallMedium.copyWith(
                         color: FabColors.greyscale500,
                       ),
                     ),
                   ],
                 ),
-
                 PaddingGap.xxs(),
-
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -632,7 +583,7 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
                     PaddingGap.xxs(),
                     Expanded(
                       child: Text(
-                        desc,
+                        plan.description,
                         style: FabTypography.bodySmallMedium.copyWith(
                           color: FabColors.greyscale500,
                         ),
@@ -640,11 +591,9 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
                     ),
                   ],
                 ),
-
                 PaddingGap.sm(),
-
                 Text(
-                  'This ticket category adds ${FabFunction.formatRupiah(currency: income.toDouble())} to your event income.',
+                  'This ticket category adds ${FabFunction.formatRupiah(currency: income)} to your event income.',
                   style: FabTypography.bodySmallRegular.copyWith(
                     color: FabColors.greyscale500,
                     fontSize: 12,
@@ -661,7 +610,6 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
   void _showMaximumSeatDialog() {
     showDialog(
       context: context,
-      barrierDismissible: true,
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
@@ -683,7 +631,7 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'You don\'t have any quota left for make a seat plan, please adjust amount of seat that you already used.',
+                  "You don't have any quota left for make a seat plan, please adjust amount of seat that you already used.",
                   style: FabTypography.displayRegular14.copyWith(
                     color: FabColors.greyscale600,
                   ),
@@ -714,13 +662,13 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
   void _showTicketIncomeBelowTargetDialog(double shortfall) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (context) {
         return Dialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -775,15 +723,14 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
   }
 
   void _navigateToNextPage() {
-    $.navigator.push(AddEvent4Route(budget: widget.budget));
+    $.navigator.push(const AddEvent4Route());
   }
 
-  void _handleContinue() {
-    final netBudget =
-        double.parse(widget.budget['netBudget']?.toString() ?? '0');
-    final shortfall = netBudget - totalTicketIncome;
+  void _handleContinue(EventPage3State state) {
+    final ticketSales = budgetPlannerCubit.state.ticketSales;
+    final shortfall = ticketSales - state.totalTicketIncome;
 
-    log('Net Budget: $netBudget, Ticket Income: $totalTicketIncome',
+    log('Ticket Sales: $ticketSales, Ticket Income: ${state.totalTicketIncome}',
         name: 'add_event_3');
 
     if (shortfall > 0) {
@@ -792,14 +739,4 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
       _navigateToNextPage();
     }
   }
-}
-
-class SeatPlanData {
-  final FormGroup form;
-  bool isEditing;
-
-  SeatPlanData({
-    required this.form,
-    this.isEditing = true,
-  });
 }

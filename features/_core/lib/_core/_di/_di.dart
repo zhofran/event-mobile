@@ -8,6 +8,7 @@ import 'package:feature_auth/_core/_di/_di.dart';
 import 'package:feature_cart/_core/_di/_di.dart';
 import 'package:feature_company_profile/_core/_di/_di.dart';
 import 'package:feature_discover/_core/_di/_di.dart';
+import 'package:feature_event/_core/_di/_di.dart';
 import 'package:feature_job_applied/_core/_di/_di.dart';
 import 'package:feature_job_listing/_core/_di/_di.dart';
 import 'package:feature_settings/_core/_di/_di.dart';
@@ -25,6 +26,7 @@ void injectAllFeatures(GetIt di, String env) {
   injectAuthFeature(di, env);
   injectCompanyProfileFeature(di, env);
   injectDiscoverFeature(di, env);
+  injectEventFeature(di, env);
   injectJobAppliedFeature(di, env);
   injectJobListingFeature(di, env);
   injectSettingsFeature(di, env);

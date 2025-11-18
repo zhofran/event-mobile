@@ -8,6 +8,6 @@ import 'package:deps/packages/injectable.dart';
 import '_di.config.dart';
 
 @InjectableInit(initializerName: 'init')
-void injectCartFeature(GetIt di, String env) {
+void injectEventFeature(GetIt di, String env) {
   di.init(environment: env);
 }
