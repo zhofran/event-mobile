@@ -652,7 +652,7 @@ class _DiscoverEventDetailPageState extends State<DiscoverEventDetailPage> {
               child: ElevatedButton(
                 onPressed: () {
                   // TODO: Navigate to ticket purchase
-                  $.navigator.push(BookingFlowRoute(event: widget.event));
+                  // $.navigator.push(BookingFlowRoute(event: widget.event));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,

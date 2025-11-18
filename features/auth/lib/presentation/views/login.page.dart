@@ -31,12 +31,12 @@ class _LoginPageState extends State<LoginPage> {
     required String email,
     required String password,
   }) async {
-    // final isSucceeded = await loginCubit.login(email: email, password: password);
+    final isSucceeded = await loginCubit.login(email: email, password: password);
 
-    // if (isSucceeded) {
+    if (isSucceeded) {
       widget.onResult(true);
       $.navigator.replace(const HomeRoute());
-    // }
+    }
   }
 
   bool _obscureText = true;
@@ -331,23 +331,23 @@ class _LoginPageState extends State<LoginPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: FabButton.primary(
                     onPressed: () 
-                    {
-                      $.navigator.replace(const HomeRoute());
-                      // $.navigator.push(DiscoverRoute());
-                    },
-                    // => data.submit(
-                    //   onValid: (model) => login(
-                    //     email: model.email,
-                    //     password: model.password,
-                    //   ),
-                    //   onNotValid: () {
-                    //     // Form is invalid, errors will be shown automatically
-                    //     // because markAllAsTouched() is called in submit()
-                    //     setState(() {
-                    //       data.form.markAllAsTouched();
-                    //     });
-                    //   },
-                    // ),
+                    // {
+                    //   $.navigator.replace(const HomeRoute());
+                    //   // $.navigator.push(DiscoverRoute());
+                    // },
+                    => data.submit(
+                      onValid: (model) => login(
+                        email: model.email,
+                        password: model.password,
+                      ),
+                      onNotValid: () {
+                        // Form is invalid, errors will be shown automatically
+                        // because markAllAsTouched() is called in submit()
+                        setState(() {
+                          data.form.markAllAsTouched();
+                        });
+                      },
+                    ),
                     size: FabButtonSize.large,
                     width: double.infinity,
                     child: Text(

@@ -57,12 +57,12 @@ class _PaymentStepState extends State<PaymentStep> {
         const Divider(),
         if (widget.bookingData.selectedTicket != null)
           _buildOrderItem("Ticket", "1x ${widget.bookingData.selectedTicket!.name}"),
-        if (widget.bookingData.isTravelPackEnabled) ...[
-          if (widget.bookingData.selectedHotel != null)
-            _buildOrderItem("Smart Travel Pack", "2 Night ${widget.bookingData.selectedHotel!.name}"),
-          if (widget.bookingData.selectedTransportation != null)
-            _buildOrderItem("", "1x ${widget.bookingData.selectedTransportation!.type}"),
-        ],
+        // if (widget.bookingData.isTravelPackEnabled) ...[
+        //   if (widget.bookingData.selectedHotel != null)
+        //     _buildOrderItem("Smart Travel Pack", "2 Night ${widget.bookingData.selectedHotel!.name}"),
+        //   if (widget.bookingData.selectedTransportation != null)
+        //     // _buildOrderItem("", "1x ${widget.bookingData.selectedTransportation!.type}"),
+        // ],
         const Divider(),
       ],
     );

@@ -9,8 +9,8 @@ class HotelOption with _$HotelOption {
     required String id,
     required String name,
     required int price,
-    required DateTime checkIn,
-    required DateTime checkOut,
+    required String dates,
+    required String location,
     @Default(false) bool isSelected,
   }) = _HotelOption;
 

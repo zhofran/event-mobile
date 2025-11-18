@@ -1,151 +1,305 @@
-import 'package:flutter/material.dart';
+// import 'dart:developer';
 
-import '../../../domain/models/booking_data.model.dart';
-import '../../../domain/models/ticket_type.model.dart';
+// import 'package:deps/design/design.dart';
+// import 'package:deps/features/features.dart';
+// import 'package:deps/packages/auto_route.dart';
+// import 'package:deps/packages/flutter_bloc.dart';
+// import 'package:flutter/material.dart';
 
+// // part 'ticket_selection_cubit.dart';
+// // part 'ticket_selection_state.dart';
 
-class TicketSelectionStep extends StatefulWidget {
-  final BookingData bookingData;
-  final Function(BookingData) onDataChanged;
+// @RoutePage()
+// class TicketSelectionPage extends StatefulWidget {
+//   final String eventId;
+  
+//   const TicketSelectionPage({
+//     super.key,
+//     required this.eventId,
+//   });
 
-  const TicketSelectionStep({
-    super.key,
-    required this.bookingData,
-    required this.onDataChanged,
-  });
+//   @override
+//   State<TicketSelectionPage> createState() => _TicketSelectionPageState();
+// }
 
-  @override
-  State<TicketSelectionStep> createState() => _TicketSelectionStepState();
-}
+// class _TicketSelectionPageState extends State<TicketSelectionPage> {
+//   // late final TicketSelectionCubit _cubit;
 
-class _TicketSelectionStepState extends State<TicketSelectionStep> {
-  late List<TicketType> _tickets;
+//   @override
+//   void initState() {
+//     super.initState();
+//     _cubit = $.get<TicketSelectionCubit>();
+//     _cubit.loadEventData(widget.eventId);
+//   }
 
-  @override
-  void initState() {
-    super.initState();
-    _loadTickets();
-  }
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: FabColors.background,
+//       body: BlocBuilder<TicketSelectionCubit, TicketSelectionState>(
+//         bloc: _cubit,
+//         builder: (context, state) {
+//           return state.when(
+//             initial: () => const Center(child: CircularProgressIndicator()),
+//             loading: () => const Center(child: CircularProgressIndicator()),
+//             error: (message) => _buildErrorView(message),
+//             loaded: (event, tickets) => _buildLoadedView(event, tickets),
+//           );
+//         },
+//       ),
+//     );
+//   }
 
-  void _loadTickets() {
-    // TODO: Replace with API call
-    _tickets = [
-      TicketType(
-        id: "1",
-        name: "Adhiya Pass",
-        price: 150000,
-        description: "Akses penuh ke seluruh sesi seminar utama.",
-        seatsLeft: 23,
-      ),
-      TicketType(
-        id: "2",
-        name: "Pradipta Pass",
-        price: 300000,
-        description: "Kursi prioritas + e-certificate eksklusif + snack box.",
-        seatsLeft: 2,
-      ),
-      TicketType(
-        id: "3",
-        name: "Dharma Pass",
-        price: 600000,
-        description: "Kursi depan, merchandise eksklusif, & sesi meet & greet dengan pembicara.",
-        seatsLeft: 50,
-      ),
-    ];
+//   Widget _buildErrorView(String message) {
+//     return Center(
+//       child: Column(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: [
+//           Text(
+//             message,
+//             style: FabTypography.bodyMediumRegular,
+//             textAlign: TextAlign.center,
+//           ),
+//           const SizedBox(height: 16),
+//           FabButton.primary(
+//             onPressed: () => _cubit.loadEventData(widget.eventId),
+//             child: const Text('Retry'),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
 
-    // Select first ticket by default
-    if (_tickets.isNotEmpty && widget.bookingData.selectedTicket == null) {
-      _selectTicket(_tickets.first);
-    }
-  }
+//   Widget _buildLoadedView(EventDetails event, List<TicketType> tickets) {
+//     return SafeArea(
+//       child: Column(
+//         children: [
+//           _buildAppBar(event.title),
+//           _buildEventHeader(event),
+//           Padding(
+//             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+//             child: Text(
+//               'Choose your ticket type',
+//               style: FabTypography.displayBold20,
+//             ),
+//           ),
+//           Expanded(
+//             child: ListView.separated(
+//               padding: const EdgeInsets.only(bottom: 16),
+//               separatorBuilder: (_, __) => const SizedBox(height: 16),
+//               itemCount: tickets.length,
+//               itemBuilder: (_, index) {
+//                 final ticket = tickets[index];
+//                 return TicketCard(
+//                   ticket: ticket,
+//                   onTap: () => _cubit.selectTicket(ticket.id),
+//                 );
+//               },
+//             ),
+//           ),
+//           _buildContinueSection(tickets),
+//         ],
+//       ),
+//     );
+//   }
 
-  void _selectTicket(TicketType ticket) {
-    setState(() {
-      _tickets = _tickets.map((t) => t.copyWith(
-        isSelected: t.id == ticket.id,
-      )).toList();
-    });
+//   Widget _buildAppBar(String title) {
+//     return Container(
+//       padding: const EdgeInsets.all(16),
+//       child: Row(
+//         children: [
+//           FloatingActionButton(
+//             mini: true,
+//             backgroundColor: FabColors.greyscale100,
+//             onPressed: $.navigator.pop,
+//             child: const Icon(Icons.chevron_left, color: FabColors.greyscale900),
+//           ),
+//           const SizedBox(width: 16),
+//           Expanded(
+//             child: Text(
+//               title,
+//               style: FabTypography.displayBold20,
+//               overflow: TextOverflow.ellipsis,
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
 
-    widget.onDataChanged(
-      widget.bookingData.copyWith(selectedTicket: ticket.copyWith(isSelected: true)),
-    );
-  }
+//   Widget _buildEventHeader(EventDetails event) {
+//     return Container(
+//       padding: const EdgeInsets.symmetric(horizontal: 24),
+//       child: Text(
+//         '${event.dateRange} | ${event.time} WIB',
+//         style: FabTypography.bodyMediumRegular.copyWith(
+//           color: FabColors.greyscale600,
+//         ),
+//       ),
+//     );
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Choose your ticket type",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        ..._tickets.map((ticket) => _buildTicketCard(ticket)).toList(),
-        const SizedBox(height: 20),
-        const Divider(),
-        _buildTotalPayment(),
-      ],
-    );
-  }
+//   Widget _buildContinueSection(List<TicketType> tickets) {
+//     final selectedTicket = tickets.firstWhere((t) => t.isSelected, orElse: () => tickets.first);
+//     final formattedPrice = _formatCurrency(selectedTicket.price);
 
-  Widget _buildTicketCard(TicketType ticket) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              ticket.name,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _formatCurrency(ticket.price),
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue[900]),
-            ),
-            const SizedBox(height: 8),
-            Text(ticket.description),
-            const SizedBox(height: 8),
-            Text(
-              "${ticket.seatsLeft} seats left",
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-          ],
-        ),
-        trailing: Radio(
-          value: ticket.id,
-          groupValue: _tickets.firstWhere((t) => t.isSelected).id,
-          onChanged: (value) {
-            _selectTicket(_tickets.firstWhere((t) => t.id == value));
-          },
-        ),
-      ),
-    );
-  }
+//     return Container(
+//       padding: const EdgeInsets.all(24),
+//       child: Column(
+//         children: [
+//           Row(
+//             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//             children: [
+//               Text(
+//                 'Total Payment',
+//                 style: FabTypography.bodyMediumRegular,
+//               ),
+//               Text(
+//                 formattedPrice,
+//                 style: FabTypography.displayBold24,
+//               ),
+//             ],
+//           ),
+//           const SizedBox(height: 16),
+//           FabButton.primary(
+//             onPressed: () => $.navigator.push(
+//               TravelPackRoute(
+//                 eventId: widget.eventId,
+//                 selectedTicket: selectedTicket,
+//               ),
+//             ),
+//             child: const Text('Continue'),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
 
-  Widget _buildTotalPayment() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text(
-          "Total Payment",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          _formatCurrency(widget.bookingData.selectedTicket?.price ?? 0),
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blue[900]),
-        ),
-      ],
-    );
-  }
+//   String _formatCurrency(int amount) {
+//     return 'Rp ${amount.toString().replaceAllMapped(
+//       RegExp(r'(\d)(?=(\d{3})+$)'),
+//       (match) => '${match[1]},',
+//     )}';
+//   }
+// }
 
-  String _formatCurrency(int amount) {
-    return 'Rp${amount.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]}.',
-    )}';
-  }
-}
+// class TicketCard extends StatelessWidget {
+//   final TicketType ticket;
+//   final VoidCallback onTap;
+
+//   const TicketCard({
+//     super.key,
+//     required this.ticket,
+//     required this.onTap,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return InkWell(
+//       onTap: onTap,
+//       child: Container(
+//         decoration: BoxDecoration(
+//           border: Border.all(
+//             color: ticket.isSelected ? FabColors.primary : FabColors.greyscale200,
+//             width: ticket.isSelected ? 2 : 1,
+//           ),
+//           borderRadius: BorderRadius.circular(12),
+//           color: ticket.isSelected ? FabColors.primary.withOpacity(0.05) : null,
+//         ),
+//         padding: const EdgeInsets.all(16),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Row(
+//               children: [
+//                 Expanded(
+//                   child: Text(
+//                     ticket.name,
+//                     style: FabTypography.displayBold18,
+//                     maxLines: 1,
+//                     overflow: TextOverflow.ellipsis,
+//                   ),
+//                 ),
+//                 if (ticket.type.isNotEmpty)
+//                   Container(
+//                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+//                     decoration: BoxDecoration(
+//                       color: _getTypeColor(ticket.type),
+//                       borderRadius: BorderRadius.circular(20),
+//                     ),
+//                     child: Text(
+//                       ticket.type,
+//                       style: FabTypography.bodySmallBold.copyWith(
+//                         color: Colors.white,
+//                       ),
+//                     ),
+//                   ),
+//               ],
+//             ),
+//             const SizedBox(height: 8),
+//             Row(
+//               children: [
+//                 Icon(Icons.attach_money, size: 16, color: FabColors.greyscale600),
+//                 const SizedBox(width: 4),
+//                 Text(
+//                   _formatCurrency(ticket.price),
+//                   style: FabTypography.bodyMediumRegular,
+//                 ),
+//               ],
+//             ),
+//             const SizedBox(height: 8),
+//             Row(
+//               children: [
+//                 Icon(Icons.check_circle, size: 16, color: FabColors.greyscale600),
+//                 const SizedBox(width: 4),
+//                 Expanded(
+//                   child: Text(
+//                     ticket.description,
+//                     style: FabTypography.bodySmallRegular,
+//                     maxLines: 2,
+//                     overflow: TextOverflow.ellipsis,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//             const SizedBox(height: 8),
+//             Row(
+//               children: [
+//                 Icon(Icons.people, size: 16, color: _getSeatsColor(ticket.seatsLeft)),
+//                 const SizedBox(width: 4),
+//                 Text(
+//                   '${ticket.seatsLeft} seats left',
+//                   style: FabTypography.bodySmallRegular.copyWith(
+//                     color: _getSeatsColor(ticket.seatsLeft),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   Color _getTypeColor(String type) {
+//     switch (type.toLowerCase()) {
+//       case 'regular': return Colors.green;
+//       case 'premium': return FabColors.primary;
+//       case 'vip': return Colors.amber;
+//       default: return FabColors.greyscale400;
+//     }
+//   }
+
+//   Color _getSeatsColor(int seatsLeft) {
+//     if (seatsLeft <= 5) return Colors.red;
+//     if (seatsLeft <= 10) return Colors.orange;
+//     return FabColors.greyscale600;
+//   }
+
+//   String _formatCurrency(int amount) {
+//     return 'Rp ${amount.toString().replaceAllMapped(
+//       RegExp(r'(\d)(?=(\d{3})+$)'),
+//       (match) => '${match[1]},',
+//     )}';
+//   }
+// }

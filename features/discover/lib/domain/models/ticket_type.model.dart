@@ -8,9 +8,10 @@ class TicketType with _$TicketType {
   factory TicketType({
     required String id,
     required String name,
-    required int price,
+    required int price, // Menggunakan int untuk konsistensi dengan template
     required String description,
     required int seatsLeft,
+    @Default('') String type, // Regular, Premium, VIP
     @Default(false) bool isSelected,
   }) = _TicketType;
 

@@ -75,7 +75,7 @@ class FeaturesRouter extends $FeaturesRouter {
           children: [
             AutoRoute(
               page: DashboardRouter.page,
-              // guards: [AuthGuard()],
+              guards: [AuthGuard()],
               initial: true,
               children: [
                 AutoRoute(
@@ -420,6 +420,11 @@ class FeaturesRouter extends $FeaturesRouter {
               path: 'event-detail',
               page: DiscoverEventDetailRoute.page,
             ),
+            // AutoRoute(
+            //   title: (_, __) => 'Booking Flow',
+            //   path: 'booking-flow',
+            //   page: BookingFlowRoute.page,
+            // ),
             CustomRoute(
               page: MaterialDialogWrapperRoute.page,
               customRouteBuilder: materialDialogRouteBuilder,

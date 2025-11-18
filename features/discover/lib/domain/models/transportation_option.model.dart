@@ -7,11 +7,10 @@ part 'transportation_option.model.g.dart';
 class TransportationOption with _$TransportationOption {
   factory TransportationOption({
     required String id,
-    required String type,
+    required String name,
     required int price,
     required String route,
-    required DateTime date,
-    required String time,
+    required String datetime,
     @Default(false) bool isSelected,
   }) = _TransportationOption;
 
