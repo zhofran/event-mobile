@@ -150,7 +150,7 @@ class _EventFormScaffold extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: _WelcomeSection(
-                  venueBudget: budgetPlannerCubit.state.vendorBudget,
+                  venueBudget: budgetPlannerCubit.state.vendorBudget.toDouble(),
                 ),
               ),
               PaddingGap.md(),

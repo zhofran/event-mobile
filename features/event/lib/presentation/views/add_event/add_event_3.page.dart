@@ -49,7 +49,7 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
     // Initialize cubit with capacity and ticket sales target
     eventPage3Cubit.initialize(
       capacity: eventPage2Cubit.state.capacity,
-      ticketSalesTarget: budgetPlannerCubit.state.ticketSales,
+      ticketSalesTarget: budgetPlannerCubit.state.ticketSales.toDouble(),
     );
   }
 
@@ -243,7 +243,7 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
         ),
         PaddingGap.xs(),
         FabTextStyled(
-          'Your ticket income goal is ${FabFunction.formatRupiah(currency: budgetPlannerCubit.state.ticketSales)}. Adjust pricing or seat quota to reach this target.',
+          'Your ticket income goal is ${FabFunction.formatRupiah(currency: budgetPlannerCubit.state.ticketSales.toDouble())}. Adjust pricing or seat quota to reach this target.',
           style: FabTypography.displayRegular14.copyWith(
             color: FabColors.greyscale400,
           ),

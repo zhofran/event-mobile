@@ -42,138 +42,155 @@ class _AddEvent1PageState extends State<AddEvent1Page> {
     eventPage1Cubit = $.get<EventPage1Cubit>();
     eventPage1Cubit
       ..toggleValidityForm(value: null)
-      ..getEventCategories();
+      ..getEventCategories()
+      ..resetStatus();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FabColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const FabPageHeader(title: 'Create Event'),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: AnimatedStepProgressIndicator(
-                currentStep: currentStep,
-                totalSteps: totalSteps,
-              ),
-            ),
-            PaddingGap.xl(),
-            Expanded(
-              child: AddEvent1FormFormBuilder(
-                builder: (_, data, __) {
-                  return Column(
-                    children: [
-                      Expanded(
-                        child: RefreshIndicator(
-                          onRefresh: () => eventPage1Cubit.getEventCategories(
-                            refresh: true,
-                          ),
-                          child: ListView(
-                            padding: EdgeInsets.zero,
-                            children: [
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 24),
-                                child: _buildWelcomeSection(),
+    return BlocConsumer<EventPage1Cubit, EventPage1State>(
+      bloc: eventPage1Cubit,
+      listener: (context, state) {
+        if (state.status == EventPage1StateStatus.loadingPost) {
+          FabLoadingOverlay.show(context);
+        } else {
+          FabLoadingOverlay.hide(context);
+        }
+      },
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: FabColors.background,
+          body: SafeArea(
+            child: Column(
+              children: [
+                const FabPageHeader(title: 'Create Event'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: AnimatedStepProgressIndicator(
+                    currentStep: currentStep,
+                    totalSteps: totalSteps,
+                  ),
+                ),
+                PaddingGap.xl(),
+                Expanded(
+                  child: AddEvent1FormFormBuilder(
+                    builder: (_, data, __) {
+                      return Column(
+                        children: [
+                          Expanded(
+                            child: RefreshIndicator(
+                              onRefresh: () =>
+                                  eventPage1Cubit.getEventCategories(
+                                refresh: true,
                               ),
-                              PaddingGap.md(),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 24),
-                                child: BlocBuilder<EventPage1Cubit,
-                                    EventPage1State>(
-                                  bloc: eventPage1Cubit,
-                                  builder: (context, state) {
-                                    if (state.status ==
-                                        EventPage1StateStatus.succeeded) {
-                                      return _buildAddEventForm(data);
-                                    }
-                                    return const Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  },
-                                ),
+                              child: ListView(
+                                padding: EdgeInsets.zero,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 24),
+                                    child: _buildWelcomeSection(),
+                                  ),
+                                  PaddingGap.md(),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 24),
+                                    child: BlocBuilder<EventPage1Cubit,
+                                        EventPage1State>(
+                                      bloc: eventPage1Cubit,
+                                      builder: (context, state) {
+                                        if (state.eventCategoryOptions
+                                            .isNotEmpty) {
+                                          return _buildAddEventForm(data);
+                                        }
+                                        return const Center(
+                                          child:
+                                              CircularProgressIndicator(),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: FabButton.primary(
-                          onPressed: byPass,
-                          // onPressed: () {
-                          //   data.submit(
-                          //     onValid: (model) {
-                          //       eventPage1Cubit.createEvent(
-                          //         eventName: model.eventName,
-                          //         eventType: model.eventType,
-                          //         eventCategory: model.eventCategory,
-                          //         eventDescription: model.eventDescription,
-                          //         eventFormat: model.eventFormat,
-                          //         eventBanner: model.photoPath,
-                          //       );
-
-                          //       $.navigator.push(const AddEvent2Route());
-
-                          //       FabSnackbar.success(
-                          //         context: context,
-                          //         content:
-                          //             'Create Event Details saved successfully!',
-                          //       );
-                          //     },
-                          //     onNotValid: () {
-                          //       eventPage1Cubit.toggleValidityForm(
-                          //         value: false,
-                          //       );
-                          //       FabSnackbar.error(
-                          //         context: context,
-                          //         content: 'Please fill all required fields',
-                          //       );
-                          //     },
-                          //   );
-                          // },
-                          size: FabButtonSize.large,
-                          width: double.infinity,
-                          child: Text(
-                            'Continue',
-                            style: FabTypography.displaySemiBold16.copyWith(
-                              color: FabColors.greyscale0,
                             ),
                           ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
+                          Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: FabButton.primary(
+                              onPressed: byPass,
+                              // onPressed: () {
+                              //   data.submit(
+                              //     onValid: (model) {
+                              //       eventPage1Cubit.createEvent(
+                              //         eventName: model.eventName,
+                              //         eventType: model.eventType,
+                              //         eventCategory: model.eventCategory,
+                              //         eventDescription: model.eventDescription,
+                              //         eventFormat: model.eventFormat,
+                              //         eventBanner: model.photoPath,
+                              //       );
+        
+                              //       $.navigator.push(const AddEvent2Route());
+        
+                              //       FabSnackbar.success(
+                              //         context: context,
+                              //         content:
+                              //             'Create Event Details saved successfully!',
+                              //       );
+                              //     },
+                              //     onNotValid: () {
+                              //       eventPage1Cubit.toggleValidityForm(
+                              //         value: false,
+                              //       );
+                              //       FabSnackbar.error(
+                              //         context: context,
+                              //         content: 'Please fill all required fields',
+                              //       );
+                              //     },
+                              //   );
+                              // },
+                              size: FabButtonSize.large,
+                              width: double.infinity,
+                              child: Text(
+                                'Continue',
+                                style: FabTypography.displaySemiBold16
+                                    .copyWith(
+                                  color: FabColors.greyscale0,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
   Future<void> byPass() async {
-    eventPage1Cubit.createEvent(
-      eventName: 'Sample Event',
-      eventType: 'conference',
-      eventCategory: ['Technology', 'Leadership'],
-      eventDescription: 'Sample Event Description',
-      eventFormat: 'offline',
-      eventBanner:
-          '/Users/mac/Library/Developer/CoreSimulator/Devices/A6B955BA-FFBE-4752-ACA9-23E244F8195E/data/Containers/Data/Application/7914F705-1CB1-4DBB-9E25-6BB7F0C82F18/tmp/image_picker_E988495E-74F3-4E51-817B-3A0260B58E59-38019-000002CE8223CBFF.jpg',
-    );
+    await eventPage1Cubit.postCreateEventDetails();
+    // eventPage1Cubit.createEvent(
+    //   eventName: 'Sample Event',
+    //   eventType: 'conference',
+    //   eventCategory: ['Technology', 'Leadership'],
+    //   eventDescription: 'Sample Event Description',
+    //   eventFormat: 'offline',
+    //   eventBanner:
+    //       'http://minio:9000/apni-event/2025/11/18/d8001dc9-e6c4-46d9-ae57-998001582632.jpg',
+    // );
 
-    FabSnackbar.success(
-      context: context,
-      content: 'Create Event Details saved successfully!',
-    );
+    // FabSnackbar.success(
+    //   context: context,
+    //   content: 'Create Event Details saved successfully!',
+    // );
 
-    await $.navigator.push(const AddEvent2Route());
+    // await $.navigator.push(const AddEvent2Route());
   }
 
   Widget _buildWelcomeSection() {
@@ -232,7 +249,6 @@ class _AddEvent1PageState extends State<AddEvent1Page> {
           minLines: 1,
         ),
         PaddingGap.md(),
-        // _buildEventFormat(),
         FabDropdown<String>(
           formControl: data.eventFormatControl,
           options: _eventFormatOptions,
@@ -244,12 +260,18 @@ class _AddEvent1PageState extends State<AddEvent1Page> {
           formControl: data.photoPathControl,
           labelText: 'Event Banner',
           helperText: 'Upload 1920x1005 images (JPG or PNG)',
-          // size: 90,
           width: double.infinity,
           height: 100,
           shape: BoxShape.rectangle,
           backgroundColor: FabColors.background,
           iconColor: FabColors.primary200,
+          onImagePicked: (value) {
+            // _selectedImage = File(photo.path));
+            if (value == null) {
+              return;
+            }
+            eventPage1Cubit.setEventBanner(value: value.path);
+          },
         ),
       ],
     );

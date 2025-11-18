@@ -37,51 +37,57 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FabColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const FabPageHeader(title: 'Create Event'),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: AnimatedStepProgressIndicator(
-                currentStep: currentStep,
-                totalSteps: totalSteps,
-              ),
-            ),
-            PaddingGap.xl(),
-            Expanded(
-              child: BudgetPlannerFormFormBuilder(
-                builder: (_, data, __) {
-                  return Column(
-                    children: [
-                      Expanded(
-                        child: ListView(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          children: [
-                            _buildWelcomeSection(),
-                            PaddingGap.md(),
-                            BlocBuilder<BudgetPlannerCubit, BudgetPlannerState>(
-                              bloc: budgetPlannerCubit,
-                              buildWhen: (previous, current) =>
-                                  previous.isFormValid != current.isFormValid,
-                              builder: (context, state) {
-                                return _buildBudgetPlannerForm(data);
-                              },
+    return BlocConsumer<BudgetPlannerCubit, BudgetPlannerState>(
+      bloc: budgetPlannerCubit,
+      listener: (context, state) {
+        if (state.status == BudgetPlannerStateStatus.loadingPost) {
+          FabLoadingOverlay.show(context);
+        } else {
+          FabLoadingOverlay.hide(context);
+        }
+      },
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: FabColors.background,
+          body: SafeArea(
+            child: Column(
+              children: [
+                const FabPageHeader(title: 'Create Event'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: AnimatedStepProgressIndicator(
+                    currentStep: currentStep,
+                    totalSteps: totalSteps,
+                  ),
+                ),
+                PaddingGap.xl(),
+                Expanded(
+                  child: BudgetPlannerFormFormBuilder(
+                    builder: (_, data, __) {
+                      return Column(
+                        children: [
+                          Expanded(
+                            child: ListView(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24),
+                              children: [
+                                _buildWelcomeSection(),
+                                PaddingGap.md(),
+                                _buildBudgetPlannerForm(data),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                      _buildBottomButtons(data),
-                    ],
-                  );
-                },
-              ),
+                          ),
+                          _buildBottomButtons(data),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -218,7 +224,7 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: FabButton.primary(
             onPressed: byPass,
-            //  () {
+            // onPressed: () {
             //   data.submit(
             //     onValid: addBudgetPlanner,
             //     onNotValid: () {
@@ -302,12 +308,14 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
       )
       ..toggleValidityForm(value: true);
 
-    FabSnackbar.success(
-      context: context,
-      content: 'Budget planning saved successfully!',
-    );
+    await budgetPlannerCubit.postBudgetPlan(callback: () async {
+      FabSnackbar.success(
+        context: context,
+        content: 'Budget planning saved successfully!',
+      );
 
-    await $.navigator.push(const AddEvent1Route());
+      await $.navigator.push(const AddEvent1Route());
+    });
   }
 
   void _handleSkip(BudgetPlannerFormForm data) {
@@ -350,7 +358,7 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
               );
 
               // Navigate to next step
-              $.navigator.push(AddEvent1Route());
+              $.navigator.push(const AddEvent1Route());
               debugPrint('Skipping budget planning...');
             },
             child: Text(

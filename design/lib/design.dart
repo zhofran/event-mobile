@@ -18,6 +18,7 @@ export 'widgets/card/card.dart';
 export 'widgets/datepicker/fab_datepicker.dart';
 export 'widgets/datepicker/fab_timepicker.dart';
 export 'widgets/empty/fab_empty_list.dart';
+export 'widgets/fab_loading_overlay.dart';
 export 'widgets/image/fab_image.dart';
 export 'widgets/menu/fab_quick_menu.dart';
 export 'widgets/modal/fab_modal.dart';

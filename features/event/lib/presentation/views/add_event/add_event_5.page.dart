@@ -192,7 +192,7 @@ class _AddEvent5PageState extends State<AddEvent5Page> {
       ),
       PaddingGap.xs(),
       FabTextStyled(
-        'Total budget for speakers is capped at ${FabFunction.formatRupiah(currency: budgetPlannerCubit.state.speakerFees)}. This includes honorarium, travel, and accommodation.',
+        'Total budget for speakers is capped at ${FabFunction.formatRupiah(currency: budgetPlannerCubit.state.speakerFees.toDouble())}. This includes honorarium, travel, and accommodation.',
         style: FabTypography.displayRegular14
             .copyWith(color: FabColors.greyscale400),
       ),

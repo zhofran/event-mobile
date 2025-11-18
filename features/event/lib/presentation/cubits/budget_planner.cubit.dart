@@ -1,17 +1,53 @@
+import 'dart:developer';
+
+import 'package:deps/features/features.dart';
 import 'package:deps/infrastructure/infrastructure.dart';
 import 'package:deps/packages/flutter_bloc.dart';
 import 'package:deps/packages/freezed_annotation.dart';
 import 'package:deps/packages/injectable.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../data/create_event.service.dart';
+
 part 'budget_planner.cubit.freezed.dart';
 part 'states/budget_planner.state.dart';
 
 @lazySingleton
 class BudgetPlannerCubit extends Cubit<BudgetPlannerState> {
-  BudgetPlannerCubit(this._client) : super(BudgetPlannerState.initial());
+  BudgetPlannerCubit() : super(BudgetPlannerState.initial());
 
-  final INetworkClient _client;
+  final createEventService = $.get<CreateEventService>();
+
+  // Post Budget Plan
+  Future<void> postBudgetPlan({required Function() callback}) async {
+    emit(state.copyWith(status: BudgetPlannerStateStatus.loadingPost));
+
+    final result = await createEventService.createBudgetPlan(
+      venueBudget: state.venueBudget,
+      speakerFee: state.speakerFees,
+      vendorBudget: state.vendorBudget,
+      ticketSales: state.ticketSales,
+      sponsorshipIncome: state.sponsorshipIncome,
+    );
+
+    result.fold(
+      (failure) {
+        log(failure.toString(), name: 'postBudgetPlan - err');
+        emit(
+          state.copyWith(status: BudgetPlannerStateStatus.failed),
+        );
+      },
+      (response) {
+        log(response.toString(), name: 'postBudgetPlan - success');
+
+        emit(
+          state.copyWith(status: BudgetPlannerStateStatus.succeeded),
+        );
+
+        callback.call();
+      },
+    );
+  }
 
   // Toggle form validity manually
   void toggleValidityForm({required bool? value}) {
@@ -31,14 +67,14 @@ class BudgetPlannerCubit extends Cubit<BudgetPlannerState> {
 
     emit(
       state.copyWith(
-        venueBudget: venueBudget.toDouble(),
-        speakerFees: speakerFees.toDouble(),
-        vendorBudget: vendorBudget.toDouble(),
-        ticketSales: ticketSales.toDouble(),
-        sponsorshipIncome: sponsorshipIncome.toDouble(),
-        totalExpenses: totalExpenses.toDouble(),
-        totalIncome: totalIncome.toDouble(),
-        netBudget: netBudget.toDouble(),
+        venueBudget: venueBudget,
+        speakerFees: speakerFees,
+        vendorBudget: vendorBudget,
+        ticketSales: ticketSales,
+        sponsorshipIncome: sponsorshipIncome,
+        totalExpenses: totalExpenses,
+        totalIncome: totalIncome,
+        netBudget: netBudget,
       ),
     );
   }

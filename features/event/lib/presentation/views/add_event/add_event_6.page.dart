@@ -21,7 +21,7 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
   int totalSteps = 8;
 
   // Maximum budget untuk vendor (dari gambar: Rp90.000.000)
-  double get maximumBudget => budgetPlannerCubit.state.vendorBudget;
+  double get maximumBudget => budgetPlannerCubit.state.vendorBudget.toDouble();
 
   final List<VendorRFQData> vendorRFQ = [];
 
