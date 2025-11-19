@@ -5,6 +5,8 @@ import 'package:deps/packages/reactive_forms.dart';
 import 'package:deps/packages/uicons.dart';
 import 'package:flutter/material.dart';
 
+import '../../../cubits/location.cubit.dart';
+
 @RoutePage()
 class VendorLocationPage extends StatefulWidget {
   const VendorLocationPage({super.key});
@@ -19,28 +21,12 @@ class _VendorLocationPageState extends State<VendorLocationPage> {
   late FormControl<String> _citySelectionFormControl;
 
   Set<String> _selectedMarketFocus = {};
-  // Set<String> _selectedMarketFocusChips = {};
+  List<SelectOption<String>> _countriesOptions = [];
+  List<SelectOption<String>> _citiesOptions = [];
+  final locationCubit = $.get<LocationCubit>();
+  String? _selectedCountryIso2;
 
-  // Options as SelectOption<String> which the FabSelectBottomSheet expects
-  final List<SelectOption<String>> _countriesOptions = [
-    const SelectOption(value: 'Albania', label: 'Albania', icon: Text('🇦🇱')),
-    const SelectOption(value: 'Argentina', label: 'Argentina', icon: Text('🇦🇷')),
-    const SelectOption(value: 'Austria', label: 'Austria', icon: Text('🇦🇹')),
-    const SelectOption(value: 'Australia', label: 'Australia', icon: Text('🇦🇺')),
-    const SelectOption(value: 'Brazil', label: 'Brazil', icon: Text('🇧🇷')),
-    const SelectOption(value: 'Belgium', label: 'Belgium', icon: Text('🇧🇪')),
-    const SelectOption(value: 'Canada', label: 'Canada', icon: Text('🇨🇦')),
-    const SelectOption(value: 'Denmark', label: 'Denmark', icon: Text('🇩🇰')),
-    const SelectOption(value: 'Indonesia', label: 'Indonesia', icon: Text('🇮🇩')),
-  ];
 
-  final List<SelectOption<String>> _citiesOptions = [
-    const SelectOption(value: 'Bali', label: 'Bali'),
-    const SelectOption(value: 'Jakarta', label: 'Jakarta'),
-    const SelectOption(value: 'Surabaya', label: 'Surabaya'),
-    const SelectOption(value: 'Bandung', label: 'Bandung'),
-    const SelectOption(value: 'Medan', label: 'Medan'),
-  ];
   
   final List<SelectOption<String>> _marketFocusOptions = [
     const SelectOption(value: 'local', label: 'Local(City/Province)'),
@@ -60,6 +46,33 @@ class _VendorLocationPageState extends State<VendorLocationPage> {
 
     _countrySelectionFormControl = form.control('vendor_country') as FormControl<String>;
     _citySelectionFormControl = form.control('vendor_city') as FormControl<String>;
+    
+    // Load countries when page initializes
+    _loadCountries();
+  }
+
+  void _loadCountries() {
+    locationCubit.getCountries();
+  }
+
+  void _loadCities(String countryIso2, {String? cityQuery}) {
+    _selectedCountryIso2 = countryIso2;
+    locationCubit.getCities(countryIso2: countryIso2, cityQuery: cityQuery);
+  }
+
+  void _onCountryChanged(String countryName) {
+    // Find the selected country to get its ISO2 code
+    final selectedCountry = locationCubit.countries.firstWhere(
+      (country) => country.country == countryName,
+      orElse: () => locationCubit.countries.first,
+    );
+    
+    // Clear city selection when country changes
+    _citySelectionFormControl.value = null;
+    _citiesOptions = [];
+    
+    // Load cities for selected country
+    _loadCities(selectedCountry.iso2);
   }
 
   @override
@@ -84,9 +97,67 @@ class _VendorLocationPageState extends State<VendorLocationPage> {
 
                         PaddingGap.lg(),
                         
-                        ReactiveForm(
-                          formGroup: form,
-                          child: _buildRegisterForm(),
+                        StreamBuilder<LocationState>(
+                          stream: locationCubit.stream,
+                          initialData: locationCubit.state,
+                          builder: (context, snapshot) {
+                            final state = snapshot.data ?? locationCubit.state;
+                            
+                            if (state is LocationStateFailed) {
+                              return Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: FabColors.error50,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: FabColors.error200),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.error_outline,
+                                          color: FabColors.error300,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Failed to load countries',
+                                                style: FabTypography.bodySmallMedium.copyWith(
+                                                  color: FabColors.error300,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              GestureDetector(
+                                                onTap: _loadCountries,
+                                                child: Text(
+                                                  'Tap to retry',
+                                                  style: FabTypography.bodySmallMedium.copyWith(
+                                                    color: FabColors.primary,
+                                                    decoration: TextDecoration.underline,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  PaddingGap.lg(),
+                                ],
+                              );
+                            }
+                            
+                            return ReactiveForm(
+                              formGroup: form,
+                              child: _buildRegisterForm(),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -295,32 +366,132 @@ class _VendorLocationPageState extends State<VendorLocationPage> {
   }
 
   Widget _buildCountry() {
-    return FabSelectBottomSheet<String>(
-      formControl: _countrySelectionFormControl,
-      labelText: 'Country',
-      hintText: 'Select Country',
-      searchHintText: 'Search Country',
-      options: _countriesOptions,
-      onChanged: (selectedOption) {
-        // simply set the form control value to the selected option's value
-        if (selectedOption != null) {
-          _countrySelectionFormControl.value = selectedOption.value;
+    return StreamBuilder<LocationState>(
+      stream: locationCubit.stream,
+      initialData: locationCubit.state,
+      builder: (context, snapshot) {
+        final state = snapshot.data ?? locationCubit.state;
+        
+        // Update options when countries are loaded
+        if (state is LocationStateCountriesLoaded) {
+          _countriesOptions = state.countries.map((country) {
+            // Generate flag emoji from country code (simple implementation)
+            final flag = _getFlagEmoji(country.iso2);
+            return SelectOption<String>(
+              value: country.country,
+              label: country.country,
+              icon: Text(flag),
+            );
+          }).toList();
         }
+
+        return FabSelectBottomSheet<String>(
+          formControl: _countrySelectionFormControl,
+          labelText: 'Country',
+          hintText: state is LocationStateLoading ? 'Loading countries...' : 'Select Country',
+          searchHintText: 'Search Country',
+          options: _countriesOptions,
+          onChanged: (selectedOption) {
+            if (selectedOption != null) {
+              _countrySelectionFormControl.value = selectedOption.value;
+              _onCountryChanged(selectedOption.value);
+            }
+          },
+        );
       },
     );
   }
 
+  String _getFlagEmoji(String countryCode) {
+    // Simple flag emoji mapping for common countries
+    const flagMap = {
+      'ID': '🇮🇩',
+      'US': '🇺🇸',
+      'GB': '🇬🇧',
+      'AU': '🇦🇺',
+      'CA': '🇨🇦',
+      'DE': '🇩🇪',
+      'FR': '🇫🇷',
+      'JP': '🇯🇵',
+      'KR': '🇰🇷',
+      'CN': '🇨🇳',
+      'SG': '🇸🇬',
+      'MY': '🇲🇾',
+      'TH': '🇹🇭',
+      'VN': '🇻🇳',
+      'PH': '🇵🇭',
+      'IN': '🇮🇳',
+      'BR': '🇧🇷',
+      'AR': '🇦🇷',
+      'MX': '🇲🇽',
+      'ES': '🇪🇸',
+      'IT': '🇮🇹',
+      'NL': '🇳🇱',
+      'BE': '🇧🇪',
+      'CH': '🇨🇭',
+      'AT': '🇦🇹',
+      'SE': '🇸🇪',
+      'NO': '🇳🇴',
+      'DK': '🇩🇰',
+      'FI': '🇫🇮',
+      'RU': '🇷🇺',
+      'TR': '🇹🇷',
+      'SA': '🇸🇦',
+      'AE': '🇦🇪',
+      'EG': '🇪🇬',
+      'ZA': '🇿🇦',
+      'NG': '🇳🇬',
+      'KE': '🇰🇪',
+      'NZ': '🇳🇿',
+    };
+    
+    return flagMap[countryCode.toUpperCase()] ?? '🏳️';
+  }
+
   Widget _buildCity() {
-    return FabSelectBottomSheet<String>(
-      formControl: _citySelectionFormControl,
-      labelText: 'City (optional)',
-      hintText: 'Select City',
-      searchHintText: 'Search City',
-      options: _citiesOptions,
-      onChanged: (selectedOption) {
-        if (selectedOption != null) {
-          _citySelectionFormControl.value = selectedOption.value;
+    return StreamBuilder<LocationState>(
+      stream: locationCubit.stream,
+      initialData: locationCubit.state,
+      builder: (context, snapshot) {
+        final state = snapshot.data ?? locationCubit.state;
+        
+        // Update cities options when cities are loaded
+        if (state is LocationStateCitiesLoaded) {
+          _citiesOptions = state.cities.map((city) {
+            return SelectOption<String>(
+              value: city.city,
+              label: '${city.city}, ${city.adminName}',
+            );
+          }).toList();
         }
+
+        // Determine if city selection should be enabled
+        final isEnabled = _selectedCountryIso2 != null;
+        final isLoading = state is LocationStateLoading && _selectedCountryIso2 != null;
+        
+        // Show message if no country selected
+        if (!isEnabled) {
+          _citiesOptions = [];
+        }
+
+        return FabSelectBottomSheet<String>(
+          formControl: _citySelectionFormControl,
+          labelText: 'City (optional)',
+          hintText: isLoading 
+              ? 'Loading cities...' 
+              : isEnabled 
+                  ? 'Select City' 
+                  : 'Select country first',
+          searchHintText: 'Search City',
+          emptyText: isEnabled ? 'No cities found' : 'Please select a country first',
+          enabled: isEnabled,
+          options: _citiesOptions,
+          onChanged: (selectedOption) {
+            if (selectedOption != null) {
+              _citySelectionFormControl.value = selectedOption.value;
+            }
+          },
+        );
       },
     );
   }

@@ -281,6 +281,59 @@ class AuthService {
     );
   }
 
+  AsyncEither<UserModel> registerVendor({
+    required String companyName,
+    required String companyTypeId,
+    required String companyDescription,
+    required List<int> eventTypeIds,
+    required String averageEventSize,
+    required String websiteUrl,
+    required String socialMediaUrl,
+    required String cityId,
+    required List<String> venueTypes,
+    required String repName,
+    required String repPosition,
+    required String repEmail,
+  }) async {
+    final response = await _client.invoke<void, Map<String, dynamic>>(
+      '/profile/vendor/complete',
+      RequestType.post,
+      requestBody: {
+        'company_name': companyName,
+        'company_type_id': companyTypeId,
+        'company_description': companyDescription,
+        'event_type_ids': eventTypeIds,
+        'average_event_size': averageEventSize,
+        'website_url': websiteUrl,
+        'social_media_url': socialMediaUrl,
+        'city_id': cityId,
+        'venue_types': venueTypes,
+        'rep_name': repName,
+        'rep_position': repPosition,
+        'rep_email': repEmail,
+      },
+    );
+
+    return response.fold(
+      (failure) {
+        log('Register vendor failure: ${failure.toString()}', name: 'Auth Service');
+        if (failure is UnauthorizedNetworkFailure) {
+          return Left(WrongCredentialsAuthFailure());
+        }
+
+        return Left(failure);
+      },
+      (result) async {
+        log('Register vendor success: $result', name: 'Auth Service');
+        return _client.invoke<dynamic, UserModel>(
+          '/auth/profile',
+          RequestType.get,
+          fromJson: (json) => UserModel.fromJson(json['data'] ?? json),
+        );
+      },
+    );
+  }
+
   // AsyncEither<String> uploadProfilePhoto({
   //   required String filePath,
   // }) async {
