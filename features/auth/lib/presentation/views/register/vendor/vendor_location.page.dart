@@ -6,6 +6,7 @@ import 'package:deps/packages/uicons.dart';
 import 'package:flutter/material.dart';
 
 import '../../../cubits/location.cubit.dart';
+import '../../../cubits/vendor_registration.cubit.dart';
 
 @RoutePage()
 class VendorLocationPage extends StatefulWidget {
@@ -24,7 +25,9 @@ class _VendorLocationPageState extends State<VendorLocationPage> {
   List<SelectOption<String>> _countriesOptions = [];
   List<SelectOption<String>> _citiesOptions = [];
   final locationCubit = $.get<LocationCubit>();
+  final vendorRegistrationCubit = $.get<VendorRegistrationCubit>();
   String? _selectedCountryIso2;
+  String? _selectedCityId;
 
 
   
@@ -36,20 +39,7 @@ class _VendorLocationPageState extends State<VendorLocationPage> {
   ];
 
 
-  @override
-  void initState() {
-    super.initState();
-    form = FormGroup({
-      'vendor_country': FormControl<String>(value: null),
-      'vendor_city': FormControl<String>(value: null),
-    });
 
-    _countrySelectionFormControl = form.control('vendor_country') as FormControl<String>;
-    _citySelectionFormControl = form.control('vendor_city') as FormControl<String>;
-    
-    // Load countries when page initializes
-    _loadCountries();
-  }
 
   void _loadCountries() {
     locationCubit.getCountries();
@@ -70,9 +60,107 @@ class _VendorLocationPageState extends State<VendorLocationPage> {
     // Clear city selection when country changes
     _citySelectionFormControl.value = null;
     _citiesOptions = [];
+    _selectedCityId = null;
     
     // Load cities for selected country
     _loadCities(selectedCountry.iso2);
+  }
+
+  void _onCityChanged(String cityName) {
+    // Find the selected city to get its ID
+    final selectedCity = locationCubit.cities.firstWhere(
+      (city) => city.city == cityName,
+      orElse: () => locationCubit.cities.first,
+    );
+    
+    _selectedCityId = selectedCity.id.toString();
+  }
+
+  void _onSubmitPressed() {
+    // Validate location form
+    if (form.valid && _selectedCountryIso2 != null) {
+      // Save Step 3 data to cubit
+      vendorRegistrationCubit.updateStep3(
+        country: _countrySelectionFormControl.value,
+        countryIso2: _selectedCountryIso2,
+        city: _citySelectionFormControl.value,
+        cityId: _selectedCityId,
+        marketFocus: _selectedMarketFocus.toList(),
+      );
+
+      // Submit the complete registration
+      _submitRegistration();
+    } else {
+      // Mark all as touched to show validation errors
+      form.markAllAsTouched();
+      
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a country to continue'),
+          backgroundColor: FabColors.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _submitRegistration() async {
+    // Add default values for required API fields
+    vendorRegistrationCubit.updateAdditionalData(
+      eventTypeIds: [1], // Default event type
+      averageEventSize: 'Medium',
+      venueTypes: ['Indoor'],
+      repName: vendorRegistrationCubit.data.companyName ?? 'Representative',
+      repPosition: 'Manager',
+      repEmail: 'contact@company.com',
+    );
+
+    await vendorRegistrationCubit.submitRegistration();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    form = FormGroup({
+      'vendor_country': FormControl<String>(value: null),
+      'vendor_city': FormControl<String>(value: null),
+    });
+
+    _countrySelectionFormControl = form.control('vendor_country') as FormControl<String>;
+    _citySelectionFormControl = form.control('vendor_city') as FormControl<String>;
+    
+    // Load countries when page initializes
+    _loadCountries();
+    
+    // Listen to vendor registration state
+    _listenToVendorRegistrationState();
+  }
+
+  void _listenToVendorRegistrationState() {
+    vendorRegistrationCubit.stream.listen((state) {
+      if (state is VendorRegistrationStateSuccess) {
+        // Navigate to success page or dashboard
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Vendor registration completed successfully!'),
+            backgroundColor: FabColors.success,
+          ),
+        );
+        
+        // Navigate to next page (permissions or dashboard)
+        $.navigator.push(
+          PermissionNotificationRoute(onResult: (bool _) {})
+        );
+      } else if (state is VendorRegistrationStateFailed) {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Registration failed: ${state.failure.message}'),
+            backgroundColor: FabColors.error,
+          ),
+        );
+      }
+    });
   }
 
   @override
@@ -168,15 +256,29 @@ class _VendorLocationPageState extends State<VendorLocationPage> {
 
             Padding(
               padding: const EdgeInsets.all(24.0),
-              child: FabButton.primary(
-                onPressed: () {
-                  $.navigator.push(
-                    PermissionNotificationRoute(onResult: (bool _) {})
+              child: StreamBuilder<VendorRegistrationState>(
+                stream: vendorRegistrationCubit.stream,
+                initialData: vendorRegistrationCubit.state,
+                builder: (context, snapshot) {
+                  final state = snapshot.data ?? vendorRegistrationCubit.state;
+                  final isLoading = state is VendorRegistrationStateLoading;
+
+                  return FabButton.primary(
+                    onPressed: isLoading ? null : _onSubmitPressed,
+                    size: FabButtonSize.large,
+                    width: double.infinity,
+                    child: isLoading 
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text('Complete Registration'),
                   );
                 },
-                size: FabButtonSize.large,
-                width: double.infinity,
-                child: const Text('Continue'),
               ),
             ),
           ],
@@ -489,6 +591,7 @@ class _VendorLocationPageState extends State<VendorLocationPage> {
           onChanged: (selectedOption) {
             if (selectedOption != null) {
               _citySelectionFormControl.value = selectedOption.value;
+              _onCityChanged(selectedOption.value);
             }
           },
         );

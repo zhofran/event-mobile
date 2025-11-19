@@ -5,6 +5,8 @@ import 'package:deps/packages/reactive_forms.dart';
 import 'package:deps/packages/uicons.dart';
 import 'package:flutter/material.dart';
 
+import '../../../cubits/vendor_registration.cubit.dart';
+
 
 @RoutePage()
 class VendorDetailPage extends StatefulWidget {
@@ -18,6 +20,7 @@ class _VendorDetailPageState extends State<VendorDetailPage> {
   late FormGroup form;  
   
   String? _selectedPaymentTerm;
+  final vendorRegistrationCubit = $.get<VendorRegistrationCubit>();
 
   final List<String> _paymentTerms = [
     '50/50',
@@ -67,11 +70,7 @@ class _VendorDetailPageState extends State<VendorDetailPage> {
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: FabButton.primary(
-                onPressed: () {
-                  $.navigator.push(
-                    VendorLocationRoute(),
-                  );
-                },
+                onPressed: _onContinuePressed,
                 size: FabButtonSize.large,
                 width: double.infinity,
                 child: Text(
@@ -248,6 +247,24 @@ class _VendorDetailPageState extends State<VendorDetailPage> {
 
       ],
     );
+  }
+
+  void _onContinuePressed() {
+    if (form.valid && _selectedPaymentTerm != null) {
+      // Save Step 2 data to cubit
+      vendorRegistrationCubit.updateStep2(
+        foundedYear: form.control('foundedYear').value as String?,
+        websiteUrl: form.control('websiteURL').value as String?,
+        socialMediaUrl: form.control('sosmedURL').value as String?,
+        paymentTerm: _selectedPaymentTerm,
+      );
+
+      // Navigate to next step
+      $.navigator.push(VendorLocationRoute());
+    } else {
+      // Mark all as touched to show validation errors
+      form.markAllAsTouched();
+    }
   }
 
 }

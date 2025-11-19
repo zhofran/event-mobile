@@ -7,6 +7,8 @@ import 'package:deps/packages/reactive_forms.dart';
 import 'package:deps/packages/uicons.dart';
 import 'package:flutter/material.dart';
 
+import '../../../cubits/register.cubit.dart';
+import '../../../cubits/vendor_registration.cubit.dart';
 import '../../widgets/photo_avatar.dart';
 
 @RoutePage()
@@ -21,6 +23,11 @@ class _VendorRegisterPageState extends State<VendorRegisterPage> {
   late FormGroup form;  
   
   String? _selectedBusinessType;
+  String? _selectedBusinessTypeId;
+  File? _selectedImage;
+
+  final vendorRegistrationCubit = $.get<VendorRegistrationCubit>();
+  final registerCubit = $.get<RegisterCubit>();
 
   final List<String> _businessType = [
     'Catering',
@@ -40,6 +47,9 @@ class _VendorRegisterPageState extends State<VendorRegisterPage> {
       'companyType': FormControl<String>(validators: [Validators.required]),
       'companyBio': FormControl<String>(validators: [Validators.required]),
     });
+    
+    // Load company types
+    registerCubit.getAllCompanyType();
   }
   
   @override
@@ -77,11 +87,7 @@ class _VendorRegisterPageState extends State<VendorRegisterPage> {
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: FabButton.primary(
-                onPressed: () {
-                  $.navigator.push(
-                    VendorDetailRoute(),
-                  );
-                },
+                onPressed: _onContinuePressed,
                 size: FabButtonSize.large,
                 width: double.infinity,
                 child: Text(
@@ -142,10 +148,32 @@ class _VendorRegisterPageState extends State<VendorRegisterPage> {
       size: 120,
       backgroundColor: FabColors.primary0,
       iconColor: FabColors.primary200,
+      selectedImage: _selectedImage,
       onImagePicked: (File? image) {
-        print('Image picked: ${image?.path}');
+        setState(() {
+          _selectedImage = image;
+        });
       },
     );
+  }
+
+  void _onContinuePressed() {
+    if (form.valid) {
+      // Save Step 1 data to cubit
+      vendorRegistrationCubit.updateStep1(
+        companyName: form.control('companyName').value as String?,
+        companyType: _selectedBusinessType,
+        companyTypeId: _selectedBusinessTypeId ?? '1', // Default to first type
+        companyDescription: form.control('companyBio').value as String?,
+        companyAvatar: _selectedImage?.path,
+      );
+
+      // Navigate to next step
+      $.navigator.push(VendorDetailRoute());
+    } else {
+      // Mark all as touched to show validation errors
+      form.markAllAsTouched();
+    }
   }
 
   Widget _buildWelcomeSection() {
@@ -182,42 +210,56 @@ class _VendorRegisterPageState extends State<VendorRegisterPage> {
           style: FabTypography.bodySmallMedium,
         ),
         const SizedBox(height: 8,),
-        DropdownButtonFormField<String>(
-          hint: Text(
-            'Business Type',
-            style: FabTypography.bodyLargeMedium.copyWith(
-              color: FabColors.greyscale400
-            ),
-          ),
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: FabColors.greyscale200),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: FabColors.primary300),
-            ),
-          ),
-          initialValue: _selectedBusinessType,
-          items: _businessType.map((size) {
-            return DropdownMenuItem<String>(
-              value: size,
-              child: Text(size),
+        StreamBuilder<RegisterState>(
+          stream: registerCubit.stream,
+          initialData: registerCubit.state,
+          builder: (context, snapshot) {
+            final companyTypes = registerCubit.companyTypes;
+            
+            return DropdownButtonFormField<String>(
+              hint: Text(
+                'Business Type',
+                style: FabTypography.bodyLargeMedium.copyWith(
+                  color: FabColors.greyscale400
+                ),
+              ),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                  borderSide: BorderSide(color: FabColors.greyscale200),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                  borderSide: BorderSide(color: FabColors.primary300),
+                ),
+              ),
+              value: _selectedBusinessTypeId,
+              items: companyTypes.map((companyType) {
+                return DropdownMenuItem<String>(
+                  value: companyType.id.toString(),
+                  child: Text(companyType.name),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedBusinessTypeId = value;
+                  // Find the company type name for display
+                  final selectedType = companyTypes.firstWhere(
+                    (type) => type.id.toString() == value,
+                    orElse: () => companyTypes.first,
+                  );
+                  _selectedBusinessType = selectedType.name;
+                });
+              },
+              icon: Icon(
+                UIcons.boldRounded.angle_small_down,
+                size: 20,
+              ),
             );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedBusinessType = value;
-            });
           },
-          icon: Icon(
-            UIcons.boldRounded.angle_small_down,
-            size: 20,
-          ),
         ),
       ],
     );

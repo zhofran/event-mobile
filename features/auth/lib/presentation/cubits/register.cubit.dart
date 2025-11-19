@@ -27,6 +27,7 @@ class RegisterCubit extends Cubit<RegisterState> {
   List<TopicModel> get topics => _topics;
 
   List<CompanyTypeModel> _companyTypes = [];
+  List<CompanyTypeModel> get companyTypes => _companyTypes;
 
   Future register({
     required String email,
@@ -130,11 +131,10 @@ class RegisterCubit extends Cubit<RegisterState> {
 
       return response.fold(
         (failure) => emit(RegisterStateFailed(failure)), 
-        (topics) {
-          // _topics = topics;
-          // emit(RegisterStateTopic(topics));
-
-          // log('Log result: $topics', name: 'Log Register Cubit');
+        (companyTypes) {
+          _companyTypes = companyTypes;
+          emit(const RegisterStateInitial());
+          // log('Log result: $companyTypes', name: 'Log Register Cubit');
         },
       );
     } catch (e) {
