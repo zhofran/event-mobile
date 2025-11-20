@@ -8,6 +8,8 @@ import 'package:deps/packages/injectable.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../data/create_event.service.dart';
+import '../../domain/enums/event_key_enum.dart';
+import '../../domain/models/budget_plan.model.dart';
 
 part 'budget_planner.cubit.freezed.dart';
 part 'states/budget_planner.state.dart';
@@ -30,15 +32,17 @@ class BudgetPlannerCubit extends Cubit<BudgetPlannerState> {
       sponsorshipIncome: state.sponsorshipIncome,
     );
 
-    result.fold(
+    await result.fold(
       (failure) {
         log(failure.toString(), name: 'postBudgetPlan - err');
         emit(
           state.copyWith(status: BudgetPlannerStateStatus.failed),
         );
       },
-      (response) {
+      (response) async {
         log(response.toString(), name: 'postBudgetPlan - success');
+
+        await saveBudgetPlanLocally();
 
         emit(
           state.copyWith(status: BudgetPlannerStateStatus.succeeded),
@@ -47,6 +51,45 @@ class BudgetPlannerCubit extends Cubit<BudgetPlannerState> {
         callback.call();
       },
     );
+  }
+
+  Future<void> saveBudgetPlanLocally() async {
+    final prefs = $.get<SharedPreferencesManager>();
+
+    await prefs.writeObject<BudgetPlan>(
+      EventKey.budgetPlan.name,
+      BudgetPlan(
+        id: '1',
+        venueBudget: state.venueBudget,
+        speakerFee: state.speakerFees,
+        vendorBudget: state.vendorBudget,
+        ticketSales: state.ticketSales,
+        sponsorshipIncome: state.sponsorshipIncome,
+      ),
+    );
+  }
+
+  Future<BudgetPlan?> loadBudgetPlanLocally() async {
+    final prefs = $.get<SharedPreferencesManager>();
+
+    final budgetPlan = prefs.readObject<BudgetPlan>(
+      EventKey.budgetPlan.name,
+      BudgetPlan.fromJson,
+    );
+
+    if (budgetPlan != null) {
+      emit(
+        state.copyWith(
+          venueBudget: budgetPlan.venueBudget,
+          speakerFees: budgetPlan.speakerFee,
+          vendorBudget: budgetPlan.vendorBudget,
+          ticketSales: budgetPlan.ticketSales,
+          sponsorshipIncome: budgetPlan.sponsorshipIncome,
+        ),
+      );
+    }
+
+    return budgetPlan;
   }
 
   // Toggle form validity manually

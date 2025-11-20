@@ -10,6 +10,8 @@ import 'package:deps/packages/injectable.dart';
 
 import '../../data/create_event.service.dart';
 import '../../data/file_service.dart';
+import '../../domain/enums/event_key_enum.dart';
+import '../../domain/models/event_detail.model.dart';
 
 part 'event_page1.cubit.freezed.dart';
 part 'states/event_page1.state.dart';
@@ -38,7 +40,6 @@ class EventPage1Cubit extends Cubit<EventPage1State> {
 
     // comment when dev cuz already upload on select image
     // await uploadEventBanner(photoPath: state.eventBanner);
-
 
     final result = await createEventService.createEventDetails(
       organizerId: '123e4567-e89b-12d3-a456-426614174000',
@@ -78,6 +79,49 @@ class EventPage1Cubit extends Cubit<EventPage1State> {
         );
       },
     );
+  }
+
+  Future<void> saveEventDetailsLocally() async {
+    final prefs = $.get<SharedPreferencesManager>();
+
+    await prefs.writeObject<EventDetail>(
+      EventKey.eventDetails.name,
+      EventDetail(
+        id: 'eventId',
+        organizerId: 'organizerId',
+        status: 'draft',
+        eventName: state.eventName,
+        eventType: state.eventType,
+        eventCategory: state.eventCategory,
+        description: state.eventDescription,
+        eventFormat: state.eventFormat,
+        eventBanner: state.eventBanner,
+      ),
+    );
+  }
+
+  Future<EventDetail?> loadEventDetailsLocally() async {
+    final prefs = $.get<SharedPreferencesManager>();
+
+    final eventDetail = prefs.readObject<EventDetail>(
+      EventKey.eventDetails.name,
+      EventDetail.fromJson,
+    );
+
+    if (eventDetail != null) {
+      emit(
+        state.copyWith(
+          eventName: eventDetail.eventName,
+          eventType: eventDetail.eventType,
+          eventCategory: eventDetail.eventCategory,
+          eventDescription: eventDetail.description,
+          eventFormat: eventDetail.eventFormat,
+          eventBanner: eventDetail.eventBanner,
+        ),
+      );
+    }
+
+    return eventDetail;
   }
 
   Future<void> uploadEventBanner({required String photoPath}) async {
@@ -136,7 +180,7 @@ class EventPage1Cubit extends Cubit<EventPage1State> {
   void createEvent({
     required String eventName,
     required String eventType,
-    required List<String> eventCategory,
+    required List<int> eventCategory,
     required String eventDescription,
     required String eventFormat,
     required String eventBanner,

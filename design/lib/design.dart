@@ -1,11 +1,11 @@
-export 'package:design/extensions/string_extension.dart';
-
 export '_core/_i18n/i18n.mixin.dart';
 export '_core/constants/assets.gen.dart';
 export '_core/constants/fab_colors.dart';
 export '_core/constants/fab_theme.dart';
 export '_core/constants/fab_theme_data.dart';
 export '_core/constants/fab_typography.dart';
+export 'extensions/date_extension.dart';
+export 'extensions/string_extension.dart';
 export 'widgets/_core/fab_validation_messages.dart';
 export 'widgets/_core/overridens/overriden_cupertino_scrollbar.dart';
 export 'widgets/_core/route/route.dart';
@@ -44,6 +44,7 @@ export 'widgets/snackbar/fab_snackbar.dart';
 export 'widgets/tab_bar/fab_tab_bar.dart';
 export 'widgets/tab_bar/fab_tab_bar_view.dart';
 export 'widgets/tab_bar/fab_tab_selection.dart';
+export 'widgets/tab_bar/fab_tab_selection_v2.dart';
 export 'widgets/tab_bar/widgets/circle_tab_indicator.dart';
 export 'widgets/tab_bar/widgets/underline_tab_indicator.dart';
 export 'widgets/textfield/fab_textfield.dart';

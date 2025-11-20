@@ -51,27 +51,3 @@ extension EventPage3StateX on EventPage3State {
   /// Check if capacity is fully allocated
   bool get isFullyAllocated => remainingSeats == 0;
 }
-
-@freezed
-class SeatPlan with _$SeatPlan {
-  const factory SeatPlan({
-    required String id,
-    required String ticketName,
-    required String ticketType,
-    required double price,
-    required int quota,
-    required String description,
-  }) = _SeatPlan;
-
-  factory SeatPlan.empty() => const SeatPlan(
-        id: '',
-        ticketName: '',
-        ticketType: 'Regular',
-        price: 0.0,
-        quota: 0,
-        description: '',
-      );
-
-  // factory SeatPlan.fromJson(Map<String, dynamic> json) =>
-  //     _$SeatPlanFromJson(json);
-}
