@@ -46,3 +46,15 @@ abstract class FlutterSecureStorageModule {
         ),
       );
 }
+
+/// A module to provide [SharedPreferencesManager] instance for dependency injection.
+///
+/// [SharedPreferencesManager] is a singleton class for managing SharedPreferences operations.
+@module
+abstract class SharedPreferencesModule {
+  /// Provides the singleton instance of [SharedPreferencesManager].
+  ///
+  /// Note: [SharedPreferencesManager.init()] must be called before this getter is accessed.
+  SharedPreferencesManager get sharedPreferences =>
+      SharedPreferencesManager.instance;
+}

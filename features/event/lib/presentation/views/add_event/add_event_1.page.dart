@@ -20,6 +20,7 @@ class _AddEvent1PageState extends State<AddEvent1Page> {
 
   int currentStep = 2;
   int totalSteps = 8;
+  bool _isFormPopulated = false;
 
   final List<SelectOption<String>> _eventTypeOptions = [
     const SelectOption(value: 'conference', label: 'Conference'),
@@ -37,13 +38,53 @@ class _AddEvent1PageState extends State<AddEvent1Page> {
   void initState() {
     super.initState();
 
-    // WidgetsBinding.instance.addPostFrameCallback((_) {});
-
     eventPage1Cubit = $.get<EventPage1Cubit>();
     eventPage1Cubit
       ..toggleValidityForm(value: null)
-      ..getEventCategories()
       ..resetStatus();
+
+    // Load saved event details and populate form
+    _loadSavedEventDetails();
+  }
+
+  Future<void> _loadSavedEventDetails() async {
+    await eventPage1Cubit.getEventCategories();
+    await eventPage1Cubit.loadEventDetailsLocally();
+  }
+
+  void _populateFormWithSavedData(
+      AddEvent1FormForm data, EventPage1State state) {
+    // Only populate once when form is first built
+    if (_isFormPopulated) {
+      return;
+    }
+
+    // Check if there's saved data in state
+    if (state.eventName.isNotEmpty) {
+      data.eventNameControl.value = state.eventName;
+      data.eventTypeControl.value = state.eventType;
+      data.eventDescriptionControl.value = state.eventDescription;
+      data.eventFormatControl.value = state.eventFormat;
+      data.photoPathControl.value = state.eventBanner;
+
+      // Convert category indices back to values for form control
+      if (state.eventCategory.isNotEmpty &&
+          state.eventCategoryOptions.isNotEmpty) {
+        final categoryValues = state.eventCategory
+            .map((index) {
+              if (index >= 0 && index < state.eventCategoryOptions.length) {
+                return state.eventCategoryOptions[index].value;
+              }
+              return null;
+            })
+            .whereType<String>()
+            .toList();
+
+        data.eventCategoryControl.value = categoryValues;
+      }
+
+      _isFormPopulated = true;
+    }
   }
 
   @override
@@ -75,6 +116,9 @@ class _AddEvent1PageState extends State<AddEvent1Page> {
                 Expanded(
                   child: AddEvent1FormFormBuilder(
                     builder: (_, data, __) {
+                      // Populate form with saved data if available
+                      _populateFormWithSavedData(data, state);
+
                       return Column(
                         children: [
                           Expanded(
@@ -99,13 +143,12 @@ class _AddEvent1PageState extends State<AddEvent1Page> {
                                         EventPage1State>(
                                       bloc: eventPage1Cubit,
                                       builder: (context, state) {
-                                        if (state.eventCategoryOptions
-                                            .isNotEmpty) {
+                                        if (state
+                                            .eventCategoryOptions.isNotEmpty) {
                                           return _buildAddEventForm(data);
                                         }
                                         return const Center(
-                                          child:
-                                              CircularProgressIndicator(),
+                                          child: CircularProgressIndicator(),
                                         );
                                       },
                                     ),
@@ -121,17 +164,28 @@ class _AddEvent1PageState extends State<AddEvent1Page> {
                               // onPressed: () {
                               //   data.submit(
                               //     onValid: (model) {
+                              //       // Convert selected category values to indices
+                              //       final categoryIndices = model.eventCategory
+                              //           .map((selectedValue) {
+                              //             return eventPage1Cubit
+                              //                 .state.eventCategoryOptions
+                              //                 .indexWhere((option) =>
+                              //                     option.value == selectedValue);
+                              //           })
+                              //           .where((index) => index != -1)
+                              //           .toList();
+
                               //       eventPage1Cubit.createEvent(
                               //         eventName: model.eventName,
                               //         eventType: model.eventType,
-                              //         eventCategory: model.eventCategory,
+                              //         eventCategory: categoryIndices,
                               //         eventDescription: model.eventDescription,
                               //         eventFormat: model.eventFormat,
                               //         eventBanner: model.photoPath,
                               //       );
-        
+
                               //       $.navigator.push(const AddEvent2Route());
-        
+
                               //       FabSnackbar.success(
                               //         context: context,
                               //         content:
@@ -153,8 +207,7 @@ class _AddEvent1PageState extends State<AddEvent1Page> {
                               width: double.infinity,
                               child: Text(
                                 'Continue',
-                                style: FabTypography.displaySemiBold16
-                                    .copyWith(
+                                style: FabTypography.displaySemiBold16.copyWith(
                                   color: FabColors.greyscale0,
                                 ),
                               ),
@@ -174,23 +227,31 @@ class _AddEvent1PageState extends State<AddEvent1Page> {
   }
 
   Future<void> byPass() async {
-    await eventPage1Cubit.postCreateEventDetails();
-    // eventPage1Cubit.createEvent(
-    //   eventName: 'Sample Event',
-    //   eventType: 'conference',
-    //   eventCategory: ['Technology', 'Leadership'],
-    //   eventDescription: 'Sample Event Description',
-    //   eventFormat: 'offline',
-    //   eventBanner:
-    //       'http://minio:9000/apni-event/2025/11/18/d8001dc9-e6c4-46d9-ae57-998001582632.jpg',
-    // );
+    // await eventPage1Cubit.postCreateEventDetails();
+    eventPage1Cubit.createEvent(
+      eventName: 'Sample Event',
+      eventType: 'conference',
+      eventCategory: [1, 2],
+      eventDescription: 'Sample Event Description',
+      eventFormat: 'offline',
+      eventBanner:
+          'http://minio:9000/apni-event/2025/11/18/d8001dc9-e6c4-46d9-ae57-998001582632.jpg',
+    );
 
-    // FabSnackbar.success(
-    //   context: context,
-    //   content: 'Create Event Details saved successfully!',
-    // );
+    await eventPage1Cubit.saveEventDetailsLocally().then(
+      (value) async {
+        if (!mounted) {
+          return;
+        }
 
-    // await $.navigator.push(const AddEvent2Route());
+        FabSnackbar.success(
+          context: context,
+          content: 'Create Event Details saved successfully!',
+        );
+
+        await $.navigator.push(const AddEvent2Route());
+      },
+    );
   }
 
   Widget _buildWelcomeSection() {

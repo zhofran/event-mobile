@@ -1,7 +1,12 @@
+import 'package:deps/features/features.dart';
 import 'package:deps/infrastructure/infrastructure.dart';
 import 'package:deps/packages/flutter_bloc.dart';
 import 'package:deps/packages/freezed_annotation.dart';
 import 'package:deps/packages/injectable.dart';
+
+import '../../domain/enums/event_key_enum.dart';
+import '../../domain/models/seat_plan.model.dart';
+
 part 'event_page3.cubit.freezed.dart';
 part 'states/event_page3.state.dart';
 
@@ -24,35 +29,40 @@ class EventPage3Cubit extends Cubit<EventPage3State> {
     );
   }
 
-  void byPass() {
+  Future<void> byPass() async {
     final seatPlans = <SeatPlan>[
-      const SeatPlan(
+      SeatPlan(
         id: '1763304381145',
         ticketName: 'pow',
         ticketType: 'Regular',
         price: 5000.0,
         quota: 2000,
         description: 'asdsad',
+        sold: 0,
       ),
-      const SeatPlan(
+      SeatPlan(
         id: '1763304519406',
         ticketName: 'low',
         ticketType: 'Premium',
         price: 8000.0,
         quota: 1000,
         description: 'asodkosad',
+        sold: 0,
       ),
-      const SeatPlan(
+      SeatPlan(
         id: '1763304543567',
         ticketName: 'pass',
         ticketType: 'VVIP',
         price: 15000.0,
         quota: 150,
         description: 'asdlsakd',
+        sold: 0,
       ),
     ];
 
     emit(state.copyWith(seatPlans: seatPlans));
+
+    await saveSeatPlansLocally();
   }
 
   /// Add a new seat plan
@@ -86,6 +96,7 @@ class EventPage3Cubit extends Cubit<EventPage3State> {
       price: price,
       quota: quota,
       description: description,
+      sold: 0,
     );
 
     final updatedPlans = List<SeatPlan>.from(state.seatPlans)..add(newPlan);
@@ -134,6 +145,7 @@ class EventPage3Cubit extends Cubit<EventPage3State> {
       price: price,
       quota: quota,
       description: description,
+      sold: 0,
     );
 
     final updatedPlans = state.seatPlans.map((plan) {
@@ -159,6 +171,34 @@ class EventPage3Cubit extends Cubit<EventPage3State> {
         status: EventPage3StateStatus.succeeded,
       ),
     );
+  }
+
+  Future<void> saveSeatPlansLocally() async {
+    final prefs = $.get<SharedPreferencesManager>();
+
+    await prefs.writeObjectList<SeatPlan>(
+      EventKey.seatPlans.name,
+      state.seatPlans,
+    );
+  }
+
+  Future<List<SeatPlan>?> loadSeatPlansLocally() async {
+    final prefs = $.get<SharedPreferencesManager>();
+
+    final seatPlans = prefs.readObjectList<SeatPlan>(
+      EventKey.seatPlans.name,
+      SeatPlan.fromJson,
+    );
+
+    if (seatPlans != null) {
+      emit(
+        state.copyWith(
+          seatPlans: seatPlans,
+        ),
+      );
+    }
+
+    return seatPlans;
   }
 
   /// Calculate percentage of seats for a given quota

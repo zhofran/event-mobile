@@ -20,6 +20,7 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
 
   int currentStep = 1;
   int totalSteps = 8;
+  bool _isFormPopulated = false;
 
   @override
   void initState() {
@@ -28,6 +29,61 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
     // Initialize cubit from DI
     budgetPlannerCubit = $.get<BudgetPlannerCubit>();
     budgetPlannerCubit.toggleValidityForm(value: null);
+
+    // Load saved budget plan and populate form
+    _loadSavedBudgetPlan();
+  }
+
+  Future<void> _loadSavedBudgetPlan() async {
+    await budgetPlannerCubit.loadBudgetPlanLocally();
+  }
+
+  void _populateFormWithSavedData(
+      BudgetPlannerFormForm data, BudgetPlannerState state) {
+    // Only populate once when form is first built
+    if (_isFormPopulated) {
+      return;
+    }
+
+    // Check if there's saved data in state
+    if (state.venueBudget > 0 ||
+        state.speakerFees > 0 ||
+        state.vendorBudget > 0 ||
+        state.ticketSales > 0 ||
+        state.sponsorshipIncome > 0) {
+      // Format numbers with thousands separator
+      data.venueBudgetControl.value =
+          ThousandsSeparatorInputFormatter.formatNumber(
+        state.venueBudget,
+        separator: ',',
+      );
+
+      data.speakerFeesControl.value =
+          ThousandsSeparatorInputFormatter.formatNumber(
+        state.speakerFees,
+        separator: ',',
+      );
+
+      data.vendorBudgetControl.value =
+          ThousandsSeparatorInputFormatter.formatNumber(
+        state.vendorBudget,
+        separator: ',',
+      );
+
+      data.ticketSalesControl.value =
+          ThousandsSeparatorInputFormatter.formatNumber(
+        state.ticketSales,
+        separator: ',',
+      );
+
+      data.sponsorshipIncomeControl.value =
+          ThousandsSeparatorInputFormatter.formatNumber(
+        state.sponsorshipIncome,
+        separator: ',',
+      );
+
+      _isFormPopulated = true;
+    }
   }
 
   @override
@@ -64,6 +120,9 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
                 Expanded(
                   child: BudgetPlannerFormFormBuilder(
                     builder: (_, data, __) {
+                      // Populate form with saved data if available
+                      _populateFormWithSavedData(data, state);
+
                       return Column(
                         children: [
                           Expanded(
@@ -263,12 +322,19 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
       )
       ..toggleValidityForm(value: true);
 
-    FabSnackbar.success(
-      context: context,
-      content: 'Budget planning saved successfully!',
-    );
+    await budgetPlannerCubit.saveBudgetPlanLocally().then(
+      (value) async {
+        if (!mounted) {
+          return;
+        }
+        FabSnackbar.success(
+          context: context,
+          content: 'Budget planning saved successfully!',
+        );
 
-    await $.navigator.push(const AddEvent1Route());
+        await $.navigator.push(const AddEvent1Route());
+      },
+    );
   }
 
   Future<void> addBudgetPlanner(BudgetPlannerForm model) async {

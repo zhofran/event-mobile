@@ -8,6 +8,7 @@ import 'package:deps/packages/reactive_forms.dart';
 import 'package:flutter/material.dart';
 
 import '../../../domain/forms/add_event_3.form.dart';
+import '../../../domain/models/seat_plan.model.dart';
 import '../../cubits/budget_planner.cubit.dart';
 import '../../cubits/event_page2.cubit.dart';
 import '../../cubits/event_page3.cubit.dart';
@@ -51,6 +52,13 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
       capacity: eventPage2Cubit.state.capacity,
       ticketSalesTarget: budgetPlannerCubit.state.ticketSales.toDouble(),
     );
+
+    // Load saved seat plans
+    _loadSavedSeatPlans();
+  }
+
+  Future<void> _loadSavedSeatPlans() async {
+    await eventPage3Cubit.loadSeatPlansLocally();
   }
 
   /// =======================================================
@@ -140,7 +148,7 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
         price:
             ThousandsSeparatorInputFormatter.formatNumber(plan.price.toInt()),
         quota: ThousandsSeparatorInputFormatter.formatNumber(plan.quota),
-        description: plan.description,
+        description: plan.description ?? '',
       );
       editingIds.add(id);
     });
@@ -210,9 +218,10 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
                 Padding(
                   padding: const EdgeInsets.all(24),
                   child: FabButton.primary(
-                    onPressed: () {
-                      eventPage3Cubit.byPass();
-                      _navigateToNextPage();
+                    onPressed: () async {
+                      await eventPage3Cubit.byPass().then((_) {
+                        _navigateToNextPage();
+                      });
                     },
                     // onPressed: () => _handleContinue(state),
                     size: FabButtonSize.large,
@@ -583,7 +592,7 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
                     PaddingGap.xxs(),
                     Expanded(
                       child: Text(
-                        plan.description,
+                        plan.description ?? '',
                         style: FabTypography.bodySmallMedium.copyWith(
                           color: FabColors.greyscale500,
                         ),
@@ -659,84 +668,12 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
     );
   }
 
-  void _showTicketIncomeBelowTargetDialog(double shortfall) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Ticket Income Below Target',
-                  style: FabTypography.displaySemiBold18,
-                  textAlign: TextAlign.center,
-                ),
-                PaddingGap.md(),
-                Text(
-                  'Your ticket income is ${FabFunction.formatRupiah(currency: shortfall)} below the target. Increase promotion or adjust pricing to reach your goal.',
-                  style: FabTypography.displayRegular14.copyWith(
-                    color: FabColors.greyscale500,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                PaddingGap.lg(),
-                FabButton.primary(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  size: FabButtonSize.large,
-                  width: double.infinity,
-                  child: Text(
-                    'Adjust Ticket Plan',
-                    style: FabTypography.displaySemiBold16.copyWith(
-                      color: FabColors.greyscale0,
-                    ),
-                  ),
-                ),
-                PaddingGap.sm(),
-                FabButton.secondary(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _navigateToNextPage();
-                  },
-                  size: FabButtonSize.large,
-                  width: double.infinity,
-                  child: Text(
-                    'Continue Anyway',
-                    style: FabTypography.displaySemiBold16.copyWith(
-                      color: FabColors.textPrimary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   void _navigateToNextPage() {
+    FabSnackbar.success(
+      context: context,
+      content: 'Create Event Details saved successfully!',
+    );
+
     $.navigator.push(const AddEvent4Route());
-  }
-
-  void _handleContinue(EventPage3State state) {
-    final ticketSales = budgetPlannerCubit.state.ticketSales;
-    final shortfall = ticketSales - state.totalTicketIncome;
-
-    log('Ticket Sales: $ticketSales, Ticket Income: ${state.totalTicketIncome}',
-        name: 'add_event_3');
-
-    if (shortfall > 0) {
-      _showTicketIncomeBelowTargetDialog(shortfall);
-    } else {
-      _navigateToNextPage();
-    }
   }
 }
