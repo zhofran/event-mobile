@@ -7,12 +7,12 @@ part 'sponsor.model.g.dart';
 class Sponsor with _$Sponsor {
   factory Sponsor({
     required String id,
-    @JsonKey(name: 'event_id') required String eventId,
     required String name,
-    String? description,
-    @JsonKey(name: 'city_id') int? cityId,
-    required String status,
-    @JsonKey(name: 'created_at') DateTime? createdAt,
+    required String industry,
+    required String location,
+    required String type,
+    required String description,
+    String? logo,
   }) = _Sponsor;
 
   const Sponsor._();
@@ -22,11 +22,11 @@ class Sponsor with _$Sponsor {
 
   factory Sponsor.empty() => Sponsor(
         id: '',
-        eventId: '',
         name: '',
+        industry: '',
+        location: '',
+        type: '',
         description: '',
-        cityId: null,
-        status: '',
-        createdAt: null,
+        logo: null,
       );
 }

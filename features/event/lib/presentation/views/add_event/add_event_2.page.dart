@@ -13,7 +13,9 @@ import '../../cubits/event_page2.cubit.dart';
 
 @RoutePage()
 class AddEvent2Page extends StatefulWidget {
-  const AddEvent2Page({super.key});
+  const AddEvent2Page({super.key, @queryParam this.fromReview = false});
+
+  final bool fromReview;
 
   @override
   State<AddEvent2Page> createState() => _AddEvent2PageState();
@@ -25,10 +27,12 @@ class _AddEvent2PageState extends State<AddEvent2Page> {
   late BudgetPlannerCubit budgetPlannerCubit;
   bool _isFormPopulatedOffline = false;
   bool _isFormPopulatedOnline = false;
+  late bool _fromReview;
 
   @override
   void initState() {
     super.initState();
+    _fromReview = widget.fromReview;
     eventPage1Cubit = $.get<EventPage1Cubit>();
     eventPage2Cubit = $.get<EventPage2Cubit>();
     budgetPlannerCubit = $.get<BudgetPlannerCubit>();
@@ -105,6 +109,7 @@ class _AddEvent2PageState extends State<AddEvent2Page> {
       eventPage2Cubit: eventPage2Cubit,
       budgetPlannerCubit: budgetPlannerCubit,
       isOffline: isOffline,
+      fromReview: _fromReview,
       populateOfflineForm: _populateOfflineFormWithSavedData,
       populateOnlineForm: _populateOnlineFormWithSavedData,
     );
@@ -118,6 +123,7 @@ class _EventFormScaffold extends StatelessWidget {
     required this.eventPage2Cubit,
     required this.budgetPlannerCubit,
     required this.isOffline,
+    required this.fromReview,
     required this.populateOfflineForm,
     required this.populateOnlineForm,
   });
@@ -126,13 +132,14 @@ class _EventFormScaffold extends StatelessWidget {
   final EventPage2Cubit eventPage2Cubit;
   final BudgetPlannerCubit budgetPlannerCubit;
   final bool isOffline;
+  final bool fromReview;
   final void Function(AddEvent2OfflineFormForm, EventPage2State)
       populateOfflineForm;
   final void Function(AddEvent2OnlineFormForm, EventPage2State)
       populateOnlineForm;
 
   static const int _currentStep = 3;
-  static const int _totalSteps = 8;
+  static const int _totalSteps = 10;
 
   static const List<SelectOption<String>> _eventPlatformOptions = [
     SelectOption(value: 'zoom', label: 'Zoom'),
@@ -143,25 +150,28 @@ class _EventFormScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FabColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const FabPageHeader(title: 'Create Event'),
-            Expanded(
-              child: BlocBuilder<EventPage2Cubit, EventPage2State>(
-                bloc: eventPage2Cubit,
-                buildWhen: (previous, current) =>
-                    previous.isFormValid != current.isFormValid,
-                builder: (context, state) {
-                  return isOffline
-                      ? _buildOfflineForm(context)
-                      : _buildOnlineForm(context);
-                },
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: FabColors.background,
+        body: SafeArea(
+          child: Column(
+            children: [
+              const FabPageHeader(title: 'Create Event'),
+              Expanded(
+                child: BlocBuilder<EventPage2Cubit, EventPage2State>(
+                  bloc: eventPage2Cubit,
+                  buildWhen: (previous, current) =>
+                      previous.isFormValid != current.isFormValid,
+                  builder: (context, state) {
+                    return isOffline
+                        ? _buildOfflineForm(context)
+                        : _buildOnlineForm(context);
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -179,15 +189,16 @@ class _EventFormScaffold extends StatelessWidget {
             return _buildFormContent(
               context: context,
               formFields: _buildOfflineFields(data),
-              onSubmit: () => byPass(context),
-              // onSubmit: () => _handleOfflineSubmit(
-              //   context: context,
-              //   formData: data,
-              //   onValid: (model) => _handleContinue(
-              //     context,
-              //     offlineModel: model,
-              //   ),
-              // ),
+              // onSubmit: () => byPass(context, fromReview: fromReview),
+              onSubmit: () => _handleOfflineSubmit(
+                context: context,
+                formData: data,
+                onValid: (model) => _handleContinue(
+                  context,
+                  offlineModel: model,
+                  fromReview: fromReview,
+                ),
+              ),
             );
           },
         );
@@ -207,15 +218,13 @@ class _EventFormScaffold extends StatelessWidget {
             return _buildFormContent(
               context: context,
               formFields: _buildOnlineFields(data),
-              onSubmit: () => byPass(context),
-              // onSubmit: () => _handleOnlineSubmit(
-              //   context: context,
-              //   formData: data,
-              //   onValid: (model) => _handleContinue(
-              //     context,
-              //     onlineModel: model,
-              //   ),
-              // ),
+              // onSubmit: () => byPass(context, fromReview: fromReview),
+              onSubmit: () => _handleOnlineSubmit(
+                context: context,
+                formData: data,
+                onValid: (model) => _handleContinue(context,
+                    onlineModel: model, fromReview: fromReview),
+              ),
             );
           },
         );
@@ -438,7 +447,7 @@ class _EventFormScaffold extends StatelessWidget {
     );
   }
 
-  Future<void> byPass(BuildContext context) async {
+  Future<void> byPass(BuildContext context, {bool fromReview = false}) async {
     if (eventPage1Cubit.state.eventFormat == 'online') {
       eventPage2Cubit.createScheduleVenueOnline(
         date: DateTime.now(),
@@ -471,13 +480,19 @@ class _EventFormScaffold extends StatelessWidget {
           content: 'Create Event Details saved successfully!',
         );
 
-        await $.navigator.push(const AddEvent3Route());
+        // Check if opened from Review page
+        if (fromReview) {
+          context.router.pop(true); // Return true to trigger reload
+        } else {
+          await $.navigator.push(AddEvent3Route());
+        }
       },
     );
   }
 
   void _handleContinue(
     BuildContext context, {
+    required bool fromReview,
     AddEvent2OnlineForm? onlineModel,
     AddEvent2OfflineForm? offlineModel,
   }) {
@@ -521,11 +536,16 @@ class _EventFormScaffold extends StatelessWidget {
       }
       _showSuccessSnackBar(context);
       // Navigate to next page
-      $.navigator.push(const AddEvent3Route());
+      if (fromReview) {
+        context.router.pop(true);
+      } else {
+        $.navigator.push(AddEvent3Route());
+      }
     }
   }
 
-  void _showBudgetExceededDialog(BuildContext context, double exceeded) {
+  void _showBudgetExceededDialog(BuildContext context, double exceeded,
+      {bool fromReview = false}) {
     BudgetExceededDialog.show(
       context: context,
       title: 'Schedule & Venue Exceeded',
@@ -533,7 +553,11 @@ class _EventFormScaffold extends StatelessWidget {
       onAdjustBudget: () {},
       onContinueAnyway: () {
         // Navigate anyway
-        $.navigator.push(const AddEvent3Route());
+        if (fromReview) {
+          context.router.pop(true);
+        } else {
+          $.navigator.push(AddEvent3Route());
+        }
       },
     );
   }

@@ -6,4 +6,7 @@ enum EventKey {
   ticketSellingTime,
   selectedSpeakers,
   invitedSpeakers,
+  vendors,
+  sponsorships,
+  selectedSponsors,
 }

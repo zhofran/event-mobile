@@ -19,7 +19,7 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
   late BudgetPlannerCubit budgetPlannerCubit;
 
   int currentStep = 1;
-  int totalSteps = 8;
+  int totalSteps = 10;
   bool _isFormPopulated = false;
 
   @override
@@ -93,60 +93,63 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<BudgetPlannerCubit, BudgetPlannerState>(
-      bloc: budgetPlannerCubit,
-      listener: (context, state) {
-        if (state.status == BudgetPlannerStateStatus.loadingPost) {
-          FabLoadingOverlay.show(context);
-        } else {
-          FabLoadingOverlay.hide(context);
-        }
-      },
-      builder: (context, state) {
-        return Scaffold(
-          backgroundColor: FabColors.background,
-          body: SafeArea(
-            child: Column(
-              children: [
-                const FabPageHeader(title: 'Create Event'),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: AnimatedStepProgressIndicator(
-                    currentStep: currentStep,
-                    totalSteps: totalSteps,
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: BlocConsumer<BudgetPlannerCubit, BudgetPlannerState>(
+        bloc: budgetPlannerCubit,
+        listener: (context, state) {
+          if (state.status == BudgetPlannerStateStatus.loadingPost) {
+            FabLoadingOverlay.show(context);
+          } else {
+            FabLoadingOverlay.hide(context);
+          }
+        },
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: FabColors.background,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  const FabPageHeader(title: 'Create Event'),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: AnimatedStepProgressIndicator(
+                      currentStep: currentStep,
+                      totalSteps: totalSteps,
+                    ),
                   ),
-                ),
-                PaddingGap.xl(),
-                Expanded(
-                  child: BudgetPlannerFormFormBuilder(
-                    builder: (_, data, __) {
-                      // Populate form with saved data if available
-                      _populateFormWithSavedData(data, state);
+                  PaddingGap.xl(),
+                  Expanded(
+                    child: BudgetPlannerFormFormBuilder(
+                      builder: (_, data, __) {
+                        // Populate form with saved data if available
+                        _populateFormWithSavedData(data, state);
 
-                      return Column(
-                        children: [
-                          Expanded(
-                            child: ListView(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              children: [
-                                _buildWelcomeSection(),
-                                PaddingGap.md(),
-                                _buildBudgetPlannerForm(data),
-                              ],
+                        return Column(
+                          children: [
+                            Expanded(
+                              child: ListView(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 24),
+                                children: [
+                                  _buildWelcomeSection(),
+                                  PaddingGap.md(),
+                                  _buildBudgetPlannerForm(data),
+                                ],
+                              ),
                             ),
-                          ),
-                          _buildBottomButtons(data),
-                        ],
-                      );
-                    },
+                            _buildBottomButtons(data),
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -282,20 +285,20 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: FabButton.primary(
-            onPressed: byPass,
-            // onPressed: () {
-            //   data.submit(
-            //     onValid: addBudgetPlanner,
-            //     onNotValid: () {
-            //       // Form is invalid, errors will be shown automatically
-            //       budgetPlannerCubit.toggleValidityForm(value: false);
-            //       FabSnackbar.error(
-            //         context: context,
-            //         content: 'Please fill all required fields',
-            //       );
-            //     },
-            //   );
-            // },
+            // onPressed: byPass,
+            onPressed: () {
+              data.submit(
+                onValid: addBudgetPlanner,
+                onNotValid: () {
+                  // Form is invalid, errors will be shown automatically
+                  budgetPlannerCubit.toggleValidityForm(value: false);
+                  FabSnackbar.error(
+                    context: context,
+                    content: 'Please fill all required fields',
+                  );
+                },
+              );
+            },
             size: FabButtonSize.large,
             width: double.infinity,
             child: Text(
@@ -332,7 +335,7 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
           content: 'Budget planning saved successfully!',
         );
 
-        await $.navigator.push(const AddEvent1Route());
+        await $.navigator.push(AddEvent1Route());
       },
     );
   }
@@ -374,14 +377,21 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
       )
       ..toggleValidityForm(value: true);
 
-    await budgetPlannerCubit.postBudgetPlan(callback: () async {
-      FabSnackbar.success(
-        context: context,
-        content: 'Budget planning saved successfully!',
-      );
+    // await budgetPlannerCubit.postBudgetPlan(callback: () async {
+    //   FabSnackbar.success(
+    //     context: context,
+    //     content: 'Budget planning saved successfully!',
+    //   );
 
-      await $.navigator.push(const AddEvent1Route());
-    });
+    //   await $.navigator.push(AddEvent1Route());
+    // });
+
+    FabSnackbar.success(
+      context: context,
+      content: 'Budget planning saved successfully!',
+    );
+
+    await $.navigator.push(AddEvent1Route());
   }
 
   void _handleSkip(BudgetPlannerFormForm data) {
@@ -424,7 +434,7 @@ class _BudgetPlanningPageState extends State<BudgetPlanningPage> {
               );
 
               // Navigate to next step
-              $.navigator.push(const AddEvent1Route());
+              $.navigator.push(AddEvent1Route());
               debugPrint('Skipping budget planning...');
             },
             child: Text(

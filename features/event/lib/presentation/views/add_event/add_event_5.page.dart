@@ -11,7 +11,9 @@ import '../widgets/invite_speaker_dialog.dart';
 
 @RoutePage()
 class AddEvent5Page extends StatefulWidget {
-  const AddEvent5Page({super.key});
+  const AddEvent5Page({super.key, @queryParam this.fromReview = false});
+
+  final bool fromReview;
 
   @override
   State<AddEvent5Page> createState() => _AddEvent5PageState();
@@ -22,9 +24,10 @@ class _AddEvent5PageState extends State<AddEvent5Page> {
   late EventPage5Cubit eventPage5Cubit;
 
   int currentStep = 6;
-  int totalSteps = 8;
+  int totalSteps = 10;
 
   late List<FabTabV2> tabs;
+  String searchQuery = '';
 
   @override
   void initState() {
@@ -51,83 +54,86 @@ class _AddEvent5PageState extends State<AddEvent5Page> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<EventPage5Cubit, EventPage5State>(
-      bloc: eventPage5Cubit,
-      builder: (context, state) {
-        final totalFee = eventPage5Cubit.calculateTotalFee();
-        final maxBudget = budgetPlannerCubit.state.speakerFees.toDouble();
-        final isOverBudget = eventPage5Cubit.isOverBudget(maxBudget);
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: BlocBuilder<EventPage5Cubit, EventPage5State>(
+        bloc: eventPage5Cubit,
+        builder: (context, state) {
+          final totalFee = eventPage5Cubit.calculateTotalFee();
+          final maxBudget = budgetPlannerCubit.state.speakerFees.toDouble();
+          final isOverBudget = eventPage5Cubit.isOverBudget(maxBudget);
 
-        return Scaffold(
-          backgroundColor: FabColors.background,
-          body: SafeArea(
-            child: Column(
-              children: [
-                const FabPageHeader(title: 'Create Event'),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: AnimatedStepProgressIndicator(
-                      currentStep: currentStep, totalSteps: totalSteps),
-                ),
-                PaddingGap.xl(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: _buildWelcomeSection(),
-                ),
-                PaddingGap.md(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    children: [
-                      // Speaker Selected Count
-                      Row(
-                        children: [
-                          Text(
-                            'Speaker Selected: ',
-                            style: FabTypography.bodySmallMedium.copyWith(
-                              color: FabColors.greyscale400,
-                            ),
-                          ),
-                          Text(
-                            '${state.selectedSpeakers.length} Speaker${state.selectedSpeakers.length != 1 ? 's' : ''}',
-                            style: FabTypography.bodySmallBold,
-                          ),
-                        ],
-                      ),
-                      PaddingGap.xxs(),
-                      // Speaker Total Fee
-                      Row(
-                        children: [
-                          Text(
-                            'Speaker Total Fee: ',
-                            style: FabTypography.bodySmallMedium.copyWith(
-                              color: FabColors.greyscale400,
-                            ),
-                          ),
-                          Text(
-                            FabFunction.formatRupiah(currency: totalFee),
-                            style: FabTypography.bodySmallBold,
-                          ),
-                        ],
-                      ),
-                    ],
+          return Scaffold(
+            backgroundColor: FabColors.background,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  const FabPageHeader(title: 'Create Event'),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: AnimatedStepProgressIndicator(
+                        currentStep: currentStep, totalSteps: totalSteps),
                   ),
-                ),
-                PaddingGap.xs(),
-                _buildSearchBar(),
-                PaddingGap.xs(),
-                // ADDED: Invite external speaker section
-                _buildInviteSection(),
-                // Tab Selection with Expanded (Only scrollable area)
-                Expanded(
-                  child: _buildListSpeaker(state),
-                ),
-                _buildFooter(state, totalFee, maxBudget, isOverBudget),
-              ],
+                  PaddingGap.xl(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: _buildWelcomeSection(),
+                  ),
+                  PaddingGap.md(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      children: [
+                        // Speaker Selected Count
+                        Row(
+                          children: [
+                            Text(
+                              'Speaker Selected: ',
+                              style: FabTypography.bodySmallMedium.copyWith(
+                                color: FabColors.greyscale400,
+                              ),
+                            ),
+                            Text(
+                              '${state.selectedSpeakers.length} Speaker${state.selectedSpeakers.length != 1 ? 's' : ''}',
+                              style: FabTypography.bodySmallBold,
+                            ),
+                          ],
+                        ),
+                        PaddingGap.xxs(),
+                        // Speaker Total Fee
+                        Row(
+                          children: [
+                            Text(
+                              'Speaker Total Fee: ',
+                              style: FabTypography.bodySmallMedium.copyWith(
+                                color: FabColors.greyscale400,
+                              ),
+                            ),
+                            Text(
+                              FabFunction.formatRupiah(currency: totalFee),
+                              style: FabTypography.bodySmallBold,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  PaddingGap.xs(),
+                  _buildSearchBar(),
+                  PaddingGap.xs(),
+                  // ADDED: Invite external speaker section
+                  _buildInviteSection(),
+                  // Tab Selection with Expanded (Only scrollable area)
+                  Expanded(
+                    child: _buildListSpeaker(state),
+                  ),
+                  _buildFooter(state, totalFee, maxBudget, isOverBudget),
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -151,10 +157,31 @@ class _AddEvent5PageState extends State<AddEvent5Page> {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: FabSearchBar(
         onChanged: (value) {
-          // TODO: Implement search functionality
+          setState(() {
+            searchQuery = value;
+          });
         },
       ),
     );
+  }
+
+  List<Speaker> _filterSpeakers(List<Speaker> speakers) {
+    if (searchQuery.isEmpty) {
+      return speakers;
+    }
+
+    return speakers.where((speaker) {
+      final nameMatch =
+          speaker.name.toLowerCase().contains(searchQuery.toLowerCase());
+      final titleMatch =
+          speaker.title.toLowerCase().contains(searchQuery.toLowerCase());
+      final locationMatch =
+          speaker.location.toLowerCase().contains(searchQuery.toLowerCase());
+      final specializeMatch =
+          speaker.specialize.toLowerCase().contains(searchQuery.toLowerCase());
+
+      return nameMatch || titleMatch || locationMatch || specializeMatch;
+    }).toList();
   }
 
   /// ADDED: Invite external speaker section
@@ -201,11 +228,16 @@ class _AddEvent5PageState extends State<AddEvent5Page> {
       ...nonInvitedSpeakers,
     ];
 
+    // Apply search filter to all lists
+    final filteredRecommendations = _filterSpeakers(recommendationsSpeakers);
+    final filteredAllSpeakers = _filterSpeakers(state.allSpeakers);
+    final filteredMySpeakers = _filterSpeakers(state.invitedSpeakers);
+
     // Update tabs with appropriate data
     final updatedTabs = [
-      FabTabV2(title: 'Recommendations', items: recommendationsSpeakers),
-      FabTabV2(title: 'All Speakers', items: state.allSpeakers),
-      FabTabV2(title: 'My Speakers', items: state.invitedSpeakers),
+      FabTabV2(title: 'Recommendations', items: filteredRecommendations),
+      FabTabV2(title: 'All Speakers', items: filteredAllSpeakers),
+      FabTabV2(title: 'My Speakers', items: filteredMySpeakers),
     ];
 
     return FabTabSelectionV2(
@@ -450,84 +482,38 @@ class _AddEvent5PageState extends State<AddEvent5Page> {
       decoration: const BoxDecoration(
         color: FabColors.background,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (isOverBudget && state.selectedSpeakers.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.shade200),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.warning_amber_rounded,
-                      color: Colors.red.shade700, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Total fee exceeds budget by ${FabFunction.formatRupiah(currency: totalFee - maxBudget)}',
-                      style: FabTypography.bodySmallMedium.copyWith(
-                        color: Colors.red.shade700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          if (state.selectedSpeakers.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                '${state.selectedSpeakers.length} speaker${state.selectedSpeakers.length > 1 ? 's' : ''} selected',
-                style: FabTypography.displayRegular14.copyWith(
-                  color: FabColors.greyscale600,
-                ),
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                'Select speakers for your event',
-                style: FabTypography.displayRegular14.copyWith(
-                  color: FabColors.greyscale400,
-                ),
-              ),
-            ),
-          FabButton.primary(
-            onPressed: state.selectedSpeakers.isEmpty
-                ? null
-                : () async {
-                    if (isOverBudget) {
-                      _showBudgetExceededDialog(totalFee, maxBudget);
-                    } else {
-                      await eventPage5Cubit.saveSpeakersLocally();
-                      if (!mounted) {
-                        return;
-                      }
+      child: FabButton.primary(
+        onPressed: state.selectedSpeakers.isEmpty
+            ? null
+            : () async {
+                if (isOverBudget) {
+                  _showBudgetExceededDialog(totalFee, maxBudget);
+                } else {
+                  await eventPage5Cubit.saveSpeakersLocally();
+                  if (!mounted) {
+                    return;
+                  }
 
-                      FabSnackbar.success(
-                        context: context,
-                        content:
-                            'Create Ticket Selling Time saved successfully!',
-                      );
-                      await $.navigator.push(const AddEvent6Route());
-                    }
-                  },
-            size: FabButtonSize.large,
-            width: double.infinity,
-            child: Text(
-              'Continue',
-              style: FabTypography.displaySemiBold16.copyWith(
-                color: FabColors.greyscale0,
-              ),
-            ),
+                  FabSnackbar.success(
+                    context: context,
+                    content: 'Create Choose Speakers saved successfully!',
+                  );
+
+                  if (widget.fromReview) {
+                    context.router.pop(true);
+                  } else {
+                    await $.navigator.push(AddEvent6Route());
+                  }
+                }
+              },
+        size: FabButtonSize.large,
+        width: double.infinity,
+        child: Text(
+          'Continue',
+          style: FabTypography.displaySemiBold16.copyWith(
+            color: FabColors.greyscale0,
           ),
-        ],
+        ),
       ),
     );
   }
@@ -538,6 +524,7 @@ class _AddEvent5PageState extends State<AddEvent5Page> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -545,7 +532,7 @@ class _AddEvent5PageState extends State<AddEvent5Page> {
         actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
         title: Center(
           child: FabTextStyled(
-            'Speaker Budget Exceeded',
+            'SpeakerFee Over Limit',
             style: FabTypography.displaySemiBold18.copyWith(
               color: FabColors.greyscale900,
             ),
@@ -553,7 +540,7 @@ class _AddEvent5PageState extends State<AddEvent5Page> {
           ),
         ),
         content: FabTextStyled(
-          'You\'ve spent ${FabFunction.formatRupiah(currency: exceeded)} more than your allocated speaker budget. Try removing some speakers or adjusting your budget.',
+          'Speaker expenses exceeded your plan by ${FabFunction.formatRupiah(currency: exceeded)}. Consider adjusting honorarium or travel costs to stay on track.',
           style: FabTypography.bodySmallRegular.copyWith(
             color: FabColors.greyscale600,
             height: 1.5,
@@ -561,6 +548,7 @@ class _AddEvent5PageState extends State<AddEvent5Page> {
           textAlign: TextAlign.center,
         ),
         actions: [
+          const SizedBox(height: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -580,7 +568,11 @@ class _AddEvent5PageState extends State<AddEvent5Page> {
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  $.navigator.push(const AddEvent6Route());
+                  if (widget.fromReview) {
+                    context.router.pop(true);
+                  } else {
+                    $.navigator.push(AddEvent6Route());
+                  }
                 },
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
