@@ -15,7 +15,9 @@ import '../../cubits/event_page3.cubit.dart';
 
 @RoutePage()
 class AddEvent3Page extends StatefulWidget {
-  const AddEvent3Page({super.key});
+  const AddEvent3Page({super.key, @queryParam this.fromReview = false});
+
+  final bool fromReview;
 
   @override
   State<AddEvent3Page> createState() => _AddEvent3PageState();
@@ -27,7 +29,7 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
   late EventPage3Cubit eventPage3Cubit;
 
   int currentStep = 4;
-  int totalSteps = 8;
+  int totalSteps = 10;
 
   // Local state for editing seat plans - store model and ID for editing forms
   final Map<String, AddEvent3Form> editingModels = {};
@@ -160,85 +162,88 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<EventPage3Cubit, EventPage3State>(
-      bloc: eventPage3Cubit,
-      buildWhen: (previous, current) => previous != current,
-      builder: (context, state) {
-        return Scaffold(
-          backgroundColor: FabColors.background,
-          body: SafeArea(
-            child: Column(
-              children: [
-                const FabPageHeader(title: 'Create Event'),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: AnimatedStepProgressIndicator(
-                    currentStep: currentStep,
-                    totalSteps: totalSteps,
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: BlocBuilder<EventPage3Cubit, EventPage3State>(
+        bloc: eventPage3Cubit,
+        buildWhen: (previous, current) => previous != current,
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: FabColors.background,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  const FabPageHeader(title: 'Create Event'),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: AnimatedStepProgressIndicator(
+                      currentStep: currentStep,
+                      totalSteps: totalSteps,
+                    ),
                   ),
-                ),
-                PaddingGap.xl(),
-                Expanded(
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: _buildWelcomeSection(),
-                      ),
+                  PaddingGap.xl(),
+                  Expanded(
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: _buildWelcomeSection(),
+                        ),
 
-                      PaddingGap.md(),
+                        PaddingGap.md(),
 
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: _buildInfoSection(state),
-                      ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: _buildInfoSection(state),
+                        ),
 
-                      PaddingGap.md(),
+                        PaddingGap.md(),
 
-                      // Render all seat plans
-                      for (final plan in state.seatPlans)
-                        editingIds.contains(plan.id)
-                            ? _buildSeatPlanForm(plan.id)
-                            : _buildSeatPlanSummary(plan),
+                        // Render all seat plans
+                        for (final plan in state.seatPlans)
+                          editingIds.contains(plan.id)
+                              ? _buildSeatPlanForm(plan.id)
+                              : _buildSeatPlanSummary(plan),
 
-                      // Render editing forms that are not yet saved
-                      for (final entry in editingModels.entries)
-                        if (!state.seatPlans.any((p) => p.id == entry.key))
-                          _buildSeatPlanForm(entry.key),
+                        // Render editing forms that are not yet saved
+                        for (final entry in editingModels.entries)
+                          if (!state.seatPlans.any((p) => p.id == entry.key))
+                            _buildSeatPlanForm(entry.key),
 
-                      PaddingGap.sm(),
+                        PaddingGap.sm(),
 
-                      _buildAddSeatPlanButton(state),
+                        _buildAddSeatPlanButton(state),
 
-                      PaddingGap.md(),
-                    ],
+                        PaddingGap.md(),
+                      ],
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: FabButton.primary(
-                    onPressed: () async {
-                      await eventPage3Cubit.byPass().then((_) {
-                        _navigateToNextPage();
-                      });
-                    },
-                    // onPressed: () => _handleContinue(state),
-                    size: FabButtonSize.large,
-                    width: double.infinity,
-                    child: Text(
-                      'Continue',
-                      style: FabTypography.displaySemiBold16.copyWith(
-                        color: FabColors.greyscale0,
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: FabButton.primary(
+                      // onPressed: () async {
+                      //   await eventPage3Cubit.byPass().then((_) {
+                      //     _navigateToNextPage();
+                      //   });
+                      // },
+                      onPressed: () => _handleContinue(state),
+                      size: FabButtonSize.large,
+                      width: double.infinity,
+                      child: Text(
+                        'Continue',
+                        style: FabTypography.displaySemiBold16.copyWith(
+                          color: FabColors.greyscale0,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -668,12 +673,94 @@ class _AddEvent3PageState extends State<AddEvent3Page> {
     );
   }
 
+  void _handleContinue(EventPage3State state) {
+    final ticketSales = budgetPlannerCubit.state.ticketSales;
+    final shortfall = ticketSales - state.totalTicketIncome;
+
+    log('Ticket Sales: $ticketSales, Ticket Income: ${state.totalTicketIncome}',
+        name: 'add_event_3');
+
+    if (shortfall > 0) {
+      _showTicketIncomeBelowTargetDialog(shortfall);
+    } else {
+      _navigateToNextPage();
+    }
+  }
+
+  void _showTicketIncomeBelowTargetDialog(double shortfall) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Ticket Income Below Target',
+                  style: FabTypography.displaySemiBold18,
+                  textAlign: TextAlign.center,
+                ),
+                PaddingGap.md(),
+                Text(
+                  'Your ticket income is ${FabFunction.formatRupiah(currency: shortfall)} below the target. Increase promotion or adjust pricing to reach your goal.',
+                  style: FabTypography.displayRegular14.copyWith(
+                    color: FabColors.greyscale500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                PaddingGap.lg(),
+                FabButton.primary(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  size: FabButtonSize.large,
+                  width: double.infinity,
+                  child: Text(
+                    'Adjust Ticket Plan',
+                    style: FabTypography.displaySemiBold16.copyWith(
+                      color: FabColors.greyscale0,
+                    ),
+                  ),
+                ),
+                PaddingGap.sm(),
+                FabButton.secondary(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _navigateToNextPage();
+                  },
+                  size: FabButtonSize.large,
+                  width: double.infinity,
+                  child: Text(
+                    'Continue Anyway',
+                    style: FabTypography.displaySemiBold16.copyWith(
+                      color: FabColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _navigateToNextPage() {
     FabSnackbar.success(
       context: context,
       content: 'Create Event Details saved successfully!',
     );
 
-    $.navigator.push(const AddEvent4Route());
+    // Check if opened from Review page
+    if (widget.fromReview) {
+      context.router.pop(true);
+    } else {
+      $.navigator.push(const AddEvent4Route());
+    }
   }
 }

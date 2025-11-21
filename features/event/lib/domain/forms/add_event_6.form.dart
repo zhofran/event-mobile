@@ -16,14 +16,12 @@ class AddEvent6Form with _$AddEvent6Form {
     @RfControl(
       validators: [
         RequiredValidator(),
-        MinLengthValidator(1),
       ],
     )
     required String categories,
     @RfControl(
       validators: [
         RequiredValidator(),
-        MinLengthValidator(1),
       ],
     )
     required String vendor,

@@ -3,155 +3,170 @@ import 'dart:developer';
 import 'package:deps/design/design.dart';
 import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
-import 'package:deps/packages/reactive_forms.dart';
-import 'package:deps/packages/uicons.dart';
+import 'package:deps/packages/flutter_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:reactive_forms/reactive_forms.dart';
+
+import '../../../domain/forms/add_event_7.form.dart';
+import '../../cubits/budget_planner.cubit.dart';
+import '../../cubits/event_page7.cubit.dart';
 
 @RoutePage()
 class AddEvent7Page extends StatefulWidget {
-  const AddEvent7Page({super.key});
+  const AddEvent7Page({super.key, @queryParam this.fromReview = false});
+
+  final bool fromReview;
 
   @override
   State<AddEvent7Page> createState() => _AddEvent7PageState();
 }
 
 class _AddEvent7PageState extends State<AddEvent7Page> {
-  int currentStep = 7;
-  int totalSteps = 8;
+  late BudgetPlannerCubit budgetPlannerCubit;
+  late EventPage7Cubit eventPage7Cubit;
+  int currentStep = 8;
+  int totalSteps = 10;
 
-  // Sponsorship income goal (dari gambar: Rp60.000.000)
-  final double sponsorshipGoal = 60000000;
+  // Local state for editing sponsorship forms
+  final Map<String, AddEvent7Form> editingModels = {};
+  final Set<String> editingIds = {};
 
-  final List<SponsorshipData> sponsorship = [];
-
-  final List<String> _sponsorshipType = [
-    'Monetary',
-    'Product',
-    'Media',
-    'Venue',
-    'Co-Branding',
-    'Services',
+  final List<SelectOption<String>> _sponsorshipTypeOptions = [
+    const SelectOption(value: 'Monetary', label: 'Monetary'),
+    const SelectOption(value: 'Product', label: 'Product'),
+    const SelectOption(value: 'Media', label: 'Media'),
+    const SelectOption(value: 'Venue', label: 'Venue'),
+    const SelectOption(value: 'Co-Branding', label: 'Co-Branding'),
+    const SelectOption(value: 'Services', label: 'Services'),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    budgetPlannerCubit = $.get<BudgetPlannerCubit>();
+    eventPage7Cubit = $.get<EventPage7Cubit>();
+
+    // Initialize cubit with sponsorship goal
+    eventPage7Cubit.initialize(
+      sponsorshipGoal: budgetPlannerCubit.state.sponsorshipIncome.toDouble(),
+    );
+
+    // Load saved sponsorships
+    _loadSavedSponsorships();
+  }
+
+  Future<void> _loadSavedSponsorships() async {
+    await eventPage7Cubit.loadSponsorshipsLocally();
+  }
 
   /// =======================================================
   /// ============== Helper Methods =========================
   /// =======================================================
 
-  // Menghitung total sponsorship income
-  double get totalSponsorshipIncome {
-    double total = 0;
-    for (var sponsor in sponsorship) {
-      if (!sponsor.isEditing) {
-        final form = sponsor.form;
-        final type = form.control('type').value ?? '';
-
-        if (type == 'Monetary') {
-          // Untuk Monetary, ambil dari 'request' field
-          final amountStr = form.control('request').value?.toString() ?? '0';
-          final amount = double.tryParse(amountStr
-                  .replaceAll('.', '')
-                  .replaceAll(',', '')
-                  .replaceAll('Rp', '')
-                  .trim()) ??
-              0;
-          total += amount;
-        } else {
-          // Untuk Product/lainnya, ambil dari 'productAmount' field
-          final amountStr =
-              form.control('productAmount').value?.toString() ?? '0';
-          final amount = double.tryParse(amountStr
-                  .replaceAll('.', '')
-                  .replaceAll(',', '')
-                  .replaceAll('Rp', '')
-                  .trim()) ??
-              0;
-          total += amount;
-        }
-      }
-    }
-    return total;
-  }
-
-  // Menghitung jumlah sponsor slots yang sudah disimpan
-  int get sponsorSlots {
-    return sponsorship.where((s) => !s.isEditing).length;
-  }
-
   /// =======================================================
   /// ============== CRUD Logic Sponsorship =================
   /// =======================================================
   void addSponsorship() {
-    final newForm = FormGroup({
-      'title': FormControl<String>(validators: [Validators.required]),
-      'type': FormControl<String>(validators: [Validators.required]),
-      'request': FormControl<String>(), // For Monetary
-      'requestedProduct': FormControl<String>(), // For Product
-      'productAmount': FormControl<String>(), // For Product
-      'description': FormControl<String>(),
-    });
+    final tempId = DateTime.now().millisecondsSinceEpoch.toString();
 
     setState(() {
-      sponsorship.add(SponsorshipData(form: newForm, isEditing: true));
+      editingModels[tempId] = AddEvent7Form.empty();
+      editingIds.add(tempId);
     });
   }
 
-  void removeSponsorship(int index) {
+  void removeSponsorship(String id) {
+    eventPage7Cubit.removeSponsorship(id);
     setState(() {
-      sponsorship.removeAt(index);
+      editingModels.remove(id);
+      editingIds.remove(id);
     });
   }
 
-  void saveSponsorship(int index) {
-    final form = sponsorship[index].form;
-    final type = form.control('type').value ?? '';
+  void saveSponsorship(String id, AddEvent7Form model) {
+    // Check if this is a new sponsorship or an update
+    final existingSponsorship =
+        eventPage7Cubit.state.sponsorships.where((s) => s.id == id).firstOrNull;
 
-    // Validasi berdasarkan type
-    if (type == 'Monetary') {
-      form.control('request');
-      form.control('requestedProduct').clearValidators();
-      form.control('productAmount').clearValidators();
+    if (existingSponsorship != null) {
+      // Update existing
+      eventPage7Cubit.updateSponsorship(
+        id: id,
+        title: model.title,
+        type: model.type,
+        requestedProduct: model.requestedProduct,
+        productAmount: model.productAmount,
+        description: model.description,
+      );
     } else {
-      form.control('request').clearValidators();
-      form.control('requestedProduct');
-      form.control('productAmount');
+      // Add new
+      eventPage7Cubit.addSponsorship(
+        title: model.title,
+        type: model.type,
+        requestedProduct: model.requestedProduct,
+        productAmount: model.productAmount,
+        description: model.description,
+      );
     }
 
-    form.control('request').updateValueAndValidity();
-    form.control('requestedProduct').updateValueAndValidity();
-    form.control('productAmount').updateValueAndValidity();
+    setState(() {
+      editingModels.remove(id);
+      editingIds.remove(id);
+    });
 
-    if (form.valid) {
-      setState(() {
-        sponsorship[index].isEditing = false;
-      });
-      log('Sponsorship saved: ${form.value}', name: 'add_event_6');
-    } else {
-      form.markAllAsTouched();
-    }
+    log('Sponsorship saved: ${model.title}', name: 'add_event_7');
   }
 
-  void editSponsorship(int index) {
+  void editSponsorship(String id) {
+    final sponsorship =
+        eventPage7Cubit.state.sponsorships.firstWhere((s) => s.id == id);
+
     setState(() {
-      sponsorship[index].isEditing = true;
+      editingModels[id] = AddEvent7Form(
+        title: sponsorship.title,
+        type: sponsorship.type,
+        requestedProduct: sponsorship.requestedProduct,
+        productAmount: sponsorship.productAmount,
+        description: sponsorship.description,
+      );
+      editingIds.add(id);
     });
   }
 
   // Validasi income dan navigasi ke halaman berikutnya
   void handleContinue() {
-    final total = totalSponsorshipIncome;
-    final shortfall = sponsorshipGoal - total;
+    // Check if there are unsaved forms
+    if (editingIds.isNotEmpty) {
+      FabSnackbar.error(
+        context: context,
+        content: 'Please save or delete all sponsorships before continuing',
+      );
+      return;
+    }
 
-    if (shortfall > 0) {
+    if (eventPage7Cubit.state.isIncomeBelowTarget) {
       // Tampilkan dialog jika income belum mencapai target
-      _showIncomeBelowTargetDialog(shortfall);
+      _showIncomeBelowTargetDialog(eventPage7Cubit.state.shortfallAmount);
     } else {
       // Lanjut ke halaman berikutnya
       _navigateToNextPage();
     }
   }
 
-  void _navigateToNextPage() {
-    $.navigator.push(const AddEvent8Route());
+  void _navigateToNextPage() async {
+    await eventPage7Cubit.saveSponsorshipsLocally();
+
+    FabSnackbar.success(
+      context: context,
+      content: 'Sponsorships saved successfully!',
+    );
+
+    if (widget.fromReview) {
+      context.router.pop(true);
+    } else {
+      await $.navigator.push(InviteSponsorsRoute());
+    }
   }
 
   // Dialog untuk income below target
@@ -225,71 +240,84 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FabColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const FabPageHeader(title: 'Create Event'),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: BlocBuilder<EventPage7Cubit, EventPage7State>(
+        bloc: eventPage7Cubit,
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: FabColors.background,
+            body: SafeArea(
+              child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: AnimatedStepProgressIndicator(
-                      currentStep: currentStep,
-                      totalSteps: totalSteps,
+                  const FabPageHeader(title: 'Create Event'),
+                  Expanded(
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: AnimatedStepProgressIndicator(
+                            currentStep: currentStep,
+                            totalSteps: totalSteps,
+                          ),
+                        ),
+
+                        PaddingGap.xl(),
+
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: _buildWelcomeSection(),
+                        ),
+
+                        PaddingGap.sm(),
+
+                        // Info section
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: _buildInfoSection(state),
+                        ),
+
+                        PaddingGap.md(),
+
+                        // Render all sponsorships (saved + editing)
+                        for (final sponsorship in state.sponsorships)
+                          editingIds.contains(sponsorship.id)
+                              ? _buildSponsorForm(sponsorship.id)
+                              : _buildSponsorshipSummary(sponsorship.id, state),
+
+                        // Render editing forms not yet saved
+                        for (final entry in editingModels.entries)
+                          if (!state.sponsorships.any((s) => s.id == entry.key))
+                            _buildSponsorForm(entry.key),
+
+                        PaddingGap.sm(),
+
+                        _buildAddSponsorshipButton(),
+
+                        PaddingGap.xl(),
+                      ],
                     ),
                   ),
-
-                  PaddingGap.xl(),
-
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _buildWelcomeSection(),
+                    padding: const EdgeInsets.all(24.0),
+                    child: FabButton.primary(
+                      onPressed: handleContinue,
+                      size: FabButtonSize.large,
+                      width: double.infinity,
+                      child: Text(
+                        'Continue',
+                        style: FabTypography.displaySemiBold16.copyWith(
+                          color: FabColors.greyscale0,
+                        ),
+                      ),
+                    ),
                   ),
-
-                  PaddingGap.sm(),
-
-                  // Info section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _buildInfoSection(),
-                  ),
-
-                  PaddingGap.md(),
-
-                  // Render semua sponsorship card
-                  for (int i = 0; i < sponsorship.length; i++)
-                    sponsorship[i].isEditing
-                        ? _buildSponsorForm(i)
-                        : _buildSponsorshipSummary(i),
-
-                  PaddingGap.sm(),
-
-                  _buildAddSponsorshipButton(),
-
-                  PaddingGap.xl(),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: FabButton.primary(
-                onPressed: handleContinue,
-                size: FabButtonSize.large,
-                width: double.infinity,
-                child: Text(
-                  'Continue',
-                  style: FabTypography.displaySemiBold16.copyWith(
-                    color: FabColors.greyscale0,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -304,7 +332,7 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
         ),
         PaddingGap.xs(),
         FabTextStyled(
-          'Your sponsorship income goal for this event is ${FabFunction.formatRupiah(currency: sponsorshipGoal)}. Adjust slots to reach this target.',
+          'Your sponsorship income goal for this event is ${FabFunction.formatRupiah(currency: eventPage7Cubit.state.sponsorshipGoal)}. Adjust slots to reach this target.',
           style: FabTypography.displayRegular14
               .copyWith(color: FabColors.greyscale400),
         ),
@@ -312,7 +340,7 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
     );
   }
 
-  Widget _buildInfoSection() {
+  Widget _buildInfoSection(EventPage7State state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -323,7 +351,7 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
               style: FabTypography.displayRegular14,
             ),
             Text(
-              '$sponsorSlots Slots',
+              '${state.sponsorSlots} Slots',
               style: FabTypography.displaySemiBold14,
             ),
           ],
@@ -336,7 +364,7 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
               style: FabTypography.displayRegular14,
             ),
             Text(
-              FabFunction.formatRupiah(currency: totalSponsorshipIncome),
+              FabFunction.formatRupiah(currency: state.totalSponsorshipIncome),
               style: FabTypography.displaySemiBold14,
             ),
           ],
@@ -345,148 +373,138 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
     );
   }
 
-  Widget _buildSponsorForm(int index) {
-    final form = sponsorship[index].form;
+  Widget _buildSponsorForm(String id) {
+    final model = editingModels[id];
+    if (model == null) {
+      return const SizedBox.shrink();
+    }
 
-    return ReactiveForm(
-      formGroup: form,
-      child: FabCardForm(
-        form: form,
-        buildFields: (form) => [
-          FabTextfield(
-            formControl: form.control('title') as FormControl<String>,
-            labelText: 'Sponsorship Title *',
-            hintText: 'e.g. Main Stage Partner',
-            keyboardType: TextInputType.text,
-            size: FabTextfieldSize.large,
-          ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: AddEvent7FormFormBuilder(
+        model: model,
+        builder: (context, formModel, child) {
+          final inputFormatters = [
+            ThousandsSeparatorInputFormatter(separator: ','),
+          ];
 
-          PaddingGap.md(),
-
-          _buildSponsorshipTypeDropdown(form),
-
-          PaddingGap.md(),
-
-          // Conditional fields based on type
-          ReactiveValueListenableBuilder<String?>(
-            formControl: form.control('type') as FormControl<String>,
-            builder: (context, control, child) {
-              final selectedType = control.value;
-
-              if (selectedType == 'Monetary') {
-                // Show only Requested Amount for Monetary
-                return FabTextfield(
-                  formControl: form.control('request') as FormControl<String>,
-                  labelText: 'Requested Amount *',
-                  hintText: 'e.g. Rp 120.000',
-                  keyboardType: TextInputType.number,
-                  size: FabTextfieldSize.large,
-                  inputFormatters: [ThousandsSeparatorInputFormatter()],
-                );
-              } else if (selectedType != null && selectedType.isNotEmpty) {
-                // Show Requested Product and Product Amount for other types
-                return Column(
-                  children: [
-                    FabTextfield(
-                      formControl: form.control('requestedProduct')
-                          as FormControl<String>,
-                      labelText: 'Requested Product *',
-                      hintText: 'e.g. 20pcs Backpack, 300pcs Tumblr',
-                      keyboardType: TextInputType.text,
-                      size: FabTextfieldSize.large,
-                      maxLines: 2,
-                    ),
-                    PaddingGap.md(),
-                    FabTextfield(
-                      formControl:
-                          form.control('productAmount') as FormControl<String>,
-                      labelText: 'Product Amount *',
-                      hintText: 'e.g. Rp45.000.000',
-                      keyboardType: TextInputType.text,
-                      size: FabTextfieldSize.large,
-                      inputFormatters: [ThousandsSeparatorInputFormatter()],
-                    ),
-                  ],
-                );
-              }
-
-              return const SizedBox.shrink();
-            },
-          ),
-
-          PaddingGap.md(),
-
-          FabTextfield(
-            formControl: form.control('description') as FormControl<String>,
-            labelText: 'Description *',
-            hintText: 'Outline the benefits for the sponsor',
-            maxLines: 3,
-            size: FabTextfieldSize.large,
-          ),
-        ],
-        buildSummary: (form) => _buildSponsorshipSummary(index),
-        onSaved: (form) => saveSponsorship(index),
-        onEdit: () => editSponsorship(index),
-        onDelete: () => removeSponsorship(index),
-      ),
-    );
-  }
-
-  Widget _buildSponsorshipTypeDropdown(FormGroup form) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Sponsorship Type *',
-          style: FabTypography.bodySmallMedium.copyWith(
-            color: FabColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        ReactiveDropdownField<String>(
-          formControlName: 'type',
-          hint: Text(
-            'Select Sponsorship Type',
-            style: FabTypography.bodySmallMedium.copyWith(
-              color: FabColors.greyscale400,
-            ),
-          ),
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: FabColors.greyscale200),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: FabColors.primary300),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: FabColors.greyscale200),
-            ),
-          ),
-          items: _sponsorshipType
-              .map(
-                (type) => DropdownMenuItem<String>(
-                  value: type,
-                  child: Text(
-                    type,
-                    style: FabTypography.bodySmallMedium.copyWith(
-                      color: FabColors.textPrimary,
-                    ),
+          return FabCard(
+            radius: 12,
+            color: FabColors.greyscale0,
+            border: Border.all(color: FabColors.greyscale200),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  FabTextfield(
+                    formControl: formModel.titleControl,
+                    labelText: 'Sponsorship Title',
+                    hintText: 'e.g. Main Stage Partner',
+                    keyboardType: TextInputType.text,
                   ),
-                ),
-              )
-              .toList(),
-          icon: Icon(
-            UIcons.boldRounded.angle_small_down,
-            size: 20,
-          ),
-          validationMessages: {
-            ValidationMessage.required: (_) => 'Sponsorship Type is required',
-          },
-        ),
-      ],
+                  PaddingGap.md(),
+                  FabSelectBottomSheet<String>(
+                    formControl: formModel.typeControl,
+                    options: _sponsorshipTypeOptions,
+                    labelText: 'Sponsorship Type',
+                    hintText: 'Select Type',
+                    searchHintText: 'Search Type',
+                  ),
+                  PaddingGap.md(),
+                  // Conditional fields based on type
+                  ReactiveValueListenableBuilder<String?>(
+                    formControl: formModel.typeControl,
+                    builder: (context, control, child) {
+                      final selectedType = control.value ?? '';
+
+                      if (selectedType == 'Monetary') {
+                        return FabTextfield(
+                          formControl: formModel.productAmountControl,
+                          labelText: 'Requested Amount',
+                          hintText: 'e.g. Rp 120.000',
+                          keyboardType: TextInputType.number,
+                          inputFormatters: inputFormatters,
+                        );
+                      } else if (selectedType.isNotEmpty) {
+                        return Column(
+                          children: [
+                            FabTextfield(
+                              formControl: formModel.requestedProductControl,
+                              labelText: 'Requested Product',
+                              hintText: 'e.g. 20pcs Backpack, 300pcs Tumblr',
+                              maxLines: 2,
+                            ),
+                            PaddingGap.md(),
+                            FabTextfield(
+                              formControl: formModel.productAmountControl,
+                              labelText: 'Product Amount',
+                              hintText: 'e.g. Rp45.000.000',
+                              keyboardType: TextInputType.number,
+                              inputFormatters: inputFormatters,
+                            ),
+                          ],
+                        );
+                      }
+
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                  PaddingGap.md(),
+                  FabTextfield(
+                    formControl: formModel.descriptionControl,
+                    labelText: 'Description',
+                    hintText: 'Outline the benefits for the sponsor',
+                    maxLines: 3,
+                  ),
+                  PaddingGap.md(),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FabButton.secondary(
+                          onPressed: () => removeSponsorship(id),
+                          size: FabButtonSize.large,
+                          child: Text(
+                            'Delete',
+                            style: FabTypography.displaySemiBold16.copyWith(
+                              color: FabColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                      PaddingGap.sm(),
+                      Expanded(
+                        child: FabButton.primary(
+                          onPressed: () {
+                            formModel.submit(
+                              onValid: (validModel) =>
+                                  saveSponsorship(id, validModel),
+                              onNotValid: () {
+                                FabSnackbar.error(
+                                  context: context,
+                                  content: 'Please fill all required fields',
+                                );
+                                setState(() {});
+                              },
+                            );
+                          },
+                          size: FabButtonSize.large,
+                          child: Text(
+                            'Save',
+                            style: FabTypography.displaySemiBold16.copyWith(
+                              color: FabColors.greyscale0,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -523,21 +541,21 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
     );
   }
 
-  Widget _buildSponsorshipSummary(int index) {
-    final form = sponsorship[index].form;
+  Widget _buildSponsorshipSummary(String id, EventPage7State state) {
+    final sponsorship = state.sponsorships.firstWhere((s) => s.id == id);
 
-    final title = form.control('title').value ?? '';
-    final type = form.control('type').value ?? '';
-    final desc = form.control('description').value ?? '';
+    final title = sponsorship.title;
+    final type = sponsorship.type;
+    final desc = sponsorship.description;
 
     String amountDisplay = '';
     String productInfo = '';
 
     if (type == 'Monetary') {
-      amountDisplay = form.control('request').value ?? '';
+      amountDisplay = sponsorship.productAmount;
     } else {
-      productInfo = form.control('requestedProduct').value ?? '';
-      amountDisplay = form.control('productAmount').value ?? '';
+      productInfo = sponsorship.requestedProduct;
+      amountDisplay = sponsorship.productAmount;
     }
 
     // Tentukan warna badge berdasarkan type
@@ -557,7 +575,7 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
     }
 
     return GestureDetector(
-      onTap: () => editSponsorship(index),
+      onTap: () => editSponsorship(id),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
         child: FabCard(
@@ -672,14 +690,4 @@ class _AddEvent7PageState extends State<AddEvent7Page> {
       ),
     );
   }
-}
-
-class SponsorshipData {
-  FormGroup form;
-  bool isEditing;
-
-  SponsorshipData({
-    required this.form,
-    this.isEditing = true,
-  });
 }

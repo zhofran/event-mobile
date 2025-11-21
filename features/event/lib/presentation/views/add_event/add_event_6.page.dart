@@ -2,14 +2,18 @@ import 'dart:developer';
 import 'package:deps/design/design.dart';
 import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
+import 'package:deps/packages/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 
 import '../../../domain/forms/add_event_6.form.dart';
 import '../../cubits/budget_planner.cubit.dart';
+import '../../cubits/event_page6.cubit.dart';
 
 @RoutePage()
 class AddEvent6Page extends StatefulWidget {
-  const AddEvent6Page({super.key});
+  const AddEvent6Page({super.key, @queryParam this.fromReview = false});
+
+  final bool fromReview;
 
   @override
   State<AddEvent6Page> createState() => _AddEvent6PageState();
@@ -17,13 +21,9 @@ class AddEvent6Page extends StatefulWidget {
 
 class _AddEvent6PageState extends State<AddEvent6Page> {
   late BudgetPlannerCubit budgetPlannerCubit;
+  late EventPage6Cubit eventPage6Cubit;
   int currentStep = 7;
-  int totalSteps = 8;
-
-  // Maximum budget untuk vendor (dari gambar: Rp90.000.000)
-  double get maximumBudget => budgetPlannerCubit.state.vendorBudget.toDouble();
-
-  final List<VendorRFQData> vendorRFQ = [];
+  int totalSteps = 10;
 
   // Local state for editing vendor forms - store model and ID for editing forms
   final Map<String, AddEvent6Form> editingModels = {};
@@ -38,7 +38,7 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
 
   final List<SelectOption<String>> _vendorOptions = [
     SelectOption(
-      value: 'gourmet_grub',
+      value: 'Gourmet Grub',
       label: 'Gourmet Grub Catering',
       subtitle: 'Exquisite Culinary Creations',
       icon: const CircleAvatar(
@@ -65,7 +65,7 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
       ),
     ),
     SelectOption(
-      value: 'spice_route',
+      value: 'Spice Route',
       label: 'Spice Route Catering',
       subtitle: 'Authentic Flavors, Modern Presentation',
       icon: const CircleAvatar(
@@ -92,7 +92,7 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
       ),
     ),
     SelectOption(
-      value: 'urban_palate',
+      value: 'Urban Palate',
       label: 'Urban Palate Catering',
       subtitle: 'Sophisticated Catering Solutions',
       icon: const CircleAvatar(
@@ -125,31 +125,24 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
     super.initState();
 
     budgetPlannerCubit = $.get<BudgetPlannerCubit>();
+    eventPage6Cubit = $.get<EventPage6Cubit>();
+
+    // Initialize cubit with maximum budget
+    eventPage6Cubit.initialize(
+      maximumBudget: budgetPlannerCubit.state.vendorBudget.toDouble(),
+    );
+
+    // Load saved vendors
+    _loadSavedVendors();
+  }
+
+  Future<void> _loadSavedVendors() async {
+    await eventPage6Cubit.loadVendorsLocally();
   }
 
   /// =======================================================
   /// ============== Helper Methods =========================
   /// =======================================================
-
-  // Menghitung total vendor fee
-  double get totalVendorFee {
-    double total = 0;
-    for (var vendor in vendorRFQ) {
-      // Skip if still editing
-      if (editingIds.contains(vendor.id)) continue;
-
-      final budget = ThousandsSeparatorInputFormatter.parseFormattedNumber(
-              vendor.budget) ??
-          0;
-      total += budget.toDouble();
-    }
-    return total;
-  }
-
-  // Menghitung jumlah vendor yang sudah disimpan (tidak sedang diedit)
-  int get vendorSelectedCount {
-    return vendorRFQ.where((v) => !editingIds.contains(v.id)).length;
-  }
 
   /// =======================================================
   /// ============== CRUD Logic Vendor RFQ ==================
@@ -164,36 +157,40 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
   }
 
   void removeVendor(String id) {
+    eventPage6Cubit.removeVendor(id);
     setState(() {
-      vendorRFQ.removeWhere((v) => v.id == id);
       editingModels.remove(id);
       editingIds.remove(id);
     });
   }
 
   void saveVendor(String id, AddEvent6Form model) {
+    final budget =
+        ThousandsSeparatorInputFormatter.parseFormattedNumber(model.budget)
+                ?.toDouble() ??
+            0.0;
+
     // Check if this is a new vendor or an update
-    final existingVendor = vendorRFQ.where((v) => v.id == id).firstOrNull;
+    final existingVendor =
+        eventPage6Cubit.state.vendors.where((v) => v.id == id).firstOrNull;
 
     if (existingVendor != null) {
       // Update existing
-      final index = vendorRFQ.indexWhere((v) => v.id == id);
-      vendorRFQ[index] = VendorRFQData(
+      eventPage6Cubit.updateVendor(
         id: id,
         categories: model.categories,
         vendor: model.vendor,
-        budget: model.budget,
+        budget: budget,
         description: model.description,
       );
     } else {
       // Add new
-      vendorRFQ.add(VendorRFQData(
-        id: id,
+      eventPage6Cubit.addVendor(
         categories: model.categories,
         vendor: model.vendor,
-        budget: model.budget,
+        budget: budget,
         description: model.description,
-      ));
+      );
     }
 
     setState(() {
@@ -205,13 +202,14 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
   }
 
   void editVendor(String id) {
-    final vendor = vendorRFQ.firstWhere((v) => v.id == id);
+    final vendor = eventPage6Cubit.state.vendors.firstWhere((v) => v.id == id);
 
     setState(() {
       editingModels[id] = AddEvent6Form(
         categories: vendor.categories,
         vendor: vendor.vendor,
-        budget: vendor.budget,
+        budget: ThousandsSeparatorInputFormatter.formatNumber(
+            vendor.budget.toInt()),
         description: vendor.description,
       );
       editingIds.add(id);
@@ -220,20 +218,37 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
 
   // Validasi budget dan navigasi ke halaman berikutnya
   void handleContinue() {
-    final total = totalVendorFee;
-    final exceeded = total - maximumBudget;
+    // Check if there are unsaved forms
+    if (editingIds.isNotEmpty) {
+      FabSnackbar.error(
+        context: context,
+        content: 'Please save or delete all vendors before continuing',
+      );
+      return;
+    }
 
-    if (exceeded > 0) {
+    if (eventPage6Cubit.state.isBudgetExceeded) {
       // Tampilkan dialog jika budget terlampaui
-      _showBudgetExceededDialog(exceeded);
+      _showBudgetExceededDialog(eventPage6Cubit.state.exceededAmount);
     } else {
       // Lanjut ke halaman berikutnya
       _navigateToNextPage();
     }
   }
 
-  void _navigateToNextPage() {
-    $.navigator.push(const AddEvent7Route());
+  void _navigateToNextPage() async {
+    await eventPage6Cubit.saveVendorsLocally();
+
+    FabSnackbar.success(
+      context: context,
+      content: 'Vendor RFQ saved successfully!',
+    );
+
+    if (widget.fromReview) {
+      context.router.pop(true);
+    } else {
+      await $.navigator.push(AddEvent7Route());
+    }
   }
 
   // Dialog untuk budget exceeded
@@ -306,74 +321,84 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
   /// =======================================================
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FabColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const FabPageHeader(title: 'Create Event'),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: BlocBuilder<EventPage6Cubit, EventPage6State>(
+        bloc: eventPage6Cubit,
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: FabColors.background,
+            body: SafeArea(
+              child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: AnimatedStepProgressIndicator(
-                      currentStep: currentStep,
-                      totalSteps: totalSteps,
+                  const FabPageHeader(title: 'Create Event'),
+                  Expanded(
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: AnimatedStepProgressIndicator(
+                            currentStep: currentStep,
+                            totalSteps: totalSteps,
+                          ),
+                        ),
+
+                        PaddingGap.xl(),
+
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: _buildWelcomeSection(),
+                        ),
+
+                        PaddingGap.sm(),
+
+                        // Info section
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: _buildInfoSection(),
+                        ),
+
+                        PaddingGap.md(),
+
+                        // Render all vendors
+                        for (final vendor in state.vendors)
+                          editingIds.contains(vendor.id)
+                              ? _buildVendorForm(vendor.id)
+                              : _buildVendorSummary(vendor.id, state),
+
+                        // Render editing forms that are not yet saved
+                        for (final entry in editingModels.entries)
+                          if (!state.vendors.any((v) => v.id == entry.key))
+                            _buildVendorForm(entry.key),
+
+                        PaddingGap.sm(),
+
+                        _buildAddVendorButton(),
+
+                        PaddingGap.xl(),
+                      ],
                     ),
                   ),
-
-                  PaddingGap.xl(),
-
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _buildWelcomeSection(),
+                    padding: const EdgeInsets.all(24.0),
+                    child: FabButton.primary(
+                      onPressed: handleContinue,
+                      size: FabButtonSize.large,
+                      width: double.infinity,
+                      child: Text(
+                        'Continue',
+                        style: FabTypography.displaySemiBold16.copyWith(
+                          color: FabColors.greyscale0,
+                        ),
+                      ),
+                    ),
                   ),
-
-                  PaddingGap.sm(),
-
-                  // Info section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _buildInfoSection(),
-                  ),
-
-                  PaddingGap.md(),
-
-                  // Render semua vendor card - forms yang sedang diedit
-                  for (var entry in editingModels.entries)
-                    _buildVendorForm(entry.key),
-
-                  // Render vendor summaries yang sudah tersimpan
-                  for (var vendor in vendorRFQ)
-                    if (!editingIds.contains(vendor.id))
-                      _buildVendorSummary(vendor.id),
-
-                  PaddingGap.sm(),
-
-                  _buildAddVendorButton(),
-
-                  PaddingGap.xl(),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: FabButton.primary(
-                onPressed: handleContinue,
-                size: FabButtonSize.large,
-                width: double.infinity,
-                child: Text(
-                  'Continue',
-                  style: FabTypography.displaySemiBold16.copyWith(
-                    color: FabColors.greyscale0,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -388,7 +413,7 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
         ),
         PaddingGap.xs(),
         FabTextStyled(
-          'Maximum vendor spending is ${FabFunction.formatRupiah(currency: maximumBudget)}. Keep all vendor quotes within this limit.',
+          'Maximum vendor spending is ${FabFunction.formatRupiah(currency: eventPage6Cubit.state.maximumBudget)}. Keep all vendor quotes within this limit.',
           style: FabTypography.displayRegular14
               .copyWith(color: FabColors.greyscale400),
         ),
@@ -407,7 +432,7 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
               style: FabTypography.displayRegular14,
             ),
             Text(
-              '$vendorSelectedCount Vendor',
+              '${eventPage6Cubit.state.vendorCount} Vendor',
               style: FabTypography.displaySemiBold14,
             ),
           ],
@@ -420,7 +445,8 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
               style: FabTypography.displayRegular14,
             ),
             Text(
-              FabFunction.formatRupiah(currency: totalVendorFee),
+              FabFunction.formatRupiah(
+                  currency: eventPage6Cubit.state.totalVendorFee),
               style: FabTypography.displaySemiBold14,
             ),
           ],
@@ -538,11 +564,18 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
                       Expanded(
                         child: FabButton.primary(
                           onPressed: () {
-                            if (formModel.form.valid) {
-                              saveVendor(id, formModel.model);
-                            } else {
-                              formModel.form.markAllAsTouched();
-                            }
+                            formModel.submit(
+                              onValid: (model) => saveVendor(id, model),
+                              onNotValid: () {
+                                setState(() {
+                                  formModel.form.markAllAsTouched();
+                                  FabSnackbar.error(
+                                    context: context,
+                                    content: 'Please fill all required fields',
+                                  );
+                                });
+                              },
+                            );
                           },
                           size: FabButtonSize.large,
                           child: Text(
@@ -567,8 +600,8 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
   /// =======================================================
   /// ================= VENDOR SUMMARY ======================
   /// =======================================================
-  Widget _buildVendorSummary(String id) {
-    final vendor = vendorRFQ.firstWhere((v) => v.id == id);
+  Widget _buildVendorSummary(String id, EventPage6State state) {
+    final vendor = state.vendors.firstWhere((v) => v.id == id);
 
     return GestureDetector(
       onTap: () => editVendor(id),
@@ -668,7 +701,7 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
                           ),
                           PaddingGap.xxs(),
                           Text(
-                            'Rp${vendor.budget}',
+                            FabFunction.formatRupiah(currency: vendor.budget),
                             style: FabTypography.bodySmallMedium.copyWith(
                               color: FabColors.greyscale500,
                             ),
@@ -705,23 +738,4 @@ class _AddEvent6PageState extends State<AddEvent6Page> {
       ),
     );
   }
-}
-
-/// =======================================================
-/// =============== DATA MODEL CLASS ======================
-/// =======================================================
-class VendorRFQData {
-  VendorRFQData({
-    required this.id,
-    required this.categories,
-    required this.vendor,
-    required this.budget,
-    required this.description,
-  });
-
-  final String id;
-  final String categories;
-  final String vendor;
-  final String budget;
-  final String description;
 }
