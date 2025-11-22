@@ -97,15 +97,15 @@ class _EventFormScaffold extends StatelessWidget {
       builder: (_, data, __) => _buildFormContent(
           context: context,
           formFields: _buildOfflineFields(data),
-          onSubmit: byPass
-          // onSubmit: () => _handleOfflineSubmit(
-          //   context: context,
-          //   formData: data,
-          //   onValid: (model) => _handleContinue(
-          //     context,
-          //     offlineModel: model,
-          //   ),
-          // ),
+          // onSubmit: byPass
+          onSubmit: () => _handleOfflineSubmit(
+            context: context,
+            formData: data,
+            onValid: (model) => _handleContinue(
+              context,
+              offlineModel: model,
+            ),
+          ),
           ),
     );
   }

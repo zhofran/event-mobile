@@ -104,38 +104,38 @@ class _AddEvent1PageState extends State<AddEvent1Page> {
                       Padding(
                         padding: const EdgeInsets.all(24),
                         child: FabButton.primary(
-                          onPressed: byPass,
-                          // onPressed: () {
-                          //   data.submit(
-                          //     onValid: (model) {
-                          //       eventPage1Cubit.createEvent(
-                          //         eventName: model.eventName,
-                          //         eventType: model.eventType,
-                          //         eventCategory: model.eventCategory,
-                          //         eventDescription: model.eventDescription,
-                          //         eventFormat: model.eventFormat,
-                          //         eventBanner: model.photoPath,
-                          //       );
+                          // onPressed: byPass,
+                          onPressed: () {
+                            data.submit(
+                              onValid: (model) {
+                                eventPage1Cubit.createEvent(
+                                  eventName: model.eventName,
+                                  eventType: model.eventType,
+                                  eventCategory: model.eventCategory,
+                                  eventDescription: model.eventDescription,
+                                  eventFormat: model.eventFormat,
+                                  eventBanner: model.photoPath,
+                                );
 
-                          //       $.navigator.push(const AddEvent2Route());
+                                $.navigator.push(const AddEvent2Route());
 
-                          //       FabSnackbar.success(
-                          //         context: context,
-                          //         content:
-                          //             'Create Event Details saved successfully!',
-                          //       );
-                          //     },
-                          //     onNotValid: () {
-                          //       eventPage1Cubit.toggleValidityForm(
-                          //         value: false,
-                          //       );
-                          //       FabSnackbar.error(
-                          //         context: context,
-                          //         content: 'Please fill all required fields',
-                          //       );
-                          //     },
-                          //   );
-                          // },
+                                FabSnackbar.success(
+                                  context: context,
+                                  content:
+                                      'Create Event Details saved successfully!',
+                                );
+                              },
+                              onNotValid: () {
+                                eventPage1Cubit.toggleValidityForm(
+                                  value: false,
+                                );
+                                FabSnackbar.error(
+                                  context: context,
+                                  content: 'Please fill all required fields',
+                                );
+                              },
+                            );
+                          },
                           size: FabButtonSize.large,
                           width: double.infinity,
                           child: Text(
