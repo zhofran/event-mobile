@@ -20,19 +20,19 @@ class EODetailPage extends StatefulWidget {
 class _EODetailPageState extends State<EODetailPage> {
   late FormGroup form;
 
-  Set<String> _selectedEventType = {};
+  Set<int> _selectedEventType = {};
   String? _selectedEventSize;
 
-  final List<SelectOption<String>> _eventTypeOptions = [
-    const SelectOption(value: '1', label: 'Education'),
-    const SelectOption(value: '2', label: 'Finance'),
-    const SelectOption(value: '3', label: 'Healthcare'),
-    const SelectOption(value: '4', label: 'Hospitality'),
-    const SelectOption(value: '5', label: 'Manufacturing'),
-    const SelectOption(value: '6', label: 'Retail'),
-    const SelectOption(value: '7', label: 'Technology'),
-    const SelectOption(value: '8', label: 'Transportation'),
-    const SelectOption(value: '9', label: 'Utilities'),
+  final List<SelectOption<int>> _eventTypeOptions = [
+    const SelectOption(value: 1, label: 'Education'),
+    const SelectOption(value: 2, label: 'Finance'),
+    const SelectOption(value: 3, label: 'Healthcare'),
+    const SelectOption(value: 4, label: 'Hospitality'),
+    const SelectOption(value: 5, label: 'Manufacturing'),
+    const SelectOption(value: 6, label: 'Retail'),
+    const SelectOption(value: 7, label: 'Technology'),
+    const SelectOption(value: 8, label: 'Transportation'),
+    const SelectOption(value: 9, label: 'Utilities'),
   ];
 
   final List<String> _eventSize = [
@@ -240,7 +240,7 @@ class _EODetailPageState extends State<EODetailPage> {
         const SizedBox(height: 8),
         GestureDetector(
           onTap: () {
-            FabMultiSelectBottomSheet.show<String>(
+            FabMultiSelectBottomSheet.show<int>(
               context: context,
               title: 'Event Type',
               primaryColor: FabColors.primary,

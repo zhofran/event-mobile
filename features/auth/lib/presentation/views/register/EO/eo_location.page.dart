@@ -35,12 +35,12 @@ class _EOLocationPageState extends State<EOLocationPage> {
   bool _hasCitiesError = false;
 
   final List<SelectOption<String>> _preferencesOptions = [
-    const SelectOption(value: 'indoor', label: 'Indoor'),
-    const SelectOption(value: 'outdoor', label: 'Outdoor'),
-    const SelectOption(value: 'exhibition', label: 'Exhibition'),
-    const SelectOption(value: 'conference', label: 'Conference'),
-    const SelectOption(value: 'ballroom', label: 'Ballroom'),
-    const SelectOption(value: 'auditorium', label: 'Auditorium'),
+    const SelectOption(value: 'Indoor', label: 'Indoor'),
+    const SelectOption(value: 'Outdoor', label: 'Outdoor'),
+    const SelectOption(value: 'Exhibition', label: 'Exhibition'),
+    const SelectOption(value: 'Conference', label: 'Conference'),
+    const SelectOption(value: 'Ballroom', label: 'Ballroom'),
+    const SelectOption(value: 'Auditorium', label: 'Auditorium'),
   ];
 
   @override
@@ -610,7 +610,7 @@ class _EOLocationPageState extends State<EOLocationPage> {
     widget.dataEO['city_id'] = _citySelectionFormControl.value;
     widget.dataEO['venue_preferences'] = _selectedPreference.toList();
 
-    log('Location Data: ${widget.dataEO.toString()}', name: 'EO Location Page');
+    log('Location Data: ${widget.dataEO}', name: 'EO Location Page');
 
     // Navigate to next page
     $.navigator.push(EORepresentativeRoute(dataEO: widget.dataEO));

@@ -75,7 +75,7 @@ class FeaturesRouter extends $FeaturesRouter {
           children: [
             AutoRoute(
               page: DashboardRouter.page,
-              guards: [AuthGuard()],
+              // guards: [AuthGuard()],
               initial: true,
               children: [
                 AutoRoute(
@@ -425,11 +425,61 @@ class FeaturesRouter extends $FeaturesRouter {
               path: 'event-detail',
               page: DiscoverEventDetailRoute.page,
             ),
-            // AutoRoute(
-            //   title: (_, __) => 'Booking Flow',
-            //   path: 'booking-flow',
-            //   page: BookingFlowRoute.page,
-            // ),
+            AutoRoute(
+              title: (_, __) => 'Ticket Selection',
+              path: 'ticket-selection',
+              page: TicketSelectionRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Smart Travel',
+              path: 'smart-travel',
+              page: SmartTravelPackRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Payment Method',
+              path: 'payment-method',
+              page: PaymentMethodRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'E-Wallet Payment',
+              path: 'ewallet-payment',
+              page: EWalletRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'E-Wallet Phone',
+              path: 'ewallet-phone',
+              page: EWalletPhoneRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'E-Wallet Details',
+              path: 'ewallet-details',
+              page: EWalletDetailRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Bank Selection',
+              path: 'bank-selection',
+              page: BankSelectionRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'VA Payment',
+              path: 'va-payment',
+              page: VirtualAccountRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'QRIS Payment',
+              path: 'qris-payment',
+              page: QRISPaymentRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Payment Confirmation',
+              path: 'payment-confirmation',
+              page: PaymentConfirmationRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Payment Success',
+              path: 'payment-success',
+              page: PaymentSuccessRoute.page,
+            ),
             CustomRoute(
               page: MaterialDialogWrapperRoute.page,
               customRouteBuilder: materialDialogRouteBuilder,

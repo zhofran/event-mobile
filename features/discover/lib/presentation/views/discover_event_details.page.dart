@@ -12,8 +12,8 @@ class DiscoverEventDetailPage extends StatefulWidget {
   final DiscoverEventModel event;
 
   const DiscoverEventDetailPage({
-    Key? key,
     required this.event,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -653,6 +653,7 @@ class _DiscoverEventDetailPageState extends State<DiscoverEventDetailPage> {
                 onPressed: () {
                   // TODO: Navigate to ticket purchase
                   // $.navigator.push(BookingFlowRoute(event: widget.event));
+                  $.navigator.push(TicketSelectionRoute());
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,

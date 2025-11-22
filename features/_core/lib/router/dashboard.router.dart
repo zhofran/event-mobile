@@ -26,9 +26,8 @@ class DashboardRouter extends StatelessWidget {
         routes: const [
           HomeRoute(),
           DiscoverRouter(),      // Keep this as is since it seems to work
-          JobAppliedRouter(),    // Keep this as is
-          // JobListingRouter(),    // Keep this as is  
-          SettingsRoute(),       // Keep this as is
+          // JobAppliedRouter(),   // Keep this as is  
+          // SettingsRoute(),       // Keep this as is
         ],
         navigatorObservers: () => [HeroController()],
         bottomNavigationBuilder: (_, tabsRouter) {
@@ -48,16 +47,16 @@ class DashboardRouter extends StatelessWidget {
                     icon: Icon(UIcons.regularRounded.document),
                     selectedIcon: Icon(UIcons.solidRounded.document),
                   ),
-                  CupertinoNavigationBarItem(
-                    label: 'Schedule',
-                    icon: Icon(UIcons.regularRounded.calendar),
-                    selectedIcon: Icon(UIcons.solidRounded.calendar),
-                  ),
-                  CupertinoNavigationBarItem(
-                    label: $.tr.settings.title,
-                    icon: Icon(UIcons.regularRounded.settings),
-                    selectedIcon: Icon(UIcons.solidRounded.settings),
-                  ),
+                  // CupertinoNavigationBarItem(
+                  //   label: 'Schedule',
+                  //   icon: Icon(UIcons.regularRounded.calendar),
+                  //   selectedIcon: Icon(UIcons.solidRounded.calendar),
+                  // ),
+                  // CupertinoNavigationBarItem(
+                  //   label: $.tr.settings.title,
+                  //   icon: Icon(UIcons.regularRounded.settings),
+                  //   selectedIcon: Icon(UIcons.solidRounded.settings),
+                  // ),
                 ],
               );
             },

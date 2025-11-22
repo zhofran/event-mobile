@@ -3,7 +3,7 @@ import 'package:deps/packages/freezed_annotation.dart';
 import 'booking_event.model.dart';
 import 'hotel_option.model.dart';
 import 'ticket_type.model.dart';
-import 'transportation_option.model.dart';
+import 'transportation.model.dart';
 
 part 'booking_data.model.freezed.dart';
 part 'booking_data.model.g.dart';
@@ -14,7 +14,7 @@ class BookingData with _$BookingData {
     required BookingEventModel event,
     TicketType? selectedTicket,
     HotelOption? selectedHotel,
-    TransportationOption? selectedTransportation,
+    // TransportationOption? selectedTransportation,
     @Default(false) bool isTravelPackEnabled,
   }) = _BookingData;
 
@@ -27,7 +27,7 @@ class BookingData with _$BookingData {
     int total = selectedTicket?.price ?? 0;
     if (isTravelPackEnabled) {
       total += selectedHotel?.price ?? 0;
-      total += selectedTransportation?.price ?? 0;
+      // total += selectedTransportation?.price ?? 0;
     }
     return total;
   }

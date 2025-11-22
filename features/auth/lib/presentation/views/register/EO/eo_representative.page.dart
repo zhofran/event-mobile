@@ -264,30 +264,30 @@ class _EORepresentativePageState extends State<EORepresentativePage> {
 
     // Log final data before submission
     log('=== Final EO Registration Data ===', name: 'EO Representative Page');
-    log('Company Name: ${widget.dataEO['company_name']}', name: 'Submit');
-    log('Company Type ID: ${widget.dataEO['company_type_id']}', name: 'Submit');
+    log('Company Name: ${widget.dataEO['companyName']}', name: 'Submit');
+    log('Company Type ID: ${widget.dataEO['companyTypeId']}', name: 'Submit');
     log('Description: ${widget.dataEO['company_description']}', name: 'Submit');
-    log('Event Type IDs: ${widget.dataEO['event_type_ids']}', name: 'Submit');
-    log('Event Size: ${widget.dataEO['average_event_size']}', name: 'Submit');
+    log('Event Type IDs: ${widget.dataEO['event_type']}', name: 'Submit');
+    log('Event Size: ${widget.dataEO['event_size']}', name: 'Submit');
     log('Website: ${widget.dataEO['website_url']}', name: 'Submit');
-    log('Social Media: ${widget.dataEO['social_media_url']}', name: 'Submit');
+    log('Social Media: ${widget.dataEO['social_media']}', name: 'Submit');
     log('City ID: ${widget.dataEO['city_id']}', name: 'Submit');
-    log('Venue Types: ${widget.dataEO['venue_types']}', name: 'Submit');
+    log('Venue Types: ${widget.dataEO['venue_preferences']}', name: 'Submit');
     log('Rep Name: $repName', name: 'Submit');
     log('Rep Position: $repPosition', name: 'Submit');
     log('Rep Email: $repEmail', name: 'Submit');
 
     // Submit to API
     final success = await registerCubit.registerEventOrganizer(
-      companyName: widget.dataEO['company_name'] as String,
-      companyTypeId: widget.dataEO['company_type_id'] as int,
+      companyName: widget.dataEO['companyName'] as String,
+      companyTypeId: widget.dataEO['companyTypeId'],
       companyDescription: widget.dataEO['company_description'] as String,
-      eventTypeIds: (widget.dataEO['event_type_ids'] as List).cast<int>(),
-      averageEventSize: widget.dataEO['average_event_size'] as String,
+      eventTypeIds: (widget.dataEO['event_type'] as List).cast<int>(),
+      averageEventSize: widget.dataEO['event_size'] as String,
       websiteUrl: widget.dataEO['website_url'] as String,
-      socialMediaUrl: widget.dataEO['social_media_url'] as String?,
-      cityId: widget.dataEO['city_id'] as int,
-      venueTypes: (widget.dataEO['venue_types'] as List).cast<String>(),
+      socialMediaUrl: widget.dataEO['social_media'] as String?,
+      cityId: int.parse(widget.dataEO['city_id']),
+      venueTypes: (widget.dataEO['venue_preferences'] as List).cast<String>(),
       repName: repName,
       repPosition: repPosition,
       repEmail: repEmail,
@@ -302,14 +302,14 @@ class _EORepresentativePageState extends State<EORepresentativePage> {
 
   bool _validateDataEO() {
     final requiredFields = {
-      'company_name': 'Company name',
-      'company_type_id': 'Company type',
+      'companyName': 'Company name',
+      'companyTypeId': 'Company type',
       'company_description': 'Company description',
-      'event_type_ids': 'Event types',
-      'average_event_size': 'Event size',
+      'event_type': 'Event types',
+      'event_size': 'Event size',
       'website_url': 'Website URL',
       'city_id': 'City',
-      'venue_types': 'Venue preferences',
+      'venue_preferences': 'Venue preferences',
     };
 
     for (final entry in requiredFields.entries) {

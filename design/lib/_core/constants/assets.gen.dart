@@ -17,8 +17,17 @@ import 'package:vector_graphics/vector_graphics.dart' as _vg;
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
+  /// File path: assets/images/LinkAja.png
+  AssetGenImage get linkAja => const AssetGenImage('assets/images/LinkAja.png');
+
+  /// File path: assets/images/ShopeePay.png
+  AssetGenImage get shopeePay => const AssetGenImage('assets/images/ShopeePay.png');
+
   /// File path: assets/images/checklist.png
   AssetGenImage get checklist => const AssetGenImage('assets/images/checklist.png');
+
+  /// File path: assets/images/dana.png
+  AssetGenImage get dana => const AssetGenImage('assets/images/dana.png');
 
   /// File path: assets/images/email_verify.png
   AssetGenImage get emailVerify => const AssetGenImage('assets/images/email_verify.png');
@@ -31,6 +40,12 @@ class $AssetsImagesGen {
 
   /// File path: assets/images/google.png
   AssetGenImage get google => const AssetGenImage('assets/images/google.png');
+
+  /// File path: assets/images/gopay.png
+  AssetGenImage get gopay => const AssetGenImage('assets/images/gopay.png');
+
+  /// File path: assets/images/icon_qris.png
+  AssetGenImage get iconQris => const AssetGenImage('assets/images/icon_qris.png');
 
   /// Directory path: assets/images/icons
   $AssetsImagesIconsGen get icons => const $AssetsImagesIconsGen();
@@ -62,6 +77,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/onboarding_5.png
   AssetGenImage get onboarding5 => const AssetGenImage('assets/images/onboarding_5.png');
 
+  /// File path: assets/images/ovo.png
+  AssetGenImage get ovo => const AssetGenImage('assets/images/ovo.png');
+
   /// File path: assets/images/set_successful.png
   AssetGenImage get setSuccessful => const AssetGenImage('assets/images/set_successful.png');
 
@@ -76,11 +94,16 @@ class $AssetsImagesGen {
 
   /// List of all assets
   List<AssetGenImage> get values => [
+        linkAja,
+        shopeePay,
         checklist,
+        dana,
         emailVerify,
         eventApproval,
         examplePosting,
         google,
+        gopay,
+        iconQris,
         linkedin,
         locationPermission,
         notifPermission,
@@ -89,6 +112,7 @@ class $AssetsImagesGen {
         onboarding3,
         onboarding4,
         onboarding5,
+        ovo,
         setSuccessful,
         splashLogoDark,
         splashLogoLight,
