@@ -135,6 +135,9 @@ final class MainHandler {
           storageDirectory: await getApplicationDocumentsDirectory(),
         );
 
+        // Init SharedPreferences
+        await SharedPreferencesManager.init();
+
         // Call additional setup
         await mainCallback?.call(binding);
 

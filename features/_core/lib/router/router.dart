@@ -75,7 +75,7 @@ class FeaturesRouter extends $FeaturesRouter {
           children: [
             AutoRoute(
               page: DashboardRouter.page,
-              // guards: [AuthGuard()],
+              guards: [AuthGuard()],
               initial: true,
               children: [
                 AutoRoute(
@@ -401,6 +401,11 @@ class FeaturesRouter extends $FeaturesRouter {
               page: AddEvent7Route.page,
             ),
             AutoRoute(
+              title: (_, __) => 'Invite Sponsors',
+              path: 'invite-sponsors',
+              page: InviteSponsorsRoute.page,
+            ),
+            AutoRoute(
               title: (_, __) => 'Add Event 8',
               path: 'add-event-8',
               page: AddEvent8Route.page,
@@ -514,6 +519,41 @@ class FeaturesRouter extends $FeaturesRouter {
               title: (_, __) => 'Post Create',
               path: 'post-create',
               page: PostCreateRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Visa Page',
+              path: 'visa-page',
+              page: VisaApplicationRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Visa Applicant',
+              path: 'visa-applicant',
+              page: VisaApplicantRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Visa Travel Detail',
+              path: 'visa-travel-detail',
+              page: VisaTravelDetailRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Visa Accomodation',
+              path: 'visa-accomodation',
+              page: VisaAccomodationRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Visa Document',
+              path: 'visa-document',
+              page: VisaDocumentRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Visa Review',
+              path: 'visa-review',
+              page: VisaReviewRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Visa Success',
+              path: 'visa-success',
+              page: VisaSuccessRoute.page,
             ),
             CustomRoute(
               page: MaterialDialogWrapperRoute.page,

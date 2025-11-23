@@ -13,7 +13,9 @@ import '../../cubits/event_page2.cubit.dart';
 
 @RoutePage()
 class AddEvent2Page extends StatefulWidget {
-  const AddEvent2Page({super.key});
+  const AddEvent2Page({super.key, @queryParam this.fromReview = false});
+
+  final bool fromReview;
 
   @override
   State<AddEvent2Page> createState() => _AddEvent2PageState();
@@ -23,23 +25,93 @@ class _AddEvent2PageState extends State<AddEvent2Page> {
   late EventPage1Cubit eventPage1Cubit;
   late EventPage2Cubit eventPage2Cubit;
   late BudgetPlannerCubit budgetPlannerCubit;
+  bool _isFormPopulatedOffline = false;
+  bool _isFormPopulatedOnline = false;
+  late bool _fromReview;
 
   @override
   void initState() {
     super.initState();
+    _fromReview = widget.fromReview;
     eventPage1Cubit = $.get<EventPage1Cubit>();
     eventPage2Cubit = $.get<EventPage2Cubit>();
     budgetPlannerCubit = $.get<BudgetPlannerCubit>();
     eventPage2Cubit.toggleValidityForm(value: null);
+
+    // Load saved eventSchedule and populate form
+    _loadSavedEventSchedule();
+  }
+
+  Future<void> _loadSavedEventSchedule() async {
+    await eventPage2Cubit.loadEventScheduleLocally();
+  }
+
+  void _populateOfflineFormWithSavedData(
+      AddEvent2OfflineFormForm data, EventPage2State state) {
+    // Only populate once when form is first built
+    if (_isFormPopulatedOffline) {
+      return;
+    }
+
+    // Check if there's saved offline data in state
+    if (state.venue != null && state.venue!.isNotEmpty) {
+      data.dateControl.value = state.date;
+      data.timeControl.value = state.time;
+      data.venueControl.value = state.venue ?? '';
+      data.addressControl.value = state.address ?? '';
+      data.locationControl.value = state.location ?? '';
+      data.priceControl.value = ThousandsSeparatorInputFormatter.formatNumber(
+        state.price.toInt(),
+        separator: ',',
+      );
+      data.capacityControl.value =
+          ThousandsSeparatorInputFormatter.formatNumber(
+        state.capacity,
+        separator: ',',
+      );
+
+      _isFormPopulatedOffline = true;
+    }
+  }
+
+  void _populateOnlineFormWithSavedData(
+      AddEvent2OnlineFormForm data, EventPage2State state) {
+    // Only populate once when form is first built
+    if (_isFormPopulatedOnline) {
+      return;
+    }
+
+    // Check if there's saved online data in state
+    if (state.platform != null && state.platform!.isNotEmpty) {
+      data.dateControl.value = state.date;
+      data.timeControl.value = state.time;
+      data.platformControl.value = state.platform ?? '';
+      data.linkControl.value = state.link ?? '';
+      data.priceControl.value = ThousandsSeparatorInputFormatter.formatNumber(
+        state.price.toInt(),
+        separator: ',',
+      );
+      data.capacityControl.value =
+          ThousandsSeparatorInputFormatter.formatNumber(
+        state.capacity,
+        separator: ',',
+      );
+
+      _isFormPopulatedOnline = true;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final isOffline = eventPage1Cubit.state.eventFormat == 'offline';
     return _EventFormScaffold(
+      eventPage1Cubit: eventPage1Cubit,
       eventPage2Cubit: eventPage2Cubit,
       budgetPlannerCubit: budgetPlannerCubit,
       isOffline: isOffline,
+      fromReview: _fromReview,
+      populateOfflineForm: _populateOfflineFormWithSavedData,
+      populateOnlineForm: _populateOnlineFormWithSavedData,
     );
   }
 }
@@ -47,17 +119,27 @@ class _AddEvent2PageState extends State<AddEvent2Page> {
 /// Unified scaffold for both online and offline event forms
 class _EventFormScaffold extends StatelessWidget {
   const _EventFormScaffold({
+    required this.eventPage1Cubit,
     required this.eventPage2Cubit,
     required this.budgetPlannerCubit,
     required this.isOffline,
+    required this.fromReview,
+    required this.populateOfflineForm,
+    required this.populateOnlineForm,
   });
 
+  final EventPage1Cubit eventPage1Cubit;
   final EventPage2Cubit eventPage2Cubit;
   final BudgetPlannerCubit budgetPlannerCubit;
   final bool isOffline;
+  final bool fromReview;
+  final void Function(AddEvent2OfflineFormForm, EventPage2State)
+      populateOfflineForm;
+  final void Function(AddEvent2OnlineFormForm, EventPage2State)
+      populateOnlineForm;
 
   static const int _currentStep = 3;
-  static const int _totalSteps = 8;
+  static const int _totalSteps = 10;
 
   static const List<SelectOption<String>> _eventPlatformOptions = [
     SelectOption(value: 'zoom', label: 'Zoom'),
@@ -68,63 +150,85 @@ class _EventFormScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FabColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const FabPageHeader(title: 'Create Event'),
-            Expanded(
-              child: BlocBuilder<EventPage2Cubit, EventPage2State>(
-                bloc: eventPage2Cubit,
-                buildWhen: (previous, current) =>
-                    previous.isFormValid != current.isFormValid,
-                builder: (context, state) {
-                  return isOffline
-                      ? _buildOfflineForm(context)
-                      : _buildOnlineForm(context);
-                },
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: FabColors.background,
+        body: SafeArea(
+          child: Column(
+            children: [
+              const FabPageHeader(title: 'Create Event'),
+              Expanded(
+                child: BlocBuilder<EventPage2Cubit, EventPage2State>(
+                  bloc: eventPage2Cubit,
+                  buildWhen: (previous, current) =>
+                      previous.isFormValid != current.isFormValid,
+                  builder: (context, state) {
+                    return isOffline
+                        ? _buildOfflineForm(context)
+                        : _buildOnlineForm(context);
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildOfflineForm(BuildContext context) {
-    return AddEvent2OfflineFormFormBuilder(
-      builder: (_, data, __) => _buildFormContent(
-          context: context,
-          formFields: _buildOfflineFields(data),
-          // onSubmit: byPass
-          onSubmit: () => _handleOfflineSubmit(
-            context: context,
-            formData: data,
-            onValid: (model) => _handleContinue(
-              context,
-              offlineModel: model,
-            ),
-          ),
-          ),
+    return BlocBuilder<EventPage2Cubit, EventPage2State>(
+      bloc: eventPage2Cubit,
+      builder: (context, state) {
+        return AddEvent2OfflineFormFormBuilder(
+          builder: (_, data, __) {
+            // Populate form with saved data if available
+            populateOfflineForm(data, state);
+
+            return _buildFormContent(
+              context: context,
+              formFields: _buildOfflineFields(data),
+              // onSubmit: () => byPass(context, fromReview: fromReview),
+              onSubmit: () => _handleOfflineSubmit(
+                context: context,
+                formData: data,
+                onValid: (model) => _handleContinue(
+                  context,
+                  offlineModel: model,
+                  fromReview: fromReview,
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
   Widget _buildOnlineForm(BuildContext context) {
-    return AddEvent2OnlineFormFormBuilder(
-      builder: (_, data, __) => _buildFormContent(
-          context: context,
-          formFields: _buildOnlineFields(data),
-          onSubmit: byPass
-          // onSubmit: () => _handleOnlineSubmit(
-          //   context: context,
-          //   formData: data,
-          //   onValid: (model) => _handleContinue(
-          //     context,
-          //     onlineModel: model,
-          //   ),
-          // ),
-          ),
+    return BlocBuilder<EventPage2Cubit, EventPage2State>(
+      bloc: eventPage2Cubit,
+      builder: (context, state) {
+        return AddEvent2OnlineFormFormBuilder(
+          builder: (_, data, __) {
+            // Populate form with saved data if available
+            populateOnlineForm(data, state);
+
+            return _buildFormContent(
+              context: context,
+              formFields: _buildOnlineFields(data),
+              // onSubmit: () => byPass(context, fromReview: fromReview),
+              onSubmit: () => _handleOnlineSubmit(
+                context: context,
+                formData: data,
+                onValid: (model) => _handleContinue(context,
+                    onlineModel: model, fromReview: fromReview),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -150,7 +254,7 @@ class _EventFormScaffold extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: _WelcomeSection(
-                  venueBudget: budgetPlannerCubit.state.vendorBudget,
+                  venueBudget: budgetPlannerCubit.state.vendorBudget.toDouble(),
                 ),
               ),
               PaddingGap.md(),
@@ -343,22 +447,52 @@ class _EventFormScaffold extends StatelessWidget {
     );
   }
 
-  Future<void> byPass() async {
-    eventPage2Cubit.createScheduleVenueOffline(
-      date: DateTime.now(),
-      time: '10:00',
-      venue: 'Jakarta Convention Center',
-      address: 'Jl. Jend. Gatot Subroto',
-      location: 'https://share.google.com/jcc',
-      price: 50000000,
-      capacity: 5000,
-    );
+  Future<void> byPass(BuildContext context, {bool fromReview = false}) async {
+    if (eventPage1Cubit.state.eventFormat == 'online') {
+      eventPage2Cubit.createScheduleVenueOnline(
+        date: DateTime.now(),
+        time: '10:00',
+        platform: 'Zoom',
+        link: 'https://meet.zoom.com/abc-123',
+        price: 50000000,
+        capacity: 5000,
+      );
+    } else {
+      eventPage2Cubit.createScheduleVenueOffline(
+        date: DateTime.now(),
+        time: '10:00',
+        venue: 'Jakarta Convention Center',
+        address: 'Jl. Jend. Gatot Subroto',
+        location: 'https://share.google.com/jcc',
+        price: 50000000,
+        capacity: 5000,
+      );
+    }
 
-    await $.navigator.push(const AddEvent3Route());
+    await eventPage2Cubit
+        .saveEventScheduleLocally(
+      isOnline: eventPage1Cubit.state.eventFormat == 'online',
+    )
+        .then(
+      (value) async {
+        FabSnackbar.success(
+          context: context,
+          content: 'Create Event Details saved successfully!',
+        );
+
+        // Check if opened from Review page
+        if (fromReview) {
+          context.router.pop(true); // Return true to trigger reload
+        } else {
+          await $.navigator.push(AddEvent3Route());
+        }
+      },
+    );
   }
 
   void _handleContinue(
     BuildContext context, {
+    required bool fromReview,
     AddEvent2OnlineForm? onlineModel,
     AddEvent2OfflineForm? offlineModel,
   }) {
@@ -402,11 +536,16 @@ class _EventFormScaffold extends StatelessWidget {
       }
       _showSuccessSnackBar(context);
       // Navigate to next page
-      $.navigator.push(const AddEvent3Route());
+      if (fromReview) {
+        context.router.pop(true);
+      } else {
+        $.navigator.push(AddEvent3Route());
+      }
     }
   }
 
-  void _showBudgetExceededDialog(BuildContext context, double exceeded) {
+  void _showBudgetExceededDialog(BuildContext context, double exceeded,
+      {bool fromReview = false}) {
     BudgetExceededDialog.show(
       context: context,
       title: 'Schedule & Venue Exceeded',
@@ -414,7 +553,11 @@ class _EventFormScaffold extends StatelessWidget {
       onAdjustBudget: () {},
       onContinueAnyway: () {
         // Navigate anyway
-        $.navigator.push(const AddEvent3Route());
+        if (fromReview) {
+          context.router.pop(true);
+        } else {
+          $.navigator.push(AddEvent3Route());
+        }
       },
     );
   }

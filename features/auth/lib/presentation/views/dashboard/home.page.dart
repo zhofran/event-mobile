@@ -90,28 +90,154 @@ class _HomePageState extends State<HomePage> {
     return _getAllEvents().where((e) => e.status == 'Completed').toList();
   }
 
-  List<QuickAccessItem> get quickItems => [
-    QuickAccessItem(
-      icon: Icons.event,
-      label: 'Create Event',
-      onTap: () => $.navigator.push(BudgetPlanningRoute()),
-    ),
-    QuickAccessItem(
-      icon: Icons.celebration,
-      label: 'Sponsors',
-      onTap: () => debugPrint('Sponsors tapped'),
-    ),
-    QuickAccessItem(
-      icon: Icons.record_voice_over,
-      label: 'Community \nForum',
-      onTap: () => $.navigator.push(CommunityForumRoute()),
-    ),
-    QuickAccessItem(
-      icon: Icons.settings,
-      label: 'Vendors',
-      onTap: () => debugPrint('Vendors tapped'),
-    ),
-  ];
+  // Method untuk mendapatkan Quick Access Menu berdasarkan role
+  List<QuickAccessItem> _getQuickAccessByRole(int? roleId) {
+    switch (roleId) {
+      case 2: // Attendee
+        return [
+          QuickAccessItem(
+            icon: Icons.event,
+            label: 'My \nAssistants',
+            onTap: () => debugPrint('My Assistants tapped'),
+          ),
+          QuickAccessItem(
+            icon: Icons.confirmation_number,
+            label: 'Apply Visa',
+            onTap: () => $.navigator.push(const VisaApplicantRoute()),
+          ),
+          QuickAccessItem(
+            icon: Icons.record_voice_over,
+            label: 'Community \nForum',
+            onTap: () => $.navigator.push(CommunityForumRoute()),
+          ),
+          QuickAccessItem(
+            icon: Icons.notifications,
+            label: 'Q&A \nDashboard',
+            onTap: () => debugPrint('Q&A Dashboard tapped'),
+          ),
+        ];
+      
+      case 3: // Speaker
+        return [
+          QuickAccessItem(
+            icon: Icons.mic,
+            label: 'My Sessions',
+            onTap: () => debugPrint('My Sessions tapped'),
+          ),
+          QuickAccessItem(
+            icon: Icons.calendar_today,
+            label: 'Apply Visa',
+            onTap: () => debugPrint('Apply Visa tapped'),
+          ),
+          QuickAccessItem(
+            icon: Icons.record_voice_over,
+            label: 'Audience \nInsight',
+            onTap: () => debugPrint('Audience nInsight tapped'),
+          ),
+          QuickAccessItem(
+            icon: Icons.person,
+            label: 'Q&A Dashboard',
+            onTap: () => debugPrint('Q&A Dashboard tapped'),
+          ),
+        ];
+      
+      case 4: // Sponsor
+        return [
+          QuickAccessItem(
+            icon: Icons.business,
+            label: 'ROI \nDashboard',
+            onTap: () => debugPrint('ROI Dashboard tapped'),
+          ),
+          QuickAccessItem(
+            icon: Icons.analytics,
+            label: 'Offers & Deals',
+            onTap: () => debugPrint('Offers & Deals tapped'),
+          ),
+          QuickAccessItem(
+            icon: Icons.handshake,
+            label: 'Billing',
+            onTap: () => debugPrint('Billing tapped'),
+          ),
+          QuickAccessItem(
+            icon: Icons.receipt_long,
+            label: 'Marketplace',
+            onTap: () => debugPrint('Marketplace tapped'),
+          ),
+        ];
+      
+      case 5: // Event Organizer
+        return [
+          QuickAccessItem(
+            icon: Icons.event,
+            label: 'Create Event',
+            onTap: () => $.navigator.push(const BudgetPlanningRoute()),
+          ),
+          QuickAccessItem(
+            icon: Icons.celebration,
+            label: 'Sponsors',
+            onTap: () => debugPrint('Sponsors tapped'),
+          ),
+          QuickAccessItem(
+            icon: Icons.record_voice_over,
+            label: 'Speakers',
+            onTap: () => debugPrint('Speakers tapped'),
+          ),
+          QuickAccessItem(
+            icon: Icons.people_alt_sharp,
+            label: 'Vendors',
+            onTap: () => debugPrint('Vendors tapped'),
+          ),
+        ];
+      
+      case 6: // Vendor
+        return [
+          QuickAccessItem(
+            icon: Icons.store,
+            label: 'My Services',
+            onTap: () => debugPrint('My Services tapped'),
+          ),
+          QuickAccessItem(
+            icon: Icons.work,
+            label: 'Active Jobs',
+            onTap: () => debugPrint('Active Jobs tapped'),
+          ),
+          QuickAccessItem(
+            icon: Icons.search,
+            label: 'Find Work',
+            onTap: () => debugPrint('Find Work tapped'),
+          ),
+          QuickAccessItem(
+            icon: Icons.payment,
+            label: 'Payments',
+            onTap: () => debugPrint('Payments tapped'),
+          ),
+        ];
+      
+      default: // Default menu jika role tidak dikenali
+        return [
+          QuickAccessItem(
+            icon: Icons.event,
+            label: 'Events',
+            onTap: () => debugPrint('Events tapped'),
+          ),
+          QuickAccessItem(
+            icon: Icons.record_voice_over,
+            label: 'Community \nForum',
+            onTap: () => $.navigator.push(CommunityForumRoute()),
+          ),
+          QuickAccessItem(
+            icon: Icons.person,
+            label: 'Profile',
+            onTap: () => debugPrint('Profile tapped'),
+          ),
+          QuickAccessItem(
+            icon: Icons.settings,
+            label: 'Settings',
+            onTap: () => debugPrint('Settings tapped'),
+          ),
+        ];
+    }
+  }
 
   Future<void> _handleLogout() async {
     try {
@@ -145,12 +271,21 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: FabQuickAccessMenu(
-                        title: 'Quick Access',
-                        items: quickItems,
-                      ),
+                    // Quick Access Menu dengan BlocBuilder untuk mengambil role
+                    BlocBuilder<UserCubit, UserModel>(
+                      bloc: userCubit,
+                      builder: (context, state) {
+                        final roleId = state.roles?.firstOrNull?.id;
+                        log('Current role ID: $roleId', name: 'HomePage');
+                        
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: FabQuickAccessMenu(
+                            title: 'Quick Access',
+                            items: _getQuickAccessByRole(roleId),
+                          ),
+                        );
+                      },
                     ),
                     PaddingGap.sm(),
                     FabTabSelection(
@@ -192,6 +327,7 @@ class _HomePageState extends State<HomePage> {
               child: BlocBuilder<UserCubit, UserModel>(
                 bloc: userCubit,
                 builder: (context, state) {
+                  // log('Response from state: ${state.roles?[0].id}', name: 'Log home page');
                   return FabImage(
                     width: 48,
                     height: 48,

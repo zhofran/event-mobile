@@ -56,23 +56,25 @@ class FabSnackbar {
     FabSnackbarType type = FabSnackbarType.info,
     Duration duration = const Duration(seconds: 3),
   }) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: FabTextStyled(
-          content,
-          style: FabTypography.bodySmallMedium.copyWith(
-            color: FabColors.greyscale0,
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: FabTextStyled(
+            content,
+            style: FabTypography.bodySmallMedium.copyWith(
+              color: FabColors.greyscale0,
+            ),
           ),
+          backgroundColor: _getBackgroundColor(type),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          duration: duration,
         ),
-        backgroundColor: _getBackgroundColor(type),
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        duration: duration,
-      ),
-    );
+      );
   }
 
   /// Show a success snackbar

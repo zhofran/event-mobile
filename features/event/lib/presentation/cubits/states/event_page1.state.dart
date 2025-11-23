@@ -1,6 +1,6 @@
 part of '../event_page1.cubit.dart';
 
-enum EventPage1StateStatus { initial, loading, failed, succeeded }
+enum EventPage1StateStatus { initial, loading, failed, succeeded, loadingPost }
 
 @freezed
 sealed class EventPage1State with _$EventPage1State {
@@ -11,7 +11,7 @@ sealed class EventPage1State with _$EventPage1State {
     required bool? isFormValid,
     required String eventName,
     required String eventType,
-    required List<String> eventCategory,
+    required List<int> eventCategory,
     required String eventDescription,
     required String eventFormat,
     required String eventBanner,

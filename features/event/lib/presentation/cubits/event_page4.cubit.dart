@@ -1,16 +1,19 @@
+import 'package:deps/design/design.dart';
+import 'package:deps/features/features.dart';
 import 'package:deps/infrastructure/infrastructure.dart';
 import 'package:deps/packages/flutter_bloc.dart';
 import 'package:deps/packages/freezed_annotation.dart';
 import 'package:deps/packages/injectable.dart';
+
+import '../../domain/enums/event_key_enum.dart';
+import '../../domain/models/event_ticketing.model.dart';
 
 part 'event_page4.cubit.freezed.dart';
 part 'states/event_page4.state.dart';
 
 @lazySingleton
 class EventPage4Cubit extends Cubit<EventPage4State> {
-  EventPage4Cubit(this._client) : super(EventPage4State.initial());
-
-  final INetworkClient _client;
+  EventPage4Cubit() : super(EventPage4State.initial());
 
   String getTicketSellingTime() {
     if (state.saleStartDate == null ||
@@ -104,5 +107,42 @@ class EventPage4Cubit extends Cubit<EventPage4State> {
         saleEndTime: null,
       ),
     );
+  }
+
+  Future<void> saveTicketSellingTimeLocally() async {
+    final prefs = $.get<SharedPreferencesManager>();
+
+    await prefs.writeObject<EventTicketing>(
+      EventKey.ticketSellingTime.name,
+      EventTicketing(
+        id: 'ticketSellingTime-id',
+        ticketStartDate: state.saleStartDate!.addTime(state.saleStartTime!),
+        ticketEndDate: state.saleEndDate!.addTime(state.saleEndTime!),
+      ),
+    );
+  }
+
+  Future<EventTicketing?> loadTicketSellingTimeLocally() async {
+    final prefs = $.get<SharedPreferencesManager>();
+
+    final ticketSellingTime = prefs.readObject<EventTicketing>(
+      EventKey.ticketSellingTime.name,
+      EventTicketing.fromJson,
+    );
+
+    if (ticketSellingTime != null) {
+      emit(
+        state.copyWith(
+          saleStartDate: ticketSellingTime.ticketStartDate,
+          saleStartTime:
+              '${ticketSellingTime.ticketStartDate.hour.toString().padLeft(2, '0')}:${ticketSellingTime.ticketStartDate.minute.toString().padLeft(2, '0')}',
+          saleEndDate: ticketSellingTime.ticketEndDate,
+          saleEndTime:
+              '${ticketSellingTime.ticketEndDate.hour.toString().padLeft(2, '0')}:${ticketSellingTime.ticketEndDate.minute.toString().padLeft(2, '0')}',
+        ),
+      );
+    }
+
+    return ticketSellingTime;
   }
 }

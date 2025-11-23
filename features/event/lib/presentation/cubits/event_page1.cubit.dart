@@ -9,6 +9,9 @@ import 'package:deps/packages/freezed_annotation.dart';
 import 'package:deps/packages/injectable.dart';
 
 import '../../data/create_event.service.dart';
+import '../../data/file_service.dart';
+import '../../domain/enums/event_key_enum.dart';
+import '../../domain/models/event_detail.model.dart';
 
 part 'event_page1.cubit.freezed.dart';
 part 'states/event_page1.state.dart';
@@ -18,9 +21,127 @@ class EventPage1Cubit extends Cubit<EventPage1State> {
   EventPage1Cubit() : super(EventPage1State.initial());
 
   final createEventService = $.get<CreateEventService>();
+  final fileService = $.get<FileService>();
+
+  void resetStatus() {
+    emit(state.copyWith(status: EventPage1StateStatus.initial));
+  }
 
   void toggleValidityForm({required bool? value}) {
     emit(state.copyWith(isFormValid: value));
+  }
+
+  void setEventBanner({required String value}) {
+    emit(state.copyWith(eventBanner: value));
+  }
+
+  Future<void> postCreateEventDetails() async {
+    emit(state.copyWith(status: EventPage1StateStatus.loadingPost));
+
+    // comment when dev cuz already upload on select image
+    // await uploadEventBanner(photoPath: state.eventBanner);
+
+    final result = await createEventService.createEventDetails(
+      organizerId: '123e4567-e89b-12d3-a456-426614174000',
+      eventName: 'Sample Event',
+      eventType: 'conference',
+      eventCategory: [0, 1, 2],
+      description: 'Sample Event Description',
+      eventFormat: 'offline',
+      eventBanner:
+          'http://minio:9000/apni-event/2025/11/18/d8001dc9-e6c4-46d9-ae57-998001582632.jpg',
+    );
+
+    // uncomment to prod
+    // final result = await createEventService.createEventDetails(
+    //   organizerId: '123e4567-e89b-12d3-a456-426614174000',
+    //   eventName: state.eventName,
+    //   eventType: state.eventType,
+    //   eventCategory: state.eventCategory.join(', '),
+    //   description: state.eventDescription,
+    //   eventFormat: state.eventFormat,
+    //   eventBanner:
+    //       'http://minio:9000/apni-event/2025/11/18/d8001dc9-e6c4-46d9-ae57-998001582632.jpg',
+    // );
+
+    result.fold(
+      (failure) {
+        log(failure.toString(), name: 'postCreateEventDetails - err');
+        emit(
+          state.copyWith(status: EventPage1StateStatus.failed),
+        );
+      },
+      (response) {
+        log(response.toString(), name: 'postCreateEventDetails - success');
+
+        emit(
+          state.copyWith(status: EventPage1StateStatus.succeeded),
+        );
+      },
+    );
+  }
+
+  Future<void> saveEventDetailsLocally() async {
+    final prefs = $.get<SharedPreferencesManager>();
+
+    await prefs.writeObject<EventDetail>(
+      EventKey.eventDetails.name,
+      EventDetail(
+        id: 'eventId',
+        organizerId: 'organizerId',
+        status: 'draft',
+        eventName: state.eventName,
+        eventType: state.eventType,
+        eventCategory: state.eventCategory,
+        description: state.eventDescription,
+        eventFormat: state.eventFormat,
+        eventBanner: state.eventBanner,
+      ),
+    );
+  }
+
+  Future<EventDetail?> loadEventDetailsLocally() async {
+    final prefs = $.get<SharedPreferencesManager>();
+
+    final eventDetail = prefs.readObject<EventDetail>(
+      EventKey.eventDetails.name,
+      EventDetail.fromJson,
+    );
+
+    if (eventDetail != null) {
+      emit(
+        state.copyWith(
+          eventName: eventDetail.eventName,
+          eventType: eventDetail.eventType,
+          eventCategory: eventDetail.eventCategory,
+          eventDescription: eventDetail.description,
+          eventFormat: eventDetail.eventFormat,
+          eventBanner: eventDetail.eventBanner,
+        ),
+      );
+    }
+
+    return eventDetail;
+  }
+
+  Future<void> uploadEventBanner({required String photoPath}) async {
+    final result = await fileService.uploadFile(photoPath);
+
+    result.fold(
+      (failure) {
+        log(failure.toString(), name: 'uploadEventBanner - err');
+        emit(
+          state.copyWith(status: EventPage1StateStatus.failed),
+        );
+      },
+      (response) {
+        log(response, name: 'uploadEventBanner - success');
+
+        emit(
+          state.copyWith(status: EventPage1StateStatus.succeeded),
+        );
+      },
+    );
   }
 
   Future<void> getEventCategories({bool refresh = false}) async {
@@ -59,7 +180,7 @@ class EventPage1Cubit extends Cubit<EventPage1State> {
   void createEvent({
     required String eventName,
     required String eventType,
-    required List<String> eventCategory,
+    required List<int> eventCategory,
     required String eventDescription,
     required String eventFormat,
     required String eventBanner,

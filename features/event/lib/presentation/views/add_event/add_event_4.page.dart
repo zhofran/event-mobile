@@ -1,6 +1,7 @@
 import 'package:deps/design/design.dart';
 import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
+import 'package:deps/packages/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 
 import '../../../domain/forms/add_event_4.form.dart';
@@ -18,101 +19,134 @@ class _AddEvent4PageState extends State<AddEvent4Page> {
   late EventPage4Cubit eventPage4Cubit;
 
   int currentStep = 5;
-  int totalSteps = 8;
+  int totalSteps = 10;
+  bool _isFormPopulated = false;
 
   @override
   void initState() {
     super.initState();
     eventPage4Cubit = $.get<EventPage4Cubit>();
-    eventPage4Cubit.clearTicketSalesPeriod();
+
+    // Load saved ticket selling time and populate form
+    _loadTicketSellingTime();
+  }
+
+  Future<void> _loadTicketSellingTime() async {
+    await eventPage4Cubit.loadTicketSellingTimeLocally();
+  }
+
+  void _populateFormWithSavedData(
+    AddEvent4Form data,
+    EventPage4State state,
+  ) {
+    if (_isFormPopulated) {
+      return;
+    }
+
+    if (state.saleStartDate != null && state.saleStartTime != null) {
+      data.saleStartDateControl.value = state.saleStartDate;
+      data.saleStartTimeControl.value = state.saleStartTime;
+      data.saleEndDateControl.value = state.saleEndDate;
+      data.saleEndTimeControl.value = state.saleEndTime;
+
+      _isFormPopulated = true;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FabColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const FabPageHeader(title: 'Create Event'),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: AnimatedStepProgressIndicator(
-                currentStep: currentStep,
-                totalSteps: totalSteps,
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: FabColors.background,
+        body: SafeArea(
+          child: Column(
+            children: [
+              const FabPageHeader(title: 'Create Event'),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: AnimatedStepProgressIndicator(
+                  currentStep: currentStep,
+                  totalSteps: totalSteps,
+                ),
               ),
-            ),
-            PaddingGap.xl(),
-            Expanded(
-              child: AddEvent4FormBuilder(
-                builder: (_, data, __) {
-                  return Column(
-                    children: [
-                      Expanded(
-                        child: ListView(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
+              PaddingGap.xl(),
+              Expanded(
+                child: BlocBuilder<EventPage4Cubit, EventPage4State>(
+                  bloc: eventPage4Cubit,
+                  builder: (context, state) {
+                    return AddEvent4FormBuilder(
+                      builder: (_, data, __) {
+                        _populateFormWithSavedData(data, state);
+                        return Column(
                           children: [
-                            _buildWelcomeSection(),
-                            PaddingGap.md(),
-                            _buildTicketStartDate(data),
-                            PaddingGap.md(),
-                            _buildTicketEndDate(data),
-                            PaddingGap.md(),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: FabButton.primary(
-                          onPressed: byPass,
-                          // onPressed: () {
-                          //   data.submit(
-                          //     onValid: (model) {
-                          //       eventPage4Cubit.createTicketSalesPeriod(
-                          //         saleStartDate: model.saleStartDate,
-                          //         saleStartTime: model.saleStartTime,
-                          //         saleEndDate: model.saleEndDate,
-                          //         saleEndTime: model.saleEndTime,
-                          //       );
-
-                          //       FabSnackbar.success(
-                          //         context: context,
-                          //         content:
-                          //             'Create Ticket Sales Period saved successfully!',
-                          //       );
-
-                          //       // $.navigator.push(
-                          //       //   AddEvent5Route(
-                          //       //     budget: {},
-                          //       //   ),
-                          //       // );
-                          //     },
-                          //     onNotValid: () {
-                          //       setState(() {
-                          //         FabSnackbar.error(
-                          //           context: context,
-                          //           content: 'Please fill all required fields',
-                          //         );
-                          //       });
-                          //     },
-                          //   );
-                          // },
-                          size: FabButtonSize.large,
-                          width: double.infinity,
-                          child: Text(
-                            'Continue',
-                            style: FabTypography.displaySemiBold16.copyWith(
-                              color: FabColors.greyscale0,
+                            Expanded(
+                              child: ListView(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 24),
+                                children: [
+                                  _buildWelcomeSection(),
+                                  PaddingGap.md(),
+                                  _buildTicketStartDate(data),
+                                  PaddingGap.md(),
+                                  _buildTicketEndDate(data),
+                                  PaddingGap.md(),
+                                ],
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
+                            Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: FabButton.primary(
+                                // onPressed: byPass,
+                                onPressed: () {
+                                  data.submit(
+                                    onValid: (model) {
+                                      eventPage4Cubit.createTicketSalesPeriod(
+                                        saleStartDate: model.saleStartDate,
+                                        saleStartTime: model.saleStartTime,
+                                        saleEndDate: model.saleEndDate,
+                                        saleEndTime: model.saleEndTime,
+                                      );
+
+                                      FabSnackbar.success(
+                                        context: context,
+                                        content:
+                                            'Create Ticket Sales Period saved successfully!',
+                                      );
+
+                                      $.navigator.push(AddEvent5Route());
+                                    },
+                                    onNotValid: () {
+                                      setState(() {
+                                        FabSnackbar.error(
+                                          context: context,
+                                          content:
+                                              'Please fill all required fields',
+                                        );
+                                      });
+                                    },
+                                  );
+                                },
+                                size: FabButtonSize.large,
+                                width: double.infinity,
+                                child: Text(
+                                  'Continue',
+                                  style:
+                                      FabTypography.displaySemiBold16.copyWith(
+                                    color: FabColors.greyscale0,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -224,7 +258,7 @@ class _AddEvent4PageState extends State<AddEvent4Page> {
     );
   }
 
-  void byPass() {
+  Future<void> byPass() async {
     setState(() {
       eventPage4Cubit.createTicketSalesPeriod(
         saleStartDate: DateTime.now(),
@@ -234,6 +268,18 @@ class _AddEvent4PageState extends State<AddEvent4Page> {
       );
     });
 
-    $.navigator.push(AddEvent5Route());
+    await eventPage4Cubit.saveTicketSellingTimeLocally().then(
+      (value) {
+        if (!mounted) {
+          return;
+        }
+
+        FabSnackbar.success(
+          context: context,
+          content: 'Create Ticket Selling Time saved successfully!',
+        );
+        $.navigator.push(AddEvent5Route());
+      },
+    );
   }
 }

@@ -45,10 +45,20 @@ class DioRequestLog extends TalkerLog {
     }
 
     if (data != null) {
-      final prettyData = encoder.convert(data);
-      final Map<String, dynamic> parsedJson = jsonDecode(prettyData);
-      final formattedEntries = parsedJson.entries.map((entry) => '"${entry.key}": "${entry.value}"').join(',\n');
-      sb.writeln('• DATA\t  ─►  $formattedEntries');
+      // Handle FormData specially to avoid toJson() error
+      if (data is FormData) {
+        sb.writeln('• DATA\t  ─►  [FormData with ${data.fields.length} fields and ${data.files.length} files]');
+      } else {
+        try {
+          final prettyData = encoder.convert(data);
+          final Map<String, dynamic> parsedJson = jsonDecode(prettyData);
+          final formattedEntries = parsedJson.entries.map((entry) => '"${entry.key}": "${entry.value}"').join(',\n');
+          sb.writeln('• DATA\t  ─►  $formattedEntries');
+        } catch (e) {
+          // Fallback if data cannot be encoded
+          sb.writeln('• DATA\t  ─►  [${data.runtimeType}]');
+        }
+      }
     }
 
     return sb.toString();
@@ -100,15 +110,20 @@ class DioResponseLog extends TalkerLog {
     }
 
     if (data != null) {
-      final prettyData = encoder.convert(data);
-      if (data is Map) {
-        final Map<String, dynamic> parsedJson = jsonDecode(prettyData);
-        final formattedEntries = parsedJson.entries.map((entry) => '"${entry.key}": "${entry.value}"').join(',\n');
-        sb.writeln('• DATA\t  ─►  $formattedEntries');
-      } else if (data is List) {
-        final List<dynamic> parsedJson = jsonDecode(prettyData);
-        final formattedEntries = parsedJson.map((entry) => '- $entry').join('\n');
-        sb.writeln('• DATA\t  ─►  $formattedEntries');
+      try {
+        final prettyData = encoder.convert(data);
+        if (data is Map) {
+          final Map<String, dynamic> parsedJson = jsonDecode(prettyData);
+          final formattedEntries = parsedJson.entries.map((entry) => '"${entry.key}": "${entry.value}"').join(',\n');
+          sb.writeln('• DATA\t  ─►  $formattedEntries');
+        } else if (data is List) {
+          final List<dynamic> parsedJson = jsonDecode(prettyData);
+          final formattedEntries = parsedJson.map((entry) => '- $entry').join('\n');
+          sb.writeln('• DATA\t  ─►  $formattedEntries');
+        }
+      } catch (e) {
+        // Fallback for data that cannot be encoded
+        sb.writeln('• DATA\t  ─►  [${data.runtimeType}]');
       }
     }
 
@@ -163,10 +178,15 @@ class DioErrorLog extends TalkerLog {
     }
 
     if (data != null) {
-      final prettyData = encoder.convert(data);
-      final Map<String, dynamic> parsedJson = jsonDecode(prettyData);
-      final formattedEntries = parsedJson.entries.map((entry) => '"${entry.key}": "${entry.value}"').join(',\n');
-      sb.writeln('• DATA\t  ─►  $formattedEntries');
+      try {
+        final prettyData = encoder.convert(data);
+        final Map<String, dynamic> parsedJson = jsonDecode(prettyData);
+        final formattedEntries = parsedJson.entries.map((entry) => '"${entry.key}": "${entry.value}"').join(',\n');
+        sb.writeln('• DATA\t  ─►  $formattedEntries');
+      } catch (e) {
+        // Fallback for error data that cannot be encoded
+        sb.writeln('• DATA\t  ─►  [${data.runtimeType}]');
+      }
     }
 
     return sb.toString();

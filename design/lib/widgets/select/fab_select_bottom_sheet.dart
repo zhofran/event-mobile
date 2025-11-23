@@ -102,7 +102,8 @@ class _FabSelectBottomSheetState<T> extends State<FabSelectBottomSheet<T>> {
       }
     } else {
       // For single select
-      if (currentValue != null) {
+      // Check if value is not null and not empty string
+      if (currentValue != null && currentValue.toString().isNotEmpty) {
         _selectedOption = widget.options.firstWhere(
           (option) => option.value == currentValue,
           orElse: () => widget.options.first,
