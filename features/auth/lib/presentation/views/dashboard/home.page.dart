@@ -103,8 +103,8 @@ class _HomePageState extends State<HomePage> {
     ),
     QuickAccessItem(
       icon: Icons.record_voice_over,
-      label: 'Speakers',
-      onTap: () => debugPrint('Speakers tapped'),
+      label: 'Community \nForum',
+      onTap: () => $.navigator.push(CommunityForumRoute()),
     ),
     QuickAccessItem(
       icon: Icons.settings,
@@ -263,6 +263,12 @@ class _HomePageState extends State<HomePage> {
         onTap: () {
           // TODO: Navigate to event detail
           log('Event tapped: ${event.title}', name: 'HomePage');
+          $.navigator.push(
+            EventDetailAttendeeRoute(
+              eventTitle: event.title, 
+              eventDate: event.date ?? '',
+            )
+          );
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

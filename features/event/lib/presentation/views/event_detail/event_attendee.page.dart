@@ -1,4 +1,6 @@
 // event_detail_page.dart
+import 'package:deps/design/design.dart';
+import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
 import 'package:flutter/material.dart';
 
@@ -18,6 +20,7 @@ class EventDetailAttendeePage extends StatefulWidget {
 }
 
 class _EventDetailAttendeePageState extends State<EventDetailAttendeePage> {
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,12 +159,23 @@ class _EventDetailAttendeePageState extends State<EventDetailAttendeePage> {
               const SizedBox(height: 16),
               
               // Event Detail Button
-              const Text(
-                'Event Detail',
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Color(0xFFFF8C42),
-                  fontWeight: FontWeight.w600,
+              Align(
+                alignment: AlignmentGeometry.centerLeft,
+                child: TextButton(
+                  onPressed: () {
+                    // $.navigator.push(
+                    //   DiscoverEventDetailRoute(
+                    //     event: event)
+                    // );
+                  },
+                  child: Text(
+                    'Event Detail',
+                    style: FabTypography.displayLight14.copyWith(
+                      color: FabColors.primary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -241,7 +255,13 @@ class _EventDetailAttendeePageState extends State<EventDetailAttendeePage> {
                 icon: Icons.person_outline,
                 title: 'Rate Speaker',
                 subtitle: 'Share your feedback',
-                onTap: () {},
+                onTap: () {
+                  $.navigator.push(
+                    RateSpeakerRoute(
+                      eventTitle: widget.eventTitle,
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 12),
               
@@ -249,7 +269,11 @@ class _EventDetailAttendeePageState extends State<EventDetailAttendeePage> {
                 icon: Icons.download_outlined,
                 title: 'Download Materials',
                 subtitle: 'Access event files',
-                onTap: () {},
+                onTap: () {
+                  $.navigator.push(
+                    const DownloadMaterialsRoute()
+                  );
+                },
               ),
               const SizedBox(height: 12),
               
@@ -257,7 +281,13 @@ class _EventDetailAttendeePageState extends State<EventDetailAttendeePage> {
                 icon: Icons.workspace_premium_outlined,
                 title: 'Download Certificate',
                 subtitle: 'Get your e-certificate',
-                onTap: () {},
+                onTap: () {
+                  $.navigator.push(
+                    CertificateRoute(
+                      eventTitle: widget.eventTitle,
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 24),
             ],

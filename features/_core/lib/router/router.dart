@@ -480,6 +480,41 @@ class FeaturesRouter extends $FeaturesRouter {
               path: 'payment-success',
               page: PaymentSuccessRoute.page,
             ),
+            AutoRoute(
+              title: (_, __) => 'Event Detail Attendee',
+              path: 'event-attendee',
+              page: EventDetailAttendeeRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Rate Speaker',
+              path: 'rate-speaker',
+              page: RateSpeakerRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Download Materials',
+              path: 'download-materials',
+              page: DownloadMaterialsRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Download Certificate',
+              path: 'download-certificate',
+              page: CertificateRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Community Forum',
+              path: 'community-forum',
+              page: CommunityForumRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Forum Details',
+              path: 'forum-details',
+              page: ForumDetailRoute.page,
+            ),
+            AutoRoute(
+              title: (_, __) => 'Post Create',
+              path: 'post-create',
+              page: PostCreateRoute.page,
+            ),
             CustomRoute(
               page: MaterialDialogWrapperRoute.page,
               customRouteBuilder: materialDialogRouteBuilder,

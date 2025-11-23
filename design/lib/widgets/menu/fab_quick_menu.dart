@@ -76,6 +76,7 @@ class FabQuickAccessMenu extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             CircleAvatar(
               radius: 26,
@@ -87,10 +88,16 @@ class FabQuickAccessMenu extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            Text(
-              item.label,
-              style: FabTypography.bodySmallBold.copyWith(
-                color: FabColors.textPrimary,
+            SizedBox(
+              height: 42, // Tinggi minimum untuk menampung 2 baris text
+              child: Text(
+                item.label,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: FabTypography.bodySmallBold.copyWith(
+                  color: FabColors.textPrimary,
+                ),
               ),
             ),
           ],
