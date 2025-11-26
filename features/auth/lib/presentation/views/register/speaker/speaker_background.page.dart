@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:deps/design/design.dart';
 import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
@@ -6,7 +8,9 @@ import 'package:flutter/material.dart';
 
 @RoutePage()
 class SpeakerBackgroundPage extends StatefulWidget {
-  const SpeakerBackgroundPage({super.key});
+  const SpeakerBackgroundPage({required this.data, super.key});
+
+  final Map<String, dynamic> data;
 
   @override
   State<SpeakerBackgroundPage> createState() => _SpeakerBackgroundPageState();
@@ -58,8 +62,24 @@ class _SpeakerBackgroundPageState extends State<SpeakerBackgroundPage> {
               padding: const EdgeInsets.all(24.0),
               child: FabButton.primary(
                 onPressed: () {
+                  final title = form.control('title').value as String;
+                  final year = form.control('year').value as String;
+                  final company = form.control('company').value as String;
+                  final portfolio = form.control('portfolio').value as String;
+                  
+                  final profesional = {
+                    'title': title,
+                    'years_of_experience': year,
+                    'company': company,
+                    'linkedin': portfolio
+                  };
+
+                  widget.data['professional'] = profesional;
+
+                  log('Hasil data: ${widget.data}', name: 'Log Speaker Background');
+
                   // For now, just navigate to a placeholder page
-                  $.navigator.push(SpeakerLocationRoute());
+                  $.navigator.push(SpeakerLocationRoute(data: widget.data));
                 },
                 size: FabButtonSize.large,
                 width: double.infinity,

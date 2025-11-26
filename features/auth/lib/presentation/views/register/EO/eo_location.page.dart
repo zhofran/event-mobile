@@ -177,8 +177,8 @@ class _EOLocationPageState extends State<EOLocationPage> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 24.0,
-                        vertical: 16.0,
+                        horizontal: 24,
+                        vertical: 16,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,7 +205,7 @@ class _EOLocationPageState extends State<EOLocationPage> {
   
   Widget _buildAppBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Row(
         children: [ 
           FabButton.secondary(
@@ -570,7 +570,7 @@ class _EOLocationPageState extends State<EOLocationPage> {
 
   Widget _buildContinueButton() {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(24),
       child: FabButton.primary(
         onPressed: _handleContinue,
         size: FabButtonSize.large,

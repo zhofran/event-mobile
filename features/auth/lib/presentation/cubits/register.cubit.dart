@@ -13,10 +13,14 @@ import 'package:deps/packages/freezed_annotation.dart';
 import 'package:deps/packages/injectable.dart';
 
 import '../../../data/auth.service.dart';
+import '../../domain/models/availability.model.dart';
 import '../../domain/models/company_type.model.dart';
 import '../../domain/models/country.model.dart';
+import '../../domain/models/honorarium_preference.model.dart';
 import '../../domain/models/location.model.dart';
+import '../../domain/models/mobility_scope.model.dart';
 import '../../domain/models/topic.model.dart';
+import '../../domain/models/travel_arrangement.model.dart';
 
 part 'register.cubit.freezed.dart';
 part 'states/register.state.dart';
@@ -38,6 +42,18 @@ class RegisterCubit extends Cubit<RegisterState> {
   
   List<LocationModel> _cities = [];
   List<LocationModel> get cities => _cities;
+
+  List<AvailabilityModel> _availability = [];
+  List<AvailabilityModel> get availability => _availability;
+
+  List<MobilityScopeModel> _mobility = [];
+  List<MobilityScopeModel> get mobility => _mobility;
+
+  List<TravelArrangementModel> _travel = [];
+  List<TravelArrangementModel> get travel => _travel;
+
+  List<HonorariumPreferenceModel> _honor = [];
+  List<HonorariumPreferenceModel> get honor => _honor;
 
   Future register({
     required String email,
@@ -70,7 +86,7 @@ class RegisterCubit extends Cubit<RegisterState> {
   }
 
   Future selectRole({int? roleID}) async {
-    emit(RegisterStateLoading());
+    emit(const RegisterStateLoading());
 
     final response = await _service.selectRole(roleID ?? 0);
 
@@ -143,7 +159,7 @@ class RegisterCubit extends Cubit<RegisterState> {
         (failure) => emit(RegisterStateFailed(failure)), 
         (type) {
           _companyTypes = type;
-          emit(RegisterStateBerhasil()); 
+          emit(const RegisterStateBerhasil()); 
           // _topics = topics;
           // emit(RegisterStateTopic(topics));
 
@@ -182,7 +198,7 @@ class RegisterCubit extends Cubit<RegisterState> {
 
   Future getAllCities({String? countrCode}) async {
     try {
-      emit(RegisterStateInitial());
+      emit(const RegisterStateInitial());
 
       final response = await _service.cities(countrCode ?? '');
 
@@ -190,6 +206,78 @@ class RegisterCubit extends Cubit<RegisterState> {
         (failure) => emit(RegisterStateFailed(failure)),
         (citiesList){
           _cities = citiesList;
+          emit(const RegisterStateBerhasil());
+        }
+      );
+    } catch (e) {
+      
+    }
+  }
+
+  Future getAllAvail() async {
+    try {
+      emit(const RegisterStateInitial());
+
+      final response = await _service.availability();
+
+      return response.fold(
+        (failure) => emit(RegisterStateFailed(failure)),
+        (availList){
+          _availability = availList;
+          emit(const RegisterStateBerhasil());
+        }
+      );
+    } catch (e) {
+      
+    }
+  }
+
+  Future getAllMobile() async {
+    try {
+      emit(const RegisterStateInitial());
+
+      final response = await _service.mobility();
+
+      return response.fold(
+        (failure) => emit(RegisterStateFailed(failure)),
+        (mobileList){
+          _mobility = mobileList;
+          emit(const RegisterStateBerhasil());
+        }
+      );
+    } catch (e) {
+      
+    }
+  }
+
+  Future getAllTravel() async {
+    try {
+      emit(const RegisterStateInitial());
+
+      final response = await _service.travelArrangement();
+
+      return response.fold(
+        (failure) => emit(RegisterStateFailed(failure)),
+        (travelList){
+          _travel = travelList;
+          emit(const RegisterStateBerhasil());
+        }
+      );
+    } catch (e) {
+      
+    }
+  }
+
+  Future getAllHonor() async {
+    try {
+      emit(const RegisterStateInitial());
+
+      final response = await _service.honor();
+
+      return response.fold(
+        (failure) => emit(RegisterStateFailed(failure)),
+        (honorList){
+          _honor = honorList;
           emit(const RegisterStateBerhasil());
         }
       );

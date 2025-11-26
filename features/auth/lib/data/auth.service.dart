@@ -8,15 +8,18 @@ import 'dart:developer';
 
 import 'package:deps/features/features.dart';
 import 'package:deps/infrastructure/infrastructure.dart';
-import 'package:deps/packages/dio.dart';
 import 'package:deps/packages/fpdart.dart';
 import 'package:deps/packages/injectable.dart';
 
 import '../domain/failures/auth.failures.dart';
+import '../domain/models/availability.model.dart';
 import '../domain/models/company_type.model.dart';
 import '../domain/models/country.model.dart';
+import '../domain/models/honorarium_preference.model.dart';
 import '../domain/models/location.model.dart';
+import '../domain/models/mobility_scope.model.dart';
 import '../domain/models/topic.model.dart';
+import '../domain/models/travel_arrangement.model.dart';
 
 @lazySingleton
 class AuthService {
@@ -125,6 +128,94 @@ class AuthService {
         .toList();
 
         return Right(topics);
+      }
+    );
+  }
+  
+  AsyncEither<List<AvailabilityModel>> availability() async {
+    final response = await _client.invoke(
+      '/enum/availabilities', 
+      RequestType.get,
+    );
+
+    // log('Log result: $response', name: 'Log Auth Service Topic');
+
+    return response.fold(
+      (failure) {
+        return Left(failure);
+      }, 
+      (availability) {
+        final avail = (availability['data'] as List)
+        .map((item) => AvailabilityModel.fromJson(item),)
+        .toList();
+
+        return Right(avail);
+      }
+    );
+  }
+  
+  AsyncEither<List<MobilityScopeModel>> mobility() async {
+    final response = await _client.invoke(
+      '/enum/mobility-scopes',
+      RequestType.get,
+    );
+
+    // log('Log result: $response', name: 'Log Auth Service Topic');
+
+    return response.fold(
+      (failure) {
+        return Left(failure);
+      }, 
+      (mobility) {
+        final mobile = (mobility['data'] as List)
+        .map((item) => MobilityScopeModel.fromJson(item),)
+        .toList();
+
+        return Right(mobile);
+      }
+    );
+  }
+  
+  AsyncEither<List<TravelArrangementModel>> travelArrangement() async {
+    final response = await _client.invoke(
+      '/enum/travel-arrangements',
+      RequestType.get,
+    );
+
+    // log('Log result: $response', name: 'Log Auth Service Topic');
+
+    return response.fold(
+      (failure) {
+        return Left(failure);
+      }, 
+      (travel) {
+        final arangement = (travel['data'] as List)
+        .map((item) => TravelArrangementModel.fromJson(item),)
+        .toList();
+
+        return Right(arangement);
+      }
+    );
+  }
+
+  AsyncEither<List<HonorariumPreferenceModel>> honor() async {
+    final response = await _client.invoke(
+      '/enum/honorarium-preferences',
+      RequestType.get,
+    );
+
+    // log('Log result: $response', name: 'Log Auth Service Topic');
+
+    return response.fold(
+      (failure) {
+        return Left(failure);
+      }, 
+      (honorarium) {
+        final honor = (honorarium['data'] as List)
+        .map((item) => HonorariumPreferenceModel.fromJson(item),)
+        .toList();
+
+        return Right(honor);
       }
     );
   }

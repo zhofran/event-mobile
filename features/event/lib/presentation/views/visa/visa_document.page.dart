@@ -3,6 +3,7 @@
 import 'package:deps/design/design.dart';
 import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
+import 'package:deps/packages/file_picker.dart';
 import 'package:flutter/material.dart';
 
 @RoutePage()
@@ -228,14 +229,14 @@ class _VisaDocumentPageState extends State<VisaDocumentPage> {
   }
 
   Future<void> _pickFile(Function(String) onFilePicked) async {
-    // FilePickerResult? result = await FilePicker.platform.pickFiles(
-    //   type: FileType.custom,
-    //   allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-    // );
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+    );
 
-    // if (result != null) {
-    //   onFilePicked(result.files.single.name);
-    // }
+    if (result != null) {
+      onFilePicked(result.files.single.name);
+    }
   }
 
   Widget _buildContinueButton() {

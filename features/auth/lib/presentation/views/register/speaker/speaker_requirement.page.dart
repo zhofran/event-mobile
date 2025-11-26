@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 
 @RoutePage()
 class SpeakerRequirementPage extends StatefulWidget {
-  const SpeakerRequirementPage({super.key});
+  const SpeakerRequirementPage({required this.data, super.key});
+
+  final Map<String, dynamic> data;
 
   @override
   State<SpeakerRequirementPage> createState() => _SpeakerRequirementPageState();

@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 
 @RoutePage()
 class SpeakerSpecializePage extends StatefulWidget {
-  const SpeakerSpecializePage({super.key});
+  const SpeakerSpecializePage({required this.data, super.key});
+
+  final Map<String, dynamic> data;
 
   @override
   State<SpeakerSpecializePage> createState() => _SpeakerSpecializePageState();
@@ -69,8 +71,9 @@ class _SpeakerSpecializePageState extends State<SpeakerSpecializePage> {
                 onPressed: _selectedExpertises.isEmpty
                     ? null
                     : () {
+                        widget.data['topics'] = _selectedExpertises.toList();
                         // For now, just navigate to a placeholder page
-                        $.navigator.push(SpeakerBackgroundRoute());
+                        $.navigator.push(SpeakerBackgroundRoute(data: widget.data));
                       },
                 size: FabButtonSize.large,
                 width: double.infinity,

@@ -59,7 +59,7 @@ class _SpeakerRegisterPageState extends State<SpeakerRegisterPage> {
                   PaddingGap.md(),
 
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: ReactiveForm(
                       formGroup: form,
                       child: _buildRegisterForm(),
@@ -70,11 +70,23 @@ class _SpeakerRegisterPageState extends State<SpeakerRegisterPage> {
             ),
 
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(24),
               child: FabButton.primary(
                 onPressed: () {
+                  final firstName = form.control('firstName').value as String;
+                  final lastName = form.control('lastName').value as String;
+                  final bio = form.control('bio').value as String;
+
+                  final dataSpeaker = {
+                    'firstName': firstName,
+                    'lastName': lastName,
+                    'bio': bio
+                  };
+                  
                   $.navigator.push(
-                    SpeakerSpecializeRoute(),
+                    SpeakerSpecializeRoute(
+                      data: dataSpeaker
+                    ),
                   );
                 },
                 size: FabButtonSize.large,
@@ -95,7 +107,7 @@ class _SpeakerRegisterPageState extends State<SpeakerRegisterPage> {
 
   Widget _buildAppBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Row(
         children: [ 
           FabButton.secondary(

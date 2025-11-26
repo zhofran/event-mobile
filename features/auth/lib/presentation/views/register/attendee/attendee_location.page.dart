@@ -1,9 +1,10 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:developer';
 
 import 'package:deps/design/design.dart';
 import 'package:deps/features/features.dart';
 import 'package:deps/packages/auto_route.dart';
-import 'package:deps/packages/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../domain/models/location.model.dart';
